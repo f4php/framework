@@ -1,0 +1,25 @@
+{
+    "name": "f4php/framework",
+    "description": "F4 is a lightweight webapp framework",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "F4\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dennis Kreminsky",
+            "email": "dennis@kreminsky.com"
+        }
+    ],
+    "require": {
+        "phug/phug": "^1.13",
+        "phug/component": "^1.1",
+        "guzzlehttp/guzzle": "^7.9",
+        "php": "^8.3"
+    },
+    "require-dev": {
+        "kint-php/kint": "^5.1"
+    }
+}

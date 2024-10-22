@@ -68,8 +68,8 @@ abstract class AbstractConfig
     ];
 
     const string SESSION_COOKIE_NAME = 'f4';
-    const string SESSION_DOMAIN = null;
-    const string SESSION_HANDLER = null;
+    const ?string SESSION_DOMAIN = null;
+    const ?string SESSION_HANDLER = null;
     const bool SESSION_HTTP_ONLY = false;
     const string SESSION_REQUIRED = true;
     const string SESSION_LIFETIME = '';

@@ -8,7 +8,7 @@ use Attribute;
 class ConfigAttribute 
 {
 
-  public function __construct(protected mixed $value)
+  public function __construct(protected mixed $value=null)
   {
 
   }

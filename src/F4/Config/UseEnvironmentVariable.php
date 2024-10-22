@@ -5,7 +5,7 @@ namespace F4\Config;
 use Attribute as BaseAttribute;
 
 #[BaseAttribute(BaseAttribute::TARGET_CLASS_CONSTANT)]
-class EnvironmentVariable extends Attribute
+class UseEnvironmentVariable extends Attribute
 {
 
   public function __construct(?string $environmentVariableName=null)

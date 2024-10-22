@@ -1,11 +1,11 @@
 <?php
 
-namespace F4\Loader;
+namespace F4\Config;
 
-use Attribute;
+use Attribute as BaseAttribute;
 
-#[Attribute(Attribute::TARGET_CLASS_CONSTANT)]
-class ConfigAttribute 
+#[BaseAttribute(BaseAttribute::TARGET_CLASS_CONSTANT)]
+class Attribute 
 {
 
   public function __construct(protected mixed $value=null)

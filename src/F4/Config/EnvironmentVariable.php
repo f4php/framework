@@ -1,11 +1,11 @@
 <?php
 
-namespace F4\Loader;
+namespace F4\Config;
 
-use Attribute;
+use Attribute as BaseAttribute;
 
-#[Attribute(Attribute::TARGET_CLASS_CONSTANT)]
-class EnvironmentVariable extends ConfigAttribute
+#[BaseAttribute(BaseAttribute::TARGET_CLASS_CONSTANT)]
+class EnvironmentVariable extends Attribute
 {
 
   public function __construct(?string $environmentVariableName=null)

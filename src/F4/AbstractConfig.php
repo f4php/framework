@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace F4;
 
+use SensitiveParameter;
+
 // use F4\DB\Adapter\PostgreSQL;
 // use F4\DB\Adapter\PostgreSQL\TypeCaster;
 // use F4\Phug\Renderer as PhugTemplateRenderer;
@@ -26,6 +28,7 @@ abstract class AbstractConfig
     public const string DB_PORT = '5432';
     public const string DB_NAME = '';
     public const string DB_USERNAME = '';
+    #[SensitiveParameter]
     public const string DB_PASSWORD = '';
     public const string DB_SCHEMA = '';
     public const ?string DB_APP_NAME = null;

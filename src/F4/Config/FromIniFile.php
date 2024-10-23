@@ -12,8 +12,8 @@ class FromIniFile extends ConfigAttribute
 
     public const string DEFAULT_PATH = "settings.ini";
 
-    protected string $name = null;
-    protected string $file = null;
+    protected string $name = '';
+    protected string $file = '';
     protected string $path = '';
 
     public function __construct(string $name, ?string $file = null, ?string $path = null)

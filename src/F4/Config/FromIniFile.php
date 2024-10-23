@@ -35,7 +35,7 @@ class FromIniFile extends ConfigAttribute
     public function getValue(): mixed 
     {
         $filename = $this->path.($this->file ?: self::DEFAULT_PATH);
-        if ((($parsedFile = parse_ini_file(filename: $filename, process_sections: false, scanner_mode: INI_SCANNER_NORMAL)) === false) && !empty($this->file)) {
+        if ((($parsedFile = parse_ini_file(filename: $filename, process_sections: false, scanner_mode: INI_SCANNER_TYPED)) === false) && !empty($this->file)) {
             throw new ErrorException(message: "Could not parse ini file {$this->file}");
         }
         return $parsedFile[$this->name] ?? null;

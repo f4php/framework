@@ -2,10 +2,11 @@
 
 namespace F4\Config;
 
-use Attribute as BaseAttribute;
+use Attribute;
+use F4\Config\ConfigAttribute;
 
-#[BaseAttribute(BaseAttribute::TARGET_CLASS_CONSTANT)]
-class SensitiveParameter extends Attribute
+#[Attribute(Attribute::TARGET_CLASS_CONSTANT)]
+class SensitiveParameter extends ConfigAttribute
 {
 
 }

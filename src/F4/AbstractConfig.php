@@ -20,7 +20,7 @@ abstract class AbstractConfig
     // public const jsonapimode = true;
     // public const jsonparameters = false;
 
-    public const bool DEBUG_MODE = true;
+    public const bool DEBUG_MODE = false;
     public const bool DEBUG_EXTENDED_ERROR_OUTPUT = false;
 
     public const string DB_HOST = 'localhost';

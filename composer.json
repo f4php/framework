@@ -19,7 +19,8 @@
         "phug/component": "^1.1",
         "guzzlehttp/guzzle": "^7.9",
         "php": "^8.3",
-        "nette/php-generator": "^4.1"
+        "nette/php-generator": "^4.1",
+        "cekurte/environment": "^0.3.0"
     },
     "require-dev": {
         "kint-php/kint": "^5.1"

@@ -15,8 +15,8 @@ class IsOneOf implements ValidatorAttributeInterface
     public function getFilteredValue(mixed $value, mixed $defaultValue = null): mixed
     {
         return match (\in_array(needle: $value, haystack: $this->values)) {
-            true => $value,
-            default => throw new ValidationFailedException(message: "{$value} is not within range"),
+            false => throw new ValidationFailedException(message: "{$value} is not within range"),
+            default => $value
         };
     }
 }

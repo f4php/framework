@@ -20,10 +20,12 @@ use F4\Core\Validator\IsFloat;
 use F4\Core\Validator\IsInt;
 use F4\Core\Validator\IsInteger;
 use F4\Core\Validator\IsOneOf;
+use F4\Core\Validator\IsRegExpMatch;
 use F4\Core\Validator\IsUuid;
 use F4\Core\Validator\Max;
 use F4\Core\Validator\Min;
 use F4\Core\Validator\OneOf;
+use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\UnsafeString;
 
@@ -120,7 +122,7 @@ final class ValidatorTest extends TestCase
         $this->assertSame(0.0, $arguments['float3']);
     }
 
-    public function testValid(): void
+    public function testValidAttributes(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(function(
@@ -170,6 +172,8 @@ final class ValidatorTest extends TestCase
             string $oneof3,
             #[OneOf(['a', 'b', 'c'])]
             string $oneof4 = 'd',
+            #[RegExp('/a([a-z0-9]+)g/', 1)]
+            string $regexp1 = '',
         ): void {},
         [
             'int1' => 5,
@@ -194,7 +198,8 @@ final class ValidatorTest extends TestCase
             'oneof1' => '2',
             'oneof2' => 3,
             'oneof3' => 'b',
-            'oneof4' => 'e'
+            'oneof4' => 'e',
+            'regexp1' => 'abcdefg',
         ]);
 
         $this->assertSame(5, $arguments['int1']);
@@ -228,6 +233,9 @@ final class ValidatorTest extends TestCase
         $this->assertSame(3, $arguments['oneof2']);
         $this->assertSame('b', $arguments['oneof3']);
         $this->assertSame('d', $arguments['oneof4']);
+
+        $this->assertSame('bcdef', $arguments['regexp1']);
+
 
     }
 
@@ -306,6 +314,18 @@ final class ValidatorTest extends TestCase
         ): void {},
         [
             'uuid1' => 'not-a-uuid'
+        ]);
+    }
+    public function testInvalidRegExp(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $validator->getFilteredArguments(function(
+            #[IsRegExpMatch('/^[a-z0-9_]+$/')]
+            string $regexp1
+        ): void {},
+        [
+            'regexp1' => 'invalid value'
         ]);
     }
 

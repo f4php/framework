@@ -12,6 +12,7 @@ use F4\Core\Validator\CastBoolean;
 use F4\Core\Validator\CastFloat;
 use F4\Core\Validator\CastInt;
 use F4\Core\Validator\CastInteger;
+use F4\Core\Validator\DefaultValue;
 use F4\Core\Validator\Filter;
 use F4\Core\Validator\IsBool;
 use F4\Core\Validator\IsBoolean;
@@ -28,6 +29,8 @@ use F4\Core\Validator\OneOf;
 use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\UnsafeString;
+
+use TypeError;
 
 final class ValidatorTest extends TestCase
 {
@@ -174,6 +177,8 @@ final class ValidatorTest extends TestCase
             string $oneof4 = 'd',
             #[RegExp('/a([a-z0-9]+)g/', 1)]
             string $regexp1 = '',
+            #[DefaultValue('default')]
+            string $default1 = 'non-default-value',
         ): void {},
         [
             'int1' => 5,
@@ -236,7 +241,50 @@ final class ValidatorTest extends TestCase
 
         $this->assertSame('bcdef', $arguments['regexp1']);
 
+        $this->assertSame('default', $arguments['default1']);
 
+    }
+    public function testSequenceOfAttributes(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[OneOf(['a', 'b', 'c'])]
+            #[DefaultValue('c')]
+            string $oneof1 = 'd',
+        ): void {},
+        [
+            'oneof1' => '',
+        ]);
+        $this->assertSame('c', $arguments['oneof1']);
+    }
+
+    public function testFallbackToDefaultValue(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[OneOf(['a', 'b', 'c'])]
+            string $oneof1 = 'd',
+        ): void {},
+        [
+            'oneof1' => '',
+        ]);
+        $this->assertSame('d', $arguments['oneof1']);
+    }
+
+    public function testStrictTypeCheck(): void
+    {
+        $this->expectException(TypeError::class);
+        $validator = new Validator();
+        $closure = function(
+            #[OneOf(['a', 'b', 'c'])]
+            string $oneof1,
+        ): void {};
+        $arguments = $validator->getFilteredArguments($closure,
+        [
+            'oneof1' => '',
+        ]);
+        $this->assertSame(null, $arguments['oneof1']);
+        $closure->call($this, $arguments); // null cannot be passed as string, and there's no other default available for $oneof1
     }
 
     public function testInvalidInteger(): void

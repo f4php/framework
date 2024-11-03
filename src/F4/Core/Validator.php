@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Closure;
-use ReflectionFunction;
-use ReflectionAttribute;
-
-use InvalidArgumentException;
 
 use F4\Core\Validator\SanitizedString;
+use F4\Core\Validator\UndefinedValue;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use ReflectionAttribute;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionProperty;
+
 class Validator
 {
-    public const SANITIZE_STRINGS_BY_DEFAULT = 0x01;
+    public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
 
     public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT)
     {
@@ -39,17 +41,19 @@ class Validator
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
                 $type = (string)$parameter->getType(); // NB: $type could be a pipe-separated list of simple types
-                if (!isset($arguments[$name]) && !$parameter->isOptional()) {
+                $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
+                $hasAttributeDefaults = array_reduce(array: $attributes, callback: function(bool $result, ReflectionAttribute $attribute): bool {
+                    $attributeInstance = $attribute->newInstance();
+                    return $result || (\method_exists(object_or_class: $attributeInstance, method: 'getDefaultValue') && (null !== $attributeInstance->getDefaultValue()));
+                }, initial: false);
+                if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
                         ->setArgumentType(argumentType: $type); 
-                } elseif (empty($arguments[$name]) && $parameter->isDefaultValueAvailable()) {
-                    // There's nothing to filter if there's no user input,
-                    // so we trust the default parameter value to always be valid and never filter it
-                    $filteredArguments[$name] = $parameter->getDefaultValue();
-                } else {
+                }
+                else {
                     $filters = [];
-                    if ($attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF)) {
+                    if ($attributes) {
                         $filters = [
                             ...$filters,
                             ...\array_map(
@@ -68,10 +72,9 @@ class Validator
                     }
                     try {
                         $filteredArguments[$name] = self::getFilteredValue(
-                            value: $arguments[$name],
-                            filters: $filters,
-                            default: $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null
-                        );
+                            value: $arguments[$name] ?? null,
+                            filters: $filters
+                        ) ?? ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
                     }
                     catch (ValidationFailedException $e) {
                         $e->setArgumentName(argumentName: $name);

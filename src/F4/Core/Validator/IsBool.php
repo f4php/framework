@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace F4\Core\Validator;
 
-use F4\Core\Validator\ValidatorAttributeInterface;
-use F4\Core\Validator\ValidationFailedException;
-
 use Attribute;
+use F4\Core\Validator\ValidationFailedException;
+use F4\Core\Validator\ValidatorAttributeInterface;
+
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsBool implements ValidatorAttributeInterface

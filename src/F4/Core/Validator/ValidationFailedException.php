@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace F4\Core\Validator;
 
 use InvalidArgumentException;
-
 class ValidationFailedException extends InvalidArgumentException {
     protected string $argumentName;
     protected string $argumentType;

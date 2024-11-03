@@ -8,7 +8,5 @@ use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 interface ValidatorAttributeInterface {
-
-    public function getFilteredValue(mixed $value, mixed $defaultValue = null): mixed;
-
+    public function getFilteredValue(mixed $value): mixed;
 }

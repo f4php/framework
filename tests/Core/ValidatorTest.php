@@ -7,12 +7,14 @@ use PHPUnit\Framework\TestCase;
 
 use F4\Core\Validator;
 use F4\Core\Validator\ValidationFailedException;
+use F4\Core\Validator\ArrayOf;
 use F4\Core\Validator\CastBool;
 use F4\Core\Validator\CastBoolean;
 use F4\Core\Validator\CastFloat;
 use F4\Core\Validator\CastInt;
 use F4\Core\Validator\CastInteger;
 use F4\Core\Validator\DefaultValue;
+use F4\Core\Validator\Fields;
 use F4\Core\Validator\Filter;
 use F4\Core\Validator\IsBool;
 use F4\Core\Validator\IsBoolean;
@@ -30,6 +32,7 @@ use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\UnsafeString;
 
+use InvalidArgumentException;
 use TypeError;
 
 final class ValidatorTest extends TestCase
@@ -192,7 +195,7 @@ final class ValidatorTest extends TestCase
             'float1' => 1.1,
             'float2' => 0.0,
             'float3' => 2.3,
-            'email1' => 'valid@email.com',
+            'email1' => 'valid@email.test',
             'uuid1' => '9c5b94b1-35ad-49bb-b118-8e8fc24abf80',
             'unsafe1' => '<p>Unsafe string</p>',
             'sanitized1' => '<p>Unsafe string</p>',
@@ -221,7 +224,7 @@ final class ValidatorTest extends TestCase
         $this->assertSame(0.0, $arguments['float2']);
         $this->assertSame(2.3, $arguments['float3']);
 
-        $this->assertSame('valid@email.com', $arguments['email1']);
+        $this->assertSame('valid@email.test', $arguments['email1']);
 
         $this->assertSame('9c5b94b1-35ad-49bb-b118-8e8fc24abf80', $arguments['uuid1']);
         
@@ -258,6 +261,87 @@ final class ValidatorTest extends TestCase
         $this->assertSame('c', $arguments['oneof1']);
     }
 
+    public function Fields(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[Fields([
+                'name' => new SanitizedString,
+                'email' => new IsEmail
+            ])]
+            array $fields = [],
+        ): void {},
+        [
+            'fields1' => [
+                'name'=>'<b>name</b>', 
+                'email'=>'valid@email.test'
+            ],
+        ]);
+        $this->assertSame(['name'=>'&lt;b&gt;&lt;name/b&gt;', 'email'=>'valid@email.test'], $arguments['array1']);
+    }
+
+    public function testFieldsIncorrectArguments(): void
+    {
+        $this->expectException(TypeError::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[Fields([
+                'key' => 'invalid-value'
+            ])]
+            string $fields1,
+        ): void {},
+        [
+            'fields1' => [],
+        ]);
+        $this->assertSame('c', $arguments['fields1']);
+    }
+    public function testFieldsIncorrectArguments2(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[Fields([
+                'string'
+            ])]
+            string $fields1,
+        ): void {},
+        [
+            'fields1' => [],
+        ]);
+        $this->assertSame('c', $arguments['fields1']);
+    }
+    public function testArrayOfIncorrectArguments(): void
+    {
+        $this->expectException(TypeError::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[ArrayOf(
+                'invalid-string'
+            )]
+            string $fields1,
+        ): void {},
+        [
+            'fields1' => [],
+        ]);
+        // $this->assertSame('c', $arguments['fields1']);
+    }
+
+
+    public function testArrayOf(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[ArrayOf(
+                new SanitizedString()
+            )]
+            array $array1 = [],
+        ): void {},
+        [
+            'array1' => ['a', '<b></b>'],
+        ]);
+        $this->assertSame(['a', '&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
+    }
+
     public function testFallbackToDefaultValue(): void
     {
         $validator = new Validator();
@@ -269,6 +353,46 @@ final class ValidatorTest extends TestCase
             'oneof1' => '',
         ]);
         $this->assertSame('d', $arguments['oneof1']);
+    }
+    public function testDefaultValueAsFallback(): void
+    {
+        $validator = new Validator();
+        $closure = function(
+            #[DefaultValue('a')]
+            string $default1,
+        ): void {};
+        $arguments = $validator->getFilteredArguments($closure,
+        [
+            'oneof1' => null,
+        ]);
+        $this->assertSame('a', $arguments['default1']);
+    }
+
+    public function testNullAsDefaultValueAttributes(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(function(
+            #[DefaultValue(null)]
+            string $default1,
+        ): void {},
+        [
+            // 'oneof1' => 'b',
+        ]);
+        $this->assertSame(null, $arguments['default1']);
+    }
+
+    public function testStrictTypeCheckWithNull(): void
+    {
+        $validator = new Validator();
+        $closure = function(
+            #[OneOf(['a', 'b', 'c'])]
+            ?string $oneof1,
+        ): void {};
+        $arguments = $validator->getFilteredArguments($closure,
+        [
+            'oneof1' => 'd',
+        ]);
+        $this->assertSame(null, $arguments['oneof1']);
     }
 
     public function testStrictTypeCheck(): void

@@ -6,17 +6,14 @@ namespace F4\Core\Validator;
 
 use Attribute;
 use F4\Core\Validator\ValidatorAttributeInterface;
-use F4\Core\Validator\WithDefaultTrait;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class DefaultValue implements ValidatorAttributeInterface
 {
-    use WithDefaultTrait;
-    public function __construct(mixed $defaultValue) {
-        $this->defaultValue = $defaultValue;
+    public function __construct(protected mixed $defaultValue) {
     }
-    public function getFilteredValue(mixed $value, mixed $defaultValue = null): mixed
+    public function getFilteredValue(mixed $value): mixed
     {
-        return $value ?? $this->defaultValue ?? $defaultValue;
+        return $value ?? $this->defaultValue;
     }
 }

@@ -7,7 +7,7 @@ namespace F4\Core;
 use Closure;
 
 use F4\Core\Validator\SanitizedString;
-use F4\Core\Validator\UndefinedValue;
+use F4\Core\Validator\DefaultValue;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
@@ -25,11 +25,11 @@ class Validator
 
     }
 
-    protected static function getFilteredValue(mixed $value, array $filters, mixed $default = null): mixed
+    protected static function getFilteredValue(mixed $value, array $filters): mixed
     {
         (function (ValidatorAttributeInterface ...$filters): void {})(...$filters);
         foreach($filters as $filter) {
-            $value = $filter->getFilteredValue($value, $default);
+            $value = $filter->getFilteredValue($value);
         }
         return $value;
     }
@@ -42,10 +42,7 @@ class Validator
                 $name = $parameter->getName();
                 $type = (string)$parameter->getType(); // NB: $type could be a pipe-separated list of simple types
                 $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
-                $hasAttributeDefaults = array_reduce(array: $attributes, callback: function(bool $result, ReflectionAttribute $attribute): bool {
-                    $attributeInstance = $attribute->newInstance();
-                    return $result || (\method_exists(object_or_class: $attributeInstance, method: 'getDefaultValue') && (null !== $attributeInstance->getDefaultValue()));
-                }, initial: false);
+                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
@@ -74,7 +71,7 @@ class Validator
                         $filteredArguments[$name] = self::getFilteredValue(
                             value: $arguments[$name] ?? null,
                             filters: $filters
-                        ) ?? ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
+                        ) ?? (($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null);
                     }
                     catch (ValidationFailedException $e) {
                         $e->setArgumentName(argumentName: $name);

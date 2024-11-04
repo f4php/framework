@@ -11,7 +11,9 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsOneOf implements ValidatorAttributeInterface
 {
-    public function __construct(protected array $values) {}
+    public function __construct(protected array $values)
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
         return match (\in_array(needle: $value, haystack: $this->values)) {

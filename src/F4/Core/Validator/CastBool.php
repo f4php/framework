@@ -10,9 +10,11 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class CastBool implements ValidatorAttributeInterface
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
-        return (bool)filter_var(value: $value, filter: FILTER_VALIDATE_BOOLEAN);
+        return (bool) filter_var(value: $value, filter: FILTER_VALIDATE_BOOLEAN);
     }
 }

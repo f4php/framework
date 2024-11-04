@@ -11,7 +11,9 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsRegExpMatch implements ValidatorAttributeInterface
 {
-    public function __construct(protected string $pattern, protected int $flags = 0) {}
+    public function __construct(protected string $pattern, protected int $flags = 0)
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
         return match (\preg_match(pattern: $this->pattern, subject: $value, matches: $matches, flags: $this->flags)) {

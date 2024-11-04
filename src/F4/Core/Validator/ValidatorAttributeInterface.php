@@ -7,6 +7,7 @@ namespace F4\Core\Validator;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-interface ValidatorAttributeInterface {
+interface ValidatorAttributeInterface
+{
     public function getFilteredValue(mixed $value): mixed;
 }

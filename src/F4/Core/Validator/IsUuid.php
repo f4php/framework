@@ -15,10 +15,12 @@ class IsUuid implements ValidatorAttributeInterface
         4 => '~^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$~'
     ];
 
-    public function __construct(protected int $version = 4) {}
+    public function __construct(protected int $version = 4)
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
-        return match(\preg_match(pattern: self::PATTERNS[$this->version], subject: $value)) {
+        return match (\preg_match(pattern: self::PATTERNS[$this->version], subject: $value)) {
             false, 0 => throw new ValidationFailedException(message: "{$value} is not a valid UUID"),
             default => $value
         };

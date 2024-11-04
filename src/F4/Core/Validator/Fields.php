@@ -19,26 +19,30 @@ class Fields implements ValidatorAttributeInterface
             throw new InvalidArgumentException(message: "A string must be used as a definition key");
         }
         (new class {
-            function __invoke(array|ValidatorAttributeInterface $definitions): void {
-                \is_array(value: $definitions) && \array_map(callback: function($definition): void { $this($definition); }, array: $definitions);
+            function __invoke(array|ValidatorAttributeInterface $definitions): void
+            {
+                \is_array(value: $definitions) && \array_map(callback: function ($definition): void{
+                    $this($definition); }, array: $definitions);
             }
         })($definitions);
         $this->definitions = $definitions;
     }
 
-    protected function getDefinitions() {
+    protected function getDefinitions()
+    {
         return $this->definitions;
     }
 
     public function getFilteredValue(mixed $value): mixed
     {
         $result = [];
-        foreach($this->definitions as $name=>$filter) {
-            $result[$name] = match(\is_array(value: $filter)) {
-                true => \array_reduce(array: (array)$filter, callback: fn($carry, $filter): mixed => $filter->getFilteredValue($carry), initial: $value[$name] ?? null),
+        foreach ($this->definitions as $name => $filter) {
+            $result[$name] = match (\is_array(value: $filter)) {
+                true => \array_reduce(array: (array) $filter, callback: fn($carry, $filter): mixed => $filter->getFilteredValue($carry), initial: $value[$name] ?? null),
                 default => $filter->getFilteredValue($value[$name] ?? null)
             };
-        };
+        }
+        ;
         return $result;
     }
 }

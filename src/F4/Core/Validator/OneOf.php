@@ -10,10 +10,8 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class OneOf implements ValidatorAttributeInterface
 {
-    public function __construct(protected array $values, mixed $defaultValue = null) {
-        if($defaultValue !== null) {
-            $this->defaultValue = $defaultValue;
-        }
+    public function __construct(protected array $values)
+    {
     }
     public function getFilteredValue(mixed $value): mixed
     {

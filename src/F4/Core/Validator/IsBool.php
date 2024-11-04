@@ -13,7 +13,7 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 class IsBool implements ValidatorAttributeInterface
 {
     public function __construct() {}
-    public function getFilteredValue(mixed $value, mixed $defaultValue = null): mixed
+    public function getFilteredValue(mixed $value): mixed
     {
         return match(\is_bool(value: $value)) {
             false => throw new ValidationFailedException(message: "'{$value}' is not a valid boolean"),

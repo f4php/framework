@@ -10,9 +10,11 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class CastFloat implements ValidatorAttributeInterface
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
-        return (float)$value;
+        return (float) $value;
     }
 }

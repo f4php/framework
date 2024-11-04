@@ -11,10 +11,12 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsFloat implements ValidatorAttributeInterface
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
-        return match(\is_float(value: $value)) {
+        return match (\is_float(value: $value)) {
             false => throw new ValidationFailedException(message: "{$value} is not a valid email address"),
             default => $value
         };

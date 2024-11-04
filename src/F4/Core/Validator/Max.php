@@ -10,7 +10,9 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Max implements ValidatorAttributeInterface
 {
-    public function __construct(protected int $max) {}
+    public function __construct(protected int $max)
+    {
+    }
     public function getFilteredValue(mixed $value): mixed
     {
         return \min($value, $this->max);

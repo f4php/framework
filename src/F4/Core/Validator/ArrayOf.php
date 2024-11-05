@@ -10,18 +10,18 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class ArrayOf implements ValidatorAttributeInterface
 {
-    protected readonly array $definitions;
-    public function __construct(mixed ...$definitions)
+    protected readonly array $filters;
+    public function __construct(mixed ...$filters)
     {
-        (function (ValidatorAttributeInterface ...$definitions): void{})(...$definitions);
-        $this->definitions = $definitions;
+        (function (ValidatorAttributeInterface ...$filters): void{})(...$filters);
+        $this->filters = $filters;
     }
     public function getFilteredValue(mixed $value): mixed
     {
         return match (\is_array(value: $value)) {
             false => [],
             default => array_map(callback: function ($valueItem): mixed {
-                    return array_reduce(array: $this->definitions, callback: fn($result, $attributeInstance): mixed => $attributeInstance->getFilteredValue($result), initial: $valueItem);
+                    return array_reduce(array: $this->filters, callback: fn($result, $attributeInstance): mixed => $attributeInstance->getFilteredValue($result), initial: $valueItem);
                 }, array: $value)
         };
     }

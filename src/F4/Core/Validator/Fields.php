@@ -16,7 +16,7 @@ class Fields implements ValidatorAttributeInterface
     public function __construct(array $definitions)
     {
         if (\array_filter(array: \array_keys($definitions), callback: fn($key): bool => !\is_string(value: $key))) {
-            throw new InvalidArgumentException(message: "A string must be used as a definition key");
+            throw new InvalidArgumentException(message: "Field name must be a string");
         }
         (new class {
             function __invoke(array|ValidatorAttributeInterface $definitions): void

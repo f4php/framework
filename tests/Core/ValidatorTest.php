@@ -244,11 +244,11 @@ final class ValidatorTest extends TestCase
         $this->assertSame('c', $arguments['oneof1']);
     }
 
-    public function Fields(): void
+    public function testFields(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[Fields(['name' => new SanitizedString, 'email' => new IsEmail])] array $fields = [], ): void {
+            function (#[Fields(['name' => new SanitizedString, 'email' => new IsEmail])] array $fields1 = [], ): void {
             },
             [
                 'fields1' => [
@@ -257,7 +257,7 @@ final class ValidatorTest extends TestCase
                 ],
             ]
         );
-        $this->assertSame(['name' => '&lt;b&gt;&lt;name/b&gt;', 'email' => 'valid@email.test'], $arguments['array1']);
+        $this->assertSame(['name' => '&lt;b&gt;name&lt;/b&gt;', 'email' => 'valid@email.test'], $arguments['fields1']);
     }
 
     public function testFieldsIncorrectArguments(): void

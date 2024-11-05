@@ -22,14 +22,17 @@ use F4\Core\Validator\IsEmail;
 use F4\Core\Validator\IsFloat;
 use F4\Core\Validator\IsInt;
 use F4\Core\Validator\IsInteger;
+use F4\Core\Validator\IsNotEmpty;
 use F4\Core\Validator\IsOneOf;
 use F4\Core\Validator\IsRegExpMatch;
+use F4\Core\Validator\IsUrl;
 use F4\Core\Validator\IsUuid;
 use F4\Core\Validator\Max;
 use F4\Core\Validator\Min;
 use F4\Core\Validator\OneOf;
 use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
+use F4\Core\Validator\Trim;
 use F4\Core\Validator\UnsafeString;
 
 use InvalidArgumentException;
@@ -106,11 +109,29 @@ final class ValidatorTest extends TestCase
         $this->assertSame(0.0, $arguments['float3']);
     }
 
-    public function testValidAttributes(): void
+    public function testValidValidationAttributes(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsInt] int $int1, #[IsInt] int $int2, #[IsInt] int $int3, #[IsInteger] int $int4, #[IsInteger] int $int5, #[IsInteger] int $int6, #[IsBool] bool $bool1, #[IsBoolean] bool $bool2, #[IsFloat] float $float1, #[IsFloat] float $float2, #[IsFloat] float $float3, #[IsEmail] string $email1, #[IsUuid] string $uuid1, #[UnsafeString] string $unsafe1, #[SanitizedString] string $sanitized1, #[Min(10)] int $min1, #[Max(20)] int $max1, #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter1, #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter2, #[IsOneOf(['1', '2', 3])] string $oneof1, #[IsOneOf(['1', '2', 3])] int $oneof2, #[OneOf(['a', 'b', 'c'])] string $oneof3, #[OneOf(['a', 'b', 'c'])] string $oneof4 = 'd', #[RegExp('/a([a-z0-9]+)g/', 1)] string $regexp1 = '', #[DefaultValue('default')] string $default1 = 'non-default-value', ): void {
+            function (
+                #[IsInt] int $int1, 
+                #[IsInt] int $int2, 
+                #[IsInt] int $int3, 
+                #[IsInteger] int $int4, 
+                #[IsInteger] int $int5, 
+                #[IsInteger] int $int6, 
+                #[IsBool] bool $bool1, 
+                #[IsBoolean] bool $bool2, 
+                #[IsFloat] float $float1, 
+                #[IsFloat] float $float2, 
+                #[IsFloat] float $float3, 
+                #[IsEmail] string $email1, 
+                #[IsNotEmpty] string $notempty1, 
+                #[IsUrl] string $url1, 
+                #[IsUuid] string $uuid1, 
+                #[IsOneOf(['1', '2', 3])] string $oneof1, 
+                #[IsOneOf(['1', '2', 3])] int $oneof2, 
+            ): void {
             },
             [
                 'int1' => 5,
@@ -125,18 +146,11 @@ final class ValidatorTest extends TestCase
                 'float2' => 0.0,
                 'float3' => 2.3,
                 'email1' => 'valid@email.test',
+                'notempty1' => 'non-empty value',
+                'url1' => 'https://test.com/?param=value',
                 'uuid1' => '9c5b94b1-35ad-49bb-b118-8e8fc24abf80',
-                'unsafe1' => '<p>Unsafe string</p>',
-                'sanitized1' => '<p>Unsafe string</p>',
-                'min1' => 8,
-                'max1' => 22,
-                'filter1' => 'true',
-                'filter2' => 'false',
                 'oneof1' => '2',
                 'oneof2' => 3,
-                'oneof3' => 'b',
-                'oneof4' => 'e',
-                'regexp1' => 'abcdefg',
             ]
         );
 
@@ -156,10 +170,52 @@ final class ValidatorTest extends TestCase
 
         $this->assertSame('valid@email.test', $arguments['email1']);
 
+        $this->assertSame('non-empty value', $arguments['notempty1']);
+
+        $this->assertSame('https://test.com/?param=value', $arguments['url1']);
+
         $this->assertSame('9c5b94b1-35ad-49bb-b118-8e8fc24abf80', $arguments['uuid1']);
+
+
+        $this->assertSame('2', $arguments['oneof1']);
+        $this->assertSame(3, $arguments['oneof2']);
+
+    }
+    public function testValidSanitizationAttributes(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (
+                #[UnsafeString] string $unsafe1, 
+                #[SanitizedString] string $sanitized1, 
+                #[Trim] string $trim1, 
+                #[Min(10)] int $min1, 
+                #[Max(20)] int $max1, 
+                #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter1, 
+                #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter2, 
+                #[OneOf(['a', 'b', 'c'])] string $oneof3, 
+                #[OneOf(['a', 'b', 'c'])] string $oneof4 = 'd', 
+                #[RegExp('/a([a-z0-9]+)g/', 1)] string $regexp1 = '', 
+                #[DefaultValue('default')] string $default1 = 'non-default-value', ): void {
+            },
+            [
+                'unsafe1' => '<p>Unsafe string</p>',
+                'sanitized1' => '<p>Unsafe string</p>',
+                'trim1' => '   trimmed     ',
+                'min1' => 8,
+                'max1' => 22,
+                'filter1' => 'true',
+                'filter2' => 'false',
+                'oneof3' => 'b',
+                'oneof4' => 'e',
+                'regexp1' => 'abcdefg',
+            ]
+        );
 
         $this->assertSame('<p>Unsafe string</p>', $arguments['unsafe1']);
         $this->assertSame('&lt;p&gt;Unsafe string&lt;/p&gt;', $arguments['sanitized1']);
+
+        $this->assertSame('trimmed', $arguments['trim1']);
 
         $this->assertSame(10, $arguments['min1']);
         $this->assertSame(20, $arguments['max1']);
@@ -167,8 +223,6 @@ final class ValidatorTest extends TestCase
         $this->assertSame(true, $arguments['filter1']);
         $this->assertSame(false, $arguments['filter2']);
 
-        $this->assertSame('2', $arguments['oneof1']);
-        $this->assertSame(3, $arguments['oneof2']);
         $this->assertSame('b', $arguments['oneof3']);
         $this->assertSame('d', $arguments['oneof4']);
 
@@ -415,6 +469,30 @@ final class ValidatorTest extends TestCase
             },
             [
                 'regexp1' => 'invalid value'
+            ]
+        );
+    }
+    public function testInvalidUrl(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $validator->getFilteredArguments(
+            function (#[IsUrl] string $regexp1): void {
+            },
+            [
+                'regexp1' => 'invalid url'
+            ]
+        );
+    }
+    public function testInvalidNotEmpty(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $validator->getFilteredArguments(
+            function (#[IsNotEmpty] string $regexp1): void {
+            },
+            [
+                'regexp1' => ''
             ]
         );
     }

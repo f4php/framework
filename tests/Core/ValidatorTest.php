@@ -18,15 +18,21 @@ use F4\Core\Validator\Fields;
 use F4\Core\Validator\Filter;
 use F4\Core\Validator\IsBool;
 use F4\Core\Validator\IsBoolean;
+use F4\Core\Validator\IsDivisibleBy;
 use F4\Core\Validator\IsEmail;
 use F4\Core\Validator\IsFloat;
+use F4\Core\Validator\IsGreaterThan;
+use F4\Core\Validator\IsGreaterThanOrEqual;
 use F4\Core\Validator\IsInt;
 use F4\Core\Validator\IsInteger;
+use F4\Core\Validator\IsIpAddress;
+use F4\Core\Validator\IsLessThan;
+use F4\Core\Validator\IsLessThanOrEqual;
 use F4\Core\Validator\IsNotEmpty;
 use F4\Core\Validator\IsOneOf;
 use F4\Core\Validator\IsRegExpMatch;
-use F4\Core\Validator\IsUrl;
 use F4\Core\Validator\IsUuid;
+use F4\Core\Validator\IsUrl;
 use F4\Core\Validator\Max;
 use F4\Core\Validator\Min;
 use F4\Core\Validator\OneOf;
@@ -493,6 +499,126 @@ final class ValidatorTest extends TestCase
             },
             [
                 'regexp1' => ''
+            ]
+        );
+    }
+
+    public function testIsDivisibleBy(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsDivisibleBy(3)] int $divisible1): void {
+            },
+            [
+                'divisible1' => 9
+            ]
+        );
+        $this->assertSame(9, $arguments['divisible1']);
+    }
+
+    public function testIsDivisibleByFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsDivisibleBy(4)] int $divisible1): void {
+            },
+            [
+                'divisible1' => 9
+            ]
+        );
+    }
+    public function testIsGreaterThan(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsGreaterThan(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 11
+            ]
+        );
+        $this->assertSame(11, $arguments['greater1']);
+    }
+
+    public function testIsGreaterThanFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsGreaterThan(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 9
+            ]
+        );
+    }
+
+    public function testIsGreaterThanOrEqual(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsGreaterThanOrEqual(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 10
+            ]
+        );
+        $this->assertSame(10, $arguments['greater1']);
+    }
+
+    public function testIsGreaterThanOrEqualFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsGreaterThanOrEqual(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 9
+            ]
+        );
+    }
+    public function testIpAddress(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (
+                #[IsIpAddress] int $ip1,
+                #[IsIpAddress] int $ip2
+            ): void {
+            },
+            [
+                'ip1' => '127.0.0.1',
+                'ip2' => '2001:db8::8a2e:370:7334'
+            ]
+        );
+        $this->assertSame('127.0.0.1', $arguments['ip1']);
+        $this->assertSame('2001:db8::8a2e:370:7334', $arguments['ip2']);
+    }
+
+    public function testIpAddressFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsIpAddress] int $ip1): void {
+            },
+            [
+                'ip1' => '256.0.0.0'
+            ]
+        );
+    }
+
+    public function testIpAddressV6Fail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsIpAddress] int $ip1): void {
+            },
+            [
+                'ip1' => '2001:db8:a0b:12f0::::0:1'
             ]
         );
     }

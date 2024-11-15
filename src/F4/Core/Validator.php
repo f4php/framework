@@ -12,19 +12,17 @@ use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
 use ReflectionAttribute;
-use ReflectionClass;
 use ReflectionFunction;
-use ReflectionProperty;
 
 class Validator
 {
     public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
+    public const int ALL_ATTRIBUTES_MUST_BE_CLASSES = 1 << 1;
 
     public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT)
     {
 
     }
-
     protected static function getFilteredValue(mixed $value, array $filters): mixed
     {
         (function (ValidatorAttributeInterface ...$filters): void {})(...$filters);
@@ -33,7 +31,14 @@ class Validator
         }
         return $value;
     }
-
+    protected function findInvalidAttributeName(array $attributes): ?string {
+        foreach($attributes as $attribute) {
+            if(!\class_exists(class: $name = $attribute->getName())) {
+                return $name;
+            }
+        }
+        return null;
+    }
     public function getFilteredArguments(Closure $handler, mixed $arguments): mixed
     {
         $filteredArguments = [];
@@ -42,7 +47,12 @@ class Validator
                 $name = $parameter->getName();
                 $type = (string)$parameter->getType(); // NB: $type could be a pipe-separated list of simple types
                 $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
-                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
+                if(($this->flags & self::ALL_ATTRIBUTES_MUST_BE_CLASSES) && (
+                    null !== ($invalidAttributeName = $this->findInvalidAttributeName(attributes: $parameter->getAttributes())))
+                ) {
+                    throw new ValidationFailedException(message: "All argument must be valid class names, '{$invalidAttributeName}' is not");
+                }
+                $hasAttributeDefaults = \count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
@@ -61,7 +71,7 @@ class Validator
                     }
                     elseif(
                         ($this->flags & self::SANITIZE_STRINGS_BY_DEFAULT) && (
-                        (\array_intersect(\explode(separator: '|', string: (string)$parameter->getType()), ['',  'string', '?string']))
+                        (\array_intersect(\explode(separator: '|', string: $type), ['',  'string', '?string']))
                         || 
                         ($parameter->isDefaultValueAvailable() && \is_string(value: $parameter->getDefaultValue()))
                     )) {

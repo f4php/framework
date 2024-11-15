@@ -54,8 +54,8 @@ final class ValidatorTest extends TestCase
             function (string $arg): void {
             },
             [
-                'arg' => '<p>Unsafe string</p>'
-            ]
+                'arg' => '<p>Unsafe string</p>',
+            ],
         );
 
         $this->assertSame('&lt;p&gt;Unsafe string&lt;/p&gt;', $arguments['arg']);
@@ -68,8 +68,8 @@ final class ValidatorTest extends TestCase
             function (string $arg): void {
             },
             [
-                'arg' => '<p>Unsafe string</p>'
-            ]
+                'arg' => '<p>Unsafe string</p>',
+            ],
         );
 
         $this->assertSame('<p>Unsafe string</p>', $arguments['arg']);
@@ -96,7 +96,7 @@ final class ValidatorTest extends TestCase
                 'float1' => '-2.2',
                 'float2' => '5.67',
                 'float3' => '0',
-            ]
+            ],
         );
 
         $this->assertSame(true, $arguments['bool1']);
@@ -119,25 +119,7 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (
-                #[IsInt] int $int1, 
-                #[IsInt] int $int2, 
-                #[IsInt] int $int3, 
-                #[IsInteger] int $int4, 
-                #[IsInteger] int $int5, 
-                #[IsInteger] int $int6, 
-                #[IsBool] bool $bool1, 
-                #[IsBoolean] bool $bool2, 
-                #[IsFloat] float $float1, 
-                #[IsFloat] float $float2, 
-                #[IsFloat] float $float3, 
-                #[IsEmail] string $email1, 
-                #[IsNotEmpty] string $notempty1, 
-                #[IsUrl] string $url1, 
-                #[IsUuid] string $uuid1, 
-                #[IsOneOf(['1', '2', 3])] string $oneof1, 
-                #[IsOneOf(['1', '2', 3])] int $oneof2, 
-            ): void {
+            function (#[IsInt] int $int1, #[IsInt] int $int2, #[IsInt] int $int3, #[IsInteger] int $int4, #[IsInteger] int $int5, #[IsInteger] int $int6, #[IsBool] bool $bool1, #[IsBoolean] bool $bool2, #[IsFloat] float $float1, #[IsFloat] float $float2, #[IsFloat] float $float3, #[IsEmail] string $email1, #[IsNotEmpty] string $notempty1, #[IsUrl] string $url1, #[IsUuid] string $uuid1, #[IsOneOf(['1', '2', 3])] string $oneof1, #[IsOneOf(['1', '2', 3])] int $oneof2, ): void {
             },
             [
                 'int1' => 5,
@@ -157,7 +139,7 @@ final class ValidatorTest extends TestCase
                 'uuid1' => '9c5b94b1-35ad-49bb-b118-8e8fc24abf80',
                 'oneof1' => '2',
                 'oneof2' => 3,
-            ]
+            ],
         );
 
         $this->assertSame(5, $arguments['int1']);
@@ -191,18 +173,7 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (
-                #[UnsafeString] string $unsafe1, 
-                #[SanitizedString] string $sanitized1, 
-                #[Trim] string $trim1, 
-                #[Min(10)] int $min1, 
-                #[Max(20)] int $max1, 
-                #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter1, 
-                #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter2, 
-                #[OneOf(['a', 'b', 'c'])] string $oneof3, 
-                #[OneOf(['a', 'b', 'c'])] string $oneof4 = 'd', 
-                #[RegExp('/a([a-z0-9]+)g/', 1)] string $regexp1 = '', 
-                #[DefaultValue('default')] string $default1 = 'non-default-value', ): void {
+            function (#[UnsafeString] string $unsafe1, #[SanitizedString] string $sanitized1, #[Trim] string $trim1, #[Min(10)] int $min1, #[Max(20)] int $max1, #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter1, #[Filter(FILTER_VALIDATE_BOOLEAN)] bool $filter2, #[OneOf(['a', 'b', 'c'])] string $oneof3, #[OneOf(['a', 'b', 'c'])] string $oneof4 = 'd', #[RegExp('/a([a-z0-9]+)g/', 1)] string $regexp1 = '', #[DefaultValue('default')] string $default1 = 'non-default-value', ): void {
             },
             [
                 'unsafe1' => '<p>Unsafe string</p>',
@@ -215,7 +186,7 @@ final class ValidatorTest extends TestCase
                 'oneof3' => 'b',
                 'oneof4' => 'e',
                 'regexp1' => 'abcdefg',
-            ]
+            ],
         );
 
         $this->assertSame('<p>Unsafe string</p>', $arguments['unsafe1']);
@@ -245,7 +216,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'oneof1' => '',
-            ]
+            ],
         );
         $this->assertSame('c', $arguments['oneof1']);
     }
@@ -259,9 +230,9 @@ final class ValidatorTest extends TestCase
             [
                 'fields1' => [
                     'name' => '<b>name</b>',
-                    'email' => 'valid@email.test'
+                    'email' => 'valid@email.test',
                 ],
-            ]
+            ],
         );
         $this->assertSame(['name' => '&lt;b&gt;name&lt;/b&gt;', 'email' => 'valid@email.test'], $arguments['fields1']);
     }
@@ -275,7 +246,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'fields1' => [],
-            ]
+            ],
         );
         $this->assertSame('c', $arguments['fields1']);
     }
@@ -288,7 +259,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'fields1' => [],
-            ]
+            ],
         );
         $this->assertSame('c', $arguments['fields1']);
     }
@@ -301,7 +272,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'fields1' => [],
-            ]
+            ],
         );
         // $this->assertSame('c', $arguments['fields1']);
     }
@@ -315,7 +286,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'array1' => ['a', '<b></b>'],
-            ]
+            ],
         );
         $this->assertSame(['a', '&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
     }
@@ -328,7 +299,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 'oneof1' => '',
-            ]
+            ],
         );
         $this->assertSame('d', $arguments['oneof1']);
     }
@@ -341,7 +312,7 @@ final class ValidatorTest extends TestCase
             $closure,
             [
                 'oneof1' => null,
-            ]
+            ],
         );
         $this->assertSame('a', $arguments['default1']);
     }
@@ -354,7 +325,7 @@ final class ValidatorTest extends TestCase
             },
             [
                 // 'oneof1' => 'b',
-            ]
+            ],
         );
         $this->assertSame(null, $arguments['default1']);
     }
@@ -368,7 +339,7 @@ final class ValidatorTest extends TestCase
             $closure,
             [
                 'oneof1' => 'd',
-            ]
+            ],
         );
         $this->assertSame(null, $arguments['oneof1']);
     }
@@ -383,7 +354,7 @@ final class ValidatorTest extends TestCase
             $closure,
             [
                 'oneof1' => '',
-            ]
+            ],
         );
         $this->assertSame(null, $arguments['oneof1']);
         $closure->call($this, $arguments); // null cannot be passed as string, and there's no other default available for $oneof1
@@ -397,8 +368,8 @@ final class ValidatorTest extends TestCase
             function (#[IsInt] int $int1): void {
             },
             [
-                'int1' => 'not-an-integer'
-            ]
+                'int1' => 'not-an-integer',
+            ],
         );
     }
 
@@ -410,8 +381,8 @@ final class ValidatorTest extends TestCase
             function (#[IsBool] int $bool1): void {
             },
             [
-                'bool1' => 'not-a-boolean'
-            ]
+                'bool1' => 'not-a-boolean',
+            ],
         );
     }
 
@@ -423,8 +394,8 @@ final class ValidatorTest extends TestCase
             function (#[IsFloat] int $float1): void {
             },
             [
-                'float1' => 'not-a-float'
-            ]
+                'float1' => 'not-a-float',
+            ],
         );
     }
 
@@ -436,8 +407,8 @@ final class ValidatorTest extends TestCase
             function (#[IsEmail] int $email1): void {
             },
             [
-                'email1' => 'not-an-email'
-            ]
+                'email1' => 'not-an-email',
+            ],
         );
     }
 
@@ -449,8 +420,8 @@ final class ValidatorTest extends TestCase
             function (#[IsOneOf(['a', 'b', 'c'])] string $oneof1): void {
             },
             [
-                'oneof1' => 'd'
-            ]
+                'oneof1' => 'd',
+            ],
         );
     }
 
@@ -462,8 +433,8 @@ final class ValidatorTest extends TestCase
             function (#[IsUuid] int $uuid1): void {
             },
             [
-                'uuid1' => 'not-a-uuid'
-            ]
+                'uuid1' => 'not-a-uuid',
+            ],
         );
     }
     public function testInvalidRegExp(): void
@@ -474,8 +445,8 @@ final class ValidatorTest extends TestCase
             function (#[IsRegExpMatch('/^[a-z0-9_]+$/')] string $regexp1): void {
             },
             [
-                'regexp1' => 'invalid value'
-            ]
+                'regexp1' => 'invalid value',
+            ],
         );
     }
     public function testInvalidUrl(): void
@@ -486,8 +457,8 @@ final class ValidatorTest extends TestCase
             function (#[IsUrl] string $regexp1): void {
             },
             [
-                'regexp1' => 'invalid url'
-            ]
+                'regexp1' => 'invalid url',
+            ],
         );
     }
     public function testInvalidNotEmpty(): void
@@ -498,8 +469,8 @@ final class ValidatorTest extends TestCase
             function (#[IsNotEmpty] string $regexp1): void {
             },
             [
-                'regexp1' => ''
-            ]
+                'regexp1' => '',
+            ],
         );
     }
 
@@ -510,8 +481,8 @@ final class ValidatorTest extends TestCase
             function (#[IsDivisibleBy(3)] int $divisible1): void {
             },
             [
-                'divisible1' => 9
-            ]
+                'divisible1' => 9,
+            ],
         );
         $this->assertSame(9, $arguments['divisible1']);
     }
@@ -524,8 +495,8 @@ final class ValidatorTest extends TestCase
             function (#[IsDivisibleBy(4)] int $divisible1): void {
             },
             [
-                'divisible1' => 9
-            ]
+                'divisible1' => 9,
+            ],
         );
     }
     public function testIsGreaterThan(): void
@@ -535,8 +506,8 @@ final class ValidatorTest extends TestCase
             function (#[IsGreaterThan(10)] int $greater1): void {
             },
             [
-                'greater1' => 11
-            ]
+                'greater1' => 11,
+            ],
         );
         $this->assertSame(11, $arguments['greater1']);
     }
@@ -549,8 +520,8 @@ final class ValidatorTest extends TestCase
             function (#[IsGreaterThan(10)] int $greater1): void {
             },
             [
-                'greater1' => 9
-            ]
+                'greater1' => 9,
+            ],
         );
     }
 
@@ -561,8 +532,8 @@ final class ValidatorTest extends TestCase
             function (#[IsGreaterThanOrEqual(10)] int $greater1): void {
             },
             [
-                'greater1' => 10
-            ]
+                'greater1' => 10,
+            ],
         );
         $this->assertSame(10, $arguments['greater1']);
     }
@@ -575,23 +546,71 @@ final class ValidatorTest extends TestCase
             function (#[IsGreaterThanOrEqual(10)] int $greater1): void {
             },
             [
-                'greater1' => 9
-            ]
+                'greater1' => 9,
+            ],
+        );
+    }
+    public function testIsLessThan(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsLessThan(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 9,
+            ],
+        );
+        $this->assertSame(9, $arguments['greater1']);
+    }
+
+    public function testIsLessThanFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsLessThan(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 11,
+            ],
+        );
+    }
+
+    public function testIsLessThanOrEqual(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsLessThanOrEqual(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 10,
+            ],
+        );
+        $this->assertSame(10, $arguments['greater1']);
+    }
+
+    public function testIsLessThanOrEqualFail(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[IsLessThanOrEqual(10)] int $greater1): void {
+            },
+            [
+                'greater1' => 11,
+            ],
         );
     }
     public function testIpAddress(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (
-                #[IsIpAddress] int $ip1,
-                #[IsIpAddress] int $ip2
-            ): void {
+            function (#[IsIpAddress] int $ip1, #[IsIpAddress] int $ip2): void {
             },
             [
                 'ip1' => '127.0.0.1',
-                'ip2' => '2001:db8::8a2e:370:7334'
-            ]
+                'ip2' => '2001:db8::8a2e:370:7334',
+            ],
         );
         $this->assertSame('127.0.0.1', $arguments['ip1']);
         $this->assertSame('2001:db8::8a2e:370:7334', $arguments['ip2']);
@@ -605,8 +624,8 @@ final class ValidatorTest extends TestCase
             function (#[IsIpAddress] int $ip1): void {
             },
             [
-                'ip1' => '256.0.0.0'
-            ]
+                'ip1' => '256.0.0.0',
+            ],
         );
     }
 
@@ -618,9 +637,39 @@ final class ValidatorTest extends TestCase
             function (#[IsIpAddress] int $ip1): void {
             },
             [
-                'ip1' => '2001:db8:a0b:12f0::::0:1'
-            ]
+                'ip1' => '2001:db8:a0b:12f0::::0:1',
+            ],
         );
+    }
+
+    public function testAllAttributesMustBeClasses(): void
+    {
+        $this->expectException(ValidationFailedException::class);
+        $validator = new Validator(flags: Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
+        $validator->getFilteredArguments(
+            function (
+                #[NotAClassName] // invalid
+                int $parameter): void {
+            },
+            [
+
+            ],
+        );
+    }
+
+    public function testAllAttributesCanByAnything(): void
+    {
+        $validator = new Validator(flags: ~Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
+        $arguments = $validator->getFilteredArguments(
+            function (
+                #[NotAClassName] // valid
+                int $parameter): void {
+            },
+            [
+                'parameter' => 'test',
+            ],
+        );
+        $this->assertSame('test', $arguments['parameter']);
     }
 
 }

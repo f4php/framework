@@ -1,0 +1,49 @@
+{
+    "name": "f4php/framework",
+    "description": "F4 is a (really) lightweight web application framework",
+    "keywords": ["f4","framework"],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "F4\\": "src/F4"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "F4\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dennis Kreminsky",
+            "email": "dennis@kreminsky.com"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "test": "phpunit --bootstrap tests/Config.php --display-warnings tests",
+        "phpstan": "phpstan analyse src tests"
+    },
+    "require": {
+        "phug/phug": "^1.13",
+        "phug/component": "^1.1",
+        "guzzlehttp/guzzle": "^7.9",
+        "php": "^8.3",
+        "cekurte/environment": "^0.3.0",
+        "ralouphie/getallheaders": "^3.0",
+        "nyholm/psr7": "^1.8",
+        "nette/php-generator": "^4.1",
+        "composer/pcre": "^3.3",
+        "nyholm/psr7-server": "^1.1"
+    },
+    "require-dev": {
+        "kint-php/kint": "^5.1",
+        "phpunit/phpunit": "^11.4",
+        "phpstan/phpstan": "^1.12"
+    }
+}

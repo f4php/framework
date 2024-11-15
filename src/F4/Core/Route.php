@@ -1,0 +1,216 @@
+<?php
+
+declare(strict_types=1);
+
+namespace F4\Core;
+
+use Closure;
+use ReflectionFunction;
+use InvalidArgumentException;
+use Throwable;
+use ValueError;
+
+use Composer\Pcre\Preg;
+
+use F4\Config;
+
+use F4\Core\CanExtractFormatFromExtensionTrait;
+use F4\Core\ExceptionHandlerTrait;
+use F4\Core\MiddlewareAwareTrait;
+use F4\Core\PriorityAwareTrait;
+use F4\Core\RequestInterface;
+use F4\Core\ResponseInterface;
+use F4\Core\RouteInterface;
+use F4\Core\Validator;
+
+class Route implements RouteInterface
+{
+    use CanExtractFormatFromExtensionTrait;
+    use ExceptionHandlerTrait;
+    use MiddlewareAwareTrait;
+    use PriorityAwareTrait;
+
+    protected Closure $handler;
+    protected ?string $name = null;
+    protected array $templates = [
+        Config::DEFAULT_RESPONSE_FORMAT => Config::DEFAULT_TEMPLATE
+    ];
+    protected array $exceptionHandlers = [];
+    protected array $state = [];
+    protected string $requestPathRegExp;
+    protected ?string $responseFormatRegExp = null;
+
+    public function __construct(string $pathDefinition, callable $handler)
+    {
+        [$this->requestPathRegExp, $extension] = $this->unpackPath(path: $pathDefinition);
+        $this->responseFormatRegExp = match($extension) {
+            null => Config::STRICT_RESPONSE_FORMAT_MATCHING ? \preg_quote(str: Config::DEFAULT_RESPONSE_FORMAT, delimiter: '/') : '.+',
+            default => \preg_quote(str: $this->getResponseFormatFromExtension(extension: $extension), delimiter: '/')
+        };
+        $this->setHandler(handler: $handler);
+    }
+
+    protected function unpackPath(string $path): array {
+        $regexpPieces = ['^'];
+        $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
+        $methodDefinitionPattern = \implode(separator: '|', array: $methods).')(\|('.implode(separator: '|', array: $methods).')){,'.(count(value: $methods)-1).'}';
+        $parameterNameDefinitionPattern = '(?<parameterNameDefinition>[a-zA-Z_][a-zA-Z0-9_]*?)';
+        $parameterTypeDefinitionPattern = "(?<parameterTypeDefinition>(any|bool|float|int|regexp|string|uuid|uuid4))";
+        $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>[^\)]*?)\)';
+        $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
+        $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
+        $extensions = $this->getAvailableExtensions();
+        $extensionDefinitionPattern = \implode(separator: '|', array: \array_map(callback: function($extension):string {
+            return \preg_quote(str: $extension, delimiter: '/');
+        }, array: $extensions));
+        $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern})+";
+        $definitionPattern = "^\s*((?i)(?<methodDefinition>({$methodDefinitionPattern})\s+)?(?<pathDefinition>({$pathDefinitionPattern}))(?<extensionDefinition>{$extensionDefinitionPattern})?\s*$";
+        if(!Preg::isMatch(pattern: "/{$definitionPattern}/Anu", subject: $path, matches: $matches)) {
+            throw new InvalidArgumentException(message: 'path parsing failed');
+        }
+        $regexpPieces[] = match(empty($matches['methodDefinition'])) {
+            false => "({$matches['methodDefinition']})\s+",
+            default => 'GET\s+'
+        };
+        $quoteLiterals = function (string $string) use ($literalPathDefinitionPattern): string {
+            return Preg::replaceCallback(pattern: "/{$literalPathDefinitionPattern}/nu",
+                replacement: function ($match): string {
+                    return \preg_quote(str: $match['literalPathDefinition'], delimiter: '/');
+                }, subject: $string);
+        };
+        $regexpPieces[] = match(Preg::isMatchAll(pattern: "/{$parameterDefinitionPattern}/nu", subject: $matches['pathDefinition'], matches: $parameterMatches)) {
+            true => Preg::replaceCallback(
+                pattern: "/{$parameterDefinitionPattern}/nu",
+                replacement: function ($match): string {
+                    $pattern = match($match['parameterTypeDefinition']) {
+                        'any'       => '.+?',
+                        'bool'      => '[true|false]',
+                        'float'     => '[\-\+]?[0-9]+(\.[0-9]+?)?',
+                        'int'       => '[\-\+]?[0-9]+?',
+                        'regexp'    => match(empty($match['parameterTypeOptionsDefinition'])) {
+                            true    => throw new InvalidArgumentException(message: 'regexp type requires pattern option in parentheses, i.e param_name:regexp([a-z0-9]+?)'),
+                            default => $match['parameterTypeOptionsDefinition']
+                        },
+                        'uuid'      => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+                        'uuid4'     => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}',
+                        default     => '[^\/]+?' // same as string
+                    };
+                    return "(?<{$match['parameterNameDefinition']}>{$pattern})";
+                }, 
+                subject: $quoteLiterals(string: $matches['pathDefinition'])),
+            default => $quoteLiterals(string: $matches['pathDefinition'])
+        };
+        $regexpPieces[] = '$';
+        return [
+            \implode(separator: '', array: $regexpPieces),
+            $matches['extensionDefinition'] ?? null
+        ];
+    }
+
+    protected function checkIfFormatIsSupported(string $format): bool 
+    {
+        return \in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_RENDERERS));
+    }
+
+    public function setTemplate(string $template, ?string $format=Config::DEFAULT_RESPONSE_FORMAT): static
+    {
+        if(!$this->checkIfFormatIsSupported(format: $format)) {
+            throw new ValueError(message: "format {$format} is not supported");
+        }
+        // TODO: check template path validity with realpath
+        $this->templates[$format] = $template;
+        return $this;
+    }
+
+    public function getTemplate(string $format=Config::DEFAULT_RESPONSE_FORMAT): ?string
+    {
+        if(!$this->checkIfFormatIsSupported(format: $format)) {
+            throw new ValueError(message: "format {$format} is not supported");
+        }
+        return $this->templates[$format] ?? null;
+    }
+
+
+
+    protected function setHandler(callable $handler): static
+    {
+        $this->handler = ($handler instanceof Closure) ? $handler : $handler(...);
+        return $this;
+    }
+    public function setName($name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
+    public function getName(): string|null
+    {
+        return $this->name;
+    }
+
+    public function getHandler(): Closure
+    {
+        return $this->handler;
+    }
+
+    public function getRequestPathRegExp(): string
+    {
+        return $this->requestPathRegExp;
+    }
+
+    public function checkMatch(RequestInterface $request, ResponseInterface $response): bool
+    {
+        $requestMethod = $request->getMethod();
+        $requestPath = $request->getPath();
+        $responseFormat = $response->getResponseFormat();
+        return 
+            Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")
+            &&
+            Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat);
+    }
+
+    protected function extractPathArgumentsFromRequest(RequestInterface $request): array {
+        $subject = "{$request->getMethod()} {$request->getPath()}";
+        if(!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
+            return [];
+        }
+        \array_walk(array: $matches, callback: function($value, $key) use (&$matches): void {
+            if(\is_numeric(value: $key)) {
+                unset($matches[$key]);
+            }
+        });
+        return $matches;
+    }
+
+    public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed
+    {
+        $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
+        $pathArguments = $this->extractPathArgumentsFromRequest(request: $request);
+        $queryArguments = $request->getQueryParams();
+        $serverArguments = $request->getServerParams();
+        $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: [...$serverArguments, ...$queryArguments, ...$pathArguments]);
+        try {
+            if(isset($this->requestMiddleware)) {
+                $this->requestMiddleware->invoke(request: $request, response: $response, context: $this);
+            }
+            $result = $this->handler->call($this, ...$arguments);
+
+            if(isset($this->responseMiddleware)) {
+                $this->responseMiddleware->invoke(response: $response, request: $request, context: $this);
+            }
+        }
+        catch (Throwable $exception) {
+            $result = null;
+            $handled = false;
+            foreach ($this->exceptionHandlers as $className => $handler) {
+                if (!$className || ($exception instanceof $className)) {
+                    $result = $handler->call($this, $exception, $request, $response);
+                    $handled = true;
+                }
+            }
+            if(!$handled) {
+                throw $exception;
+            }
+        }
+        return $result;
+    }
+}

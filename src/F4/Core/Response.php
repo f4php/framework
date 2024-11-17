@@ -8,6 +8,7 @@ use ErrorException;
 
 use F4\Config;
 use F4\Core\ResponseInterface;
+use F4\Core\StateAwareTrait;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -21,10 +22,10 @@ use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
  */
 class Response implements ResponseInterface
 {
+    use StateAwareTrait;
     protected PsrResponseInterface $psrResponse;
-    protected array $partialResults = [];
+    protected array $bodyFragments = [];
     protected string $responseFormat = Config::DEFAULT_RESPONSE_FORMAT;
-
     protected array $templates = [
         Config::DEFAULT_RESPONSE_FORMAT => Config::DEFAULT_TEMPLATE
     ];
@@ -73,11 +74,11 @@ class Response implements ResponseInterface
     {
         return $this->templates[$format ?? Config::DEFAULT_RESPONSE_FORMAT] ?? Config::DEFAULT_TEMPLATE;
     }
-    public function addPartialResult(mixed $part): void {
-        $this->partialResults[] = $part;
+    public function addBodyFragment(mixed $part): void {
+        $this->bodyFragments[] = $part;
     }
-    public function getPartialResults(): array {
-        return $this->partialResults;
+    public function getBodyFragments(): array {
+        return $this->bodyFragments;
     }
     public function addHeader(string $name, $value): void {
         $this->setPsrResponse(psrResponse: $this->psrResponse->withHeader($name, $value));

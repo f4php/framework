@@ -459,5 +459,18 @@ final class RouteTest extends TestCase
         $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
     }
+    public function testState(): void
+    {
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::any('/', function (): string {
+            return $this->getState('test');
+        })
+            ->before(function (Request $request): void {
+                $this->setState('test', 'test value 1');
+            });
+        $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
+        $this->assertSame('test value 1', $route->invoke(request: $request, response: $response));
+    }
 
 }

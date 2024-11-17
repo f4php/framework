@@ -45,7 +45,7 @@ class Router implements RouterInterface
     }
     public function getRouteGroups(): array
     {
-        \usort(array: $this->routeGroups, callback: function (RouteGroup $groupA, Route $groupB): int {
+        \usort(array: $this->routeGroups, callback: function (RouteGroup $groupA, RouteGroup $groupB): int {
             return (int) $groupB->getPriority() - (int) $groupA->getPriority();
         });
         return $this->routeGroups;

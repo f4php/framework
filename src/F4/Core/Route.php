@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Closure;
-use ReflectionFunction;
+use ReflectionObject;
 use InvalidArgumentException;
 use Throwable;
 use ValueError;
@@ -29,6 +29,7 @@ class Route implements RouteInterface
     use ExceptionHandlerTrait;
     use MiddlewareAwareTrait;
     use PriorityAwareTrait;
+    use StateAwareTrait;
 
     protected Closure $handler;
     protected ?string $name = null;
@@ -36,7 +37,6 @@ class Route implements RouteInterface
         Config::DEFAULT_RESPONSE_FORMAT => Config::DEFAULT_TEMPLATE
     ];
     protected array $exceptionHandlers = [];
-    protected array $state = [];
     protected string $requestPathRegExp;
     protected ?string $responseFormatRegExp = null;
 
@@ -50,7 +50,7 @@ class Route implements RouteInterface
         $this->setHandler(handler: $handler);
     }
 
-    static public function get(string $pathDefinition, callable $handler): static 
+    static public function get(string $pathDefinition, callable $handler): static
     {
         return new static("GET {$pathDefinition}", $handler);
     }
@@ -180,17 +180,14 @@ class Route implements RouteInterface
     {
         return $this->name;
     }
-
     public function getHandler(): Closure
     {
         return $this->handler;
     }
-
     public function getRequestPathRegExp(): string
     {
         return $this->requestPathRegExp;
     }
-
     public function checkMatch(RequestInterface $request, ResponseInterface $response): bool
     {
         $requestMethod = $request->getMethod();
@@ -201,20 +198,6 @@ class Route implements RouteInterface
             &&
             Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat);
     }
-
-    protected function extractPathArgumentsFromRequest(RequestInterface $request): array {
-        $subject = "{$request->getMethod()} {$request->getPath()}";
-        if(!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
-            return [];
-        }
-        \array_walk(array: $matches, callback: function($value, $key) use (&$matches): void {
-            if(\is_numeric(value: $key)) {
-                unset($matches[$key]);
-            }
-        });
-        return $matches;
-    }
-
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed
     {
         $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
@@ -246,5 +229,17 @@ class Route implements RouteInterface
             }
         }
         return $result;
+    }
+    protected function extractPathArgumentsFromRequest(RequestInterface $request): array {
+        $subject = "{$request->getMethod()} {$request->getPath()}";
+        if(!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
+            return [];
+        }
+        \array_walk(array: $matches, callback: function($value, $key) use (&$matches): void {
+            if(\is_numeric(value: $key)) {
+                unset($matches[$key]);
+            }
+        });
+        return $matches;
     }
 }

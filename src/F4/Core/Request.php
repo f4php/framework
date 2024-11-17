@@ -10,6 +10,7 @@ use Composer\Pcre\Preg;
 
 use F4\Config;
 use F4\Core\RequestInterface;
+use F4\Core\StateAwareTrait;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
@@ -25,6 +26,7 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
  */
 class Request implements RequestInterface 
 {
+    use StateAwareTrait;
     protected PsrServerRequestInterface $psrRequest;
     protected string $path;
     protected ?string $extension = null;

@@ -14,8 +14,8 @@ interface ResponseInterface extends PsrResponseInterface
     public function getResponseFormat(): string;
     public function setTemplate(string $template, string $format = null): bool;
     public function getTemplate(?string $format = null): string;
-    public function addPartialResult(mixed $part): void;
-    public function getPartialResults(): array;
+    public function addBodyFragment(mixed $fragment): void;
+    public function getBodyFragments(): array;
     public function addHeader(string $name, $value): void;
     public function removeHeader(string $name): void;
     static public function fromPsr(psrResponseInterface $psrResponse): self;

@@ -50,7 +50,10 @@ class RouteGroup implements RouteGroupInterface
         if (isset($this->eachRouteRequestMiddleware)) {
             throw new InvalidArgumentException(message: 'Each route request middleware already set');
         }
-        $this->eachRouteRequestMiddleware = $requestMiddleware;
+        $this->eachRouteRequestMiddleware = match ($requestMiddleware instanceof RequestMiddlware) {
+            true => $requestMiddleware,
+            default => new RequestMiddleware(handler: $requestMiddleware),
+        };
         return $this;
     }
 
@@ -62,7 +65,10 @@ class RouteGroup implements RouteGroupInterface
         if (isset($this->eachRouteResponseMiddleware)) {
             throw new InvalidArgumentException(message: 'Each route response middleware already set');
         }
-        $this->eachRouteResponseMiddleware = $responseMiddleware;
+        $this->eachRouteResponseMiddleware = match ($responseMiddleware instanceof ResponseMiddlware) {
+            true => $responseMiddleware,
+            default => new ResponseMiddleware(handler: $responseMiddleware),
+        };
         return $this;
     }
     public function afterEach(ResponseMiddleware|callable $responseMiddleware): static {

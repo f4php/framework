@@ -35,6 +35,14 @@ class RouteGroup implements RouteGroupInterface
         }, array: $routes);
         return $this;
     }
+    static public function withRoutes(array $routes): static
+    {
+        return (new static())->addRoutes(routes: $routes);
+    }
+    static public function fromRoutes(array $routes): static
+    {
+        return self::withRoutes(routes: $routes);
+    }
     public function getRoutes(): array {
         return $this->routes;
     }

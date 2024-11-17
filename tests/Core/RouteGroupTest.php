@@ -39,6 +39,29 @@ final class RouteGroupTest extends TestCase
         $this->assertSame('test-value-1', $results[0]);
         $this->assertSame('test-value-2', $results[1]);
     }
+
+    public function testStaticCreation(): void
+    {
+        $requestMethod = 'GET';
+        $requestPath = '/';
+        $responseFormat = 'text/html';
+
+        $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath);
+        $response = new MockResponse(responseFormat: $responseFormat);
+        
+        $routePathDefinition = 'GET /';
+        $routeGroup = RouteGroup::withRoutes([
+                Route::get('/', function (): string {
+                        return 'test-value-1';
+                }),
+                Route::any('/', function (): string {
+                        return 'test-value-2';
+                }),
+            ]);
+        $results = $routeGroup->invoke(request: $request, response: $response);
+        $this->assertSame('test-value-1', $results[0]);
+        $this->assertSame('test-value-2', $results[1]);
+    }
     // public function testRequestHandlers(): void
     // {
     //     $requestMethod = 'GET';

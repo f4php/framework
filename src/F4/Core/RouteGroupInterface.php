@@ -23,5 +23,7 @@ interface RouteGroupInterface
     public function on(string $exceptionClassName, callable $exceptionHandler): static;
     public function getExceptionHandlers(?string $exceptionClass = null): array;
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed;
+    static public function withRoutes(array $routes): static;
+    static public function fromRoutes(array $routes): static;
 
 }

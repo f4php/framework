@@ -32,7 +32,6 @@ final class RouteTest extends TestCase
         $this->assertSame('^(GET)\s+\/$', $route->getRequestPathRegExp());
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
     }
-
     public function testComplexRoutePathGetMatching(): void
     {
         $requestMethod = 'GET';
@@ -371,5 +370,94 @@ final class RouteTest extends TestCase
         $this->assertSame('handled', $result);
     }
 
+    public function testStaticGetCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::get('/', function (): void {});
+        $this->assertSame('^(GET)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticHeadCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'HEAD', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::head('/', function (): void {});
+        $this->assertSame('^(HEAD)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticPostCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::post('/', function (): void {});
+        $this->assertSame('^(POST)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticPutCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'PUT', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::put('/', function (): void {});
+        $this->assertSame('^(PUT)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticDeleteCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'DELETE', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::delete('/', function (): void {});
+        $this->assertSame('^(DELETE)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticConnectCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'CONNECT', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::connect('/', function (): void {});
+        $this->assertSame('^(CONNECT)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticOptionsCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'OPTIONS', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::options('/', function (): void {});
+        $this->assertSame('^(OPTIONS)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticTraceCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'TRACE', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::trace('/', function (): void {});
+        $this->assertSame('^(TRACE)\s+\/$', $route->getRequestPathRegExp());
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
+    }
+    public function testStaticAnyCreation(): void
+    {
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::any('/', function (): void {});
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+        $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
+        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
+    }
 
 }

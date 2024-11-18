@@ -72,7 +72,7 @@ class Request implements RequestInterface
         };
     }
     static public function fromPsr(psrServerRequestInterface $psrRequest): static {
-        return new static($psrRequest);
+        return new self(psrRequest: $psrRequest);
     }
     protected function getAvailableExtensions(): array
     {

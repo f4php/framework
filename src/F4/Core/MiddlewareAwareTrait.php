@@ -35,7 +35,7 @@ trait MiddlewareAwareTrait
         if (isset($this->responseMiddleware)) {
             throw new InvalidArgumentException(message: 'Response middleware already set');
         }
-        $this->responseMiddleware = match ($responseMiddleware instanceof ResponseMiddlware) {
+        $this->responseMiddleware = match ($responseMiddleware instanceof ResponseMiddleware) {
             true => $responseMiddleware,
             default => new ResponseMiddleware(handler: $responseMiddleware),
         };

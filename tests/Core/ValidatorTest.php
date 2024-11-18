@@ -648,6 +648,9 @@ final class ValidatorTest extends TestCase
         $validator = new Validator(flags: Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
         $validator->getFilteredArguments(
             function (
+                /**
+                 *  @phpstan-ignore attribute.notFound
+                 */
                 #[NotAClassName] // invalid
                 int $parameter): void {
             },
@@ -662,6 +665,9 @@ final class ValidatorTest extends TestCase
         $validator = new Validator(flags: ~Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
         $arguments = $validator->getFilteredArguments(
             function (
+                /**
+                 *  @phpstan-ignore attribute.notFound
+                 */
                 #[NotAClassName] // valid
                 int $parameter): void {
             },

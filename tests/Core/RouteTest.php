@@ -79,7 +79,7 @@ final class RouteTest extends TestCase
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testPositiveFloatMatching(): void
+    public function testFloatMatching(): void
     {
         $requestMethod = 'GET';
         $requestPath = '/entities/0';
@@ -103,7 +103,7 @@ final class RouteTest extends TestCase
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testPositiveBooleanMatching(): void
+    public function testBooleanMatching(): void
     {
         $requestMethod = 'GET';
         $requestPath = '/entities/true';
@@ -122,7 +122,7 @@ final class RouteTest extends TestCase
         $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testNegativeMethodMatching(): void
+    public function testMethodMismatching(): void
     {
         $requestMethod = 'PUT';
         $requestPath = '/entities';
@@ -136,7 +136,7 @@ final class RouteTest extends TestCase
         $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testNegativeIntegerMatching(): void
+    public function testIntegerMisatching(): void
     {
         $requestMethod = 'PUT';
         $requestPath = '/entities/abc';
@@ -150,7 +150,7 @@ final class RouteTest extends TestCase
         $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testNegativeBooleanMatching(): void
+    public function testBooleanMisatching(): void
     {
         $requestMethod = 'GET';
         $requestPath = '/entities/1';
@@ -234,7 +234,8 @@ final class RouteTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = '/entities/{entityID:int}';
         $route = new Route($routePathDefinition, function (int $entityID = 0): int {
-            return $entityID; });
+            return $entityID;
+        });
         $result = $route->invoke(request: $request, response: $response);
         $this->assertSame(24782, $result);
     }
@@ -247,7 +248,8 @@ final class RouteTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = '/entities/{entityID:string}';
         $route = new Route($routePathDefinition, function (string $entityID = ''): string {
-            return $entityID; });
+            return $entityID;
+        });
         $result = $route->invoke(request: $request, response: $response);
         $this->assertSame('string-id', $result);
     }
@@ -261,7 +263,8 @@ final class RouteTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = '/entities/{entityID:int}';
         $route = new Route($routePathDefinition, function (int $entityID = 0): int {
-            return $entityID; });
+            return $entityID;
+        });
         $result = $route->invoke(request: $request, response: $response);
         $this->assertSame(123, $result);
     }
@@ -276,7 +279,8 @@ final class RouteTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = '/entities/{entityID:string}';
         $route = new Route($routePathDefinition, function (#[CastInt] int $entityID = 0): int {
-            return $entityID; });
+            return $entityID;
+        });
         $result = $route->invoke(request: $request, response: $response);
         $this->assertSame(0, $result);
     }
@@ -292,7 +296,8 @@ final class RouteTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = '/entities/{entityID:string}';
         $route = new Route($routePathDefinition, function (int $entityID, int $param): int {
-            return $entityID; });
+            return $entityID;
+        });
         $route->invoke(request: $request, response: $response);
     }
 
@@ -307,7 +312,8 @@ final class RouteTest extends TestCase
         $response = new Response();
         $routePathDefinition = '/entities/{entityID:string}';
         $route = new Route($routePathDefinition, function (int $entityID = 0): int {
-            return $entityID; });
+            return $entityID;
+        });
         $route->invoke(request: $request, response: $response);
     }
 
@@ -459,18 +465,64 @@ final class RouteTest extends TestCase
         $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
     }
-    public function testState(): void
+    // public function testMiddleware(): void
+    // {
+    //     $request = new MockRequest(requestMethod: 'GET', requestPath: '/entity/123');
+    //     $response = new MockResponse(responseFormat: 'text/html');
+    //     $route = Route::any('/entity/{entityID:int}', function (int $entityID = 0): int {
+    //         return $entityID;
+    //     })
+    //         ->before(function (Request $request, Response $response): void {
+
+    //         })
+    //         ->after(function (Response $response, Request $request): void {
+
+    //         });
+    //     
+    // }
+    public function testStateWithMiddleware(): void
     {
         $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
         $response = new MockResponse(responseFormat: 'text/html');
-        $route = Route::any('/', function (): string {
+        $route = Route::any('/', 
+        function (): string {
+            /**
+             * @var Route $this
+             */
             return $this->getState('test');
         })
-            ->before(function (Request $request): void {
+            ->before(function (Request $request, Response $response): void {
+                /**
+                 * @var Route $this
+                 */
                 $this->setState('test', 'test value 1');
+            })
+            ->after(function (Response $response, Request $request): void {
+                /**
+                 * @var Route $this
+                 */
+                $this->setState('test', 'test value 2');
             });
-        $request = new MockRequest(requestMethod: 'POST', requestPath: '/');
         $this->assertSame('test value 1', $route->invoke(request: $request, response: $response));
+        $this->assertSame('test value 2', $route->getState('test'));
+    }
+   public function testRequestMiddlewareAlreadySet(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::any('/', function (): void {})
+            ->before(function (Request $request, Response $response): void {})
+            ->setRequestMiddleware(function (Request $request, Response $response): void {});
+    }
+   public function testResponseMiddlewareAlreadySet(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
+        $response = new MockResponse(responseFormat: 'text/html');
+        $route = Route::any('/', function (): void {})
+            ->after(function (Request $request, Response $response): void {})
+            ->setResponseMiddleware(function (Request $request, Response $response): void {});
     }
 
 }

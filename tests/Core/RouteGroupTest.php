@@ -49,15 +49,14 @@ final class RouteGroupTest extends TestCase
         $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath);
         $response = new MockResponse(responseFormat: $responseFormat);
         
-        $routePathDefinition = 'GET /';
-        $routeGroup = RouteGroup::withRoutes([
+        $routeGroup = RouteGroup::withRoutes(
                 Route::get('/', function (): string {
                         return 'test-value-1';
                 }),
                 Route::any('/', function (): string {
                         return 'test-value-2';
                 }),
-            ]);
+            );
         $results = $routeGroup->invoke(request: $request, response: $response);
         $this->assertSame('test-value-1', $results[0]);
         $this->assertSame('test-value-2', $results[1]);

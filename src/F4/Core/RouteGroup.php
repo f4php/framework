@@ -27,21 +27,27 @@ class RouteGroup implements RouteGroupInterface
             default => new Route(pathDefinition: $routeOrPath, handler: $handler)
         };
     }
-    public function addRoutes(array $routes): self
+    public function addRoutes(...$routes): static
     {
+        $routes = \array_reduce($routes, function($result, $route) {
+            return [...$result, ...match(\is_array($route)) {
+                true => [...$route],
+                false => [$route]
+            }];
+        }, []);
         (function (Route ...$routes): void{})(...$routes);
         \array_map(callback: function($route) {
             $this->addRoute($route);
         }, array: $routes);
         return $this;
     }
-    static public function withRoutes(array $routes): static
+    static public function withRoutes(...$routes): static
     {
-        return (new static())->addRoutes(routes: $routes);
+        return (new static())->addRoutes(...$routes);
     }
-    static public function fromRoutes(array $routes): static
+    static public function fromRoutes(...$routes): static
     {
-        return self::withRoutes(routes: $routes);
+        return self::withRoutes(...$routes);
     }
     public function getRoutes(): array {
         return $this->routes;
@@ -56,11 +62,9 @@ class RouteGroup implements RouteGroupInterface
         };
         return $this;
     }
-
     public function beforeEach(RequestMiddleware|callable $requestMiddleware): static {
         return $this->setEachRouteRequestMiddleware($requestMiddleware);
     }
-
     public function setEachRouteResponseMiddleware(ResponseMiddleware|callable $responseMiddleware): static {
         if (isset($this->eachRouteResponseMiddleware)) {
             throw new InvalidArgumentException(message: 'Each route response middleware already set');
@@ -74,7 +78,6 @@ class RouteGroup implements RouteGroupInterface
     public function afterEach(ResponseMiddleware|callable $responseMiddleware): static {
         return $this->setEachRouteResponseMiddleware($responseMiddleware);
     }
-
     protected function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array
     {
         $method = $request->getMethod();
@@ -88,7 +91,6 @@ class RouteGroup implements RouteGroupInterface
         });
         return $routes;
     }
-
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed {
         $result = [];
         if($matchingRoutes = $this->getMatchingRoutes(request: $request, response: $response)) {

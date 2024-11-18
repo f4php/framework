@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use InvalidArgumentException;
+use ErrorException;
 use Throwable;
 
 use Composer\Pcre\Preg;
@@ -43,23 +43,36 @@ class Router implements RouterInterface
             default => new Route(pathDefinition: $routeOrPath, handler: $handler)
         });
     }
-    public function getRouteGroups(): array
+    protected function getMatchingRouteGroups(RequestInterface $request, ResponseInterface $response): array
     {
-        \usort(array: $this->routeGroups, callback: function (RouteGroup $groupA, RouteGroup $groupB): int {
-            return (int) $groupB->getPriority() - (int) $groupA->getPriority();
+        $matchingGroups = \array_filter($this->routeGroups, function (RouteGroup $routeGroup) use ($request, $response) {
+            return $routeGroup->getMatchingRoutes($request, $response);
         });
-        return $this->routeGroups;
-
+        return $matchingGroups;
     }
     public function invokeMatchingRoutes(RequestInterface &$request, ResponseInterface &$response): mixed
     {
-        $result = [];
+        $result = null;
+        $matchingRouteGroups = $this->getMatchingRouteGroups(request: $request, response: $response);
+        if(\count($matchingRouteGroups) > 1) {
+            throw new ErrorException(message: 'Matching multiple route groups per request is not allowed');
+        }
+        $matchingRoutes = \array_reduce(array: $matchingRouteGroups, callback: function($result, $routeGroup) use ($request, $response): array {
+            return [...$result, ...$routeGroup->getMatchingRoutes($request, $response)];
+        }, initial: []);
+        if(\count($matchingRoutes) > 1) {
+            throw new ErrorException(message: 'Matching multiple routes per request is not allowed');
+        }
         try {
             if(isset($this->requestMiddleware)) {
                 $this->invokeRequestMiddleware(request: $request, response: $response);
             }
-            foreach($this->getRouteGroups() as $routeGroup) {
-                $result = [...$result, ...$routeGroup->invoke($request, $response)];
+            if ($matchingRoutes) {
+                foreach($matchingRouteGroups as $routeGroup) {
+                    if($routeGroup->hasMatchingRoutes($request, $response)) {
+                        $result = $routeGroup->invoke($request, $response)[0] ?? null; // we assume there's at most one matching group per request
+                    }
+                }
             }
             if(isset($this->responseMiddleware)) {
                 $this->invokeResponseMiddleware(response: $response, request: $request);

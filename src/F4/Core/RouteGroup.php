@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use InvalidArgumentException;
 use Throwable;
 
 use F4\Core\ExceptionHandlerTrait;
@@ -17,8 +16,6 @@ class RouteGroup implements RouteGroupInterface
     use MiddlewareAwareTrait;
     use PriorityAwareTrait;
 
-    protected RequestMiddleware $eachRouteRequestMiddleware;
-    protected ResponseMiddleware $eachRouteResponseMiddleware;
     protected array $routes = [];
     public function addRoute(Route|string $routeOrPath, ?callable $handler = null): Route
     {
@@ -43,7 +40,7 @@ class RouteGroup implements RouteGroupInterface
     }
     static public function withRoutes(...$routes): static
     {
-        return (new static())->addRoutes(...$routes);
+        return (new self())->addRoutes(...$routes);
     }
     static public function fromRoutes(...$routes): static
     {
@@ -52,37 +49,14 @@ class RouteGroup implements RouteGroupInterface
     public function getRoutes(): array {
         return $this->routes;
     }
-    public function setEachRouteRequestMiddleware(RequestMiddleware|callable $requestMiddleware): static {
-        if (isset($this->eachRouteRequestMiddleware)) {
-            throw new InvalidArgumentException(message: 'Each route request middleware already set');
-        }
-        $this->eachRouteRequestMiddleware = match ($requestMiddleware instanceof RequestMiddlware) {
-            true => $requestMiddleware,
-            default => new RequestMiddleware(handler: $requestMiddleware),
-        };
-        return $this;
-    }
-    public function beforeEach(RequestMiddleware|callable $requestMiddleware): static {
-        return $this->setEachRouteRequestMiddleware($requestMiddleware);
-    }
-    public function setEachRouteResponseMiddleware(ResponseMiddleware|callable $responseMiddleware): static {
-        if (isset($this->eachRouteResponseMiddleware)) {
-            throw new InvalidArgumentException(message: 'Each route response middleware already set');
-        }
-        $this->eachRouteResponseMiddleware = match ($responseMiddleware instanceof ResponseMiddlware) {
-            true => $responseMiddleware,
-            default => new ResponseMiddleware(handler: $responseMiddleware),
-        };
-        return $this;
-    }
-    public function afterEach(ResponseMiddleware|callable $responseMiddleware): static {
-        return $this->setEachRouteResponseMiddleware($responseMiddleware);
-    }
-    protected function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array
+    public function hasMatchingRoutes(RequestInterface $request, ResponseInterface $response): bool
     {
-        $method = $request->getMethod();
-        $path = $request->getPath();
-        $responseFormat = $response->getResponseFormat();
+        return \array_reduce($this->routes,function ($result, Route $route) use ($request, $response): bool {
+            return $result || $route->checkMatch(request: $request, response: $response);
+        }, false);
+    }
+    public function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array
+    {
         $routes = \array_filter(array: $this->routes, callback: function (Route $route) use ($request, $response): bool {
             return $route->checkMatch(request: $request, response: $response);
         });
@@ -95,20 +69,14 @@ class RouteGroup implements RouteGroupInterface
         $result = [];
         if($matchingRoutes = $this->getMatchingRoutes(request: $request, response: $response)) {
             try {
-                if(isset($this->requestMiddleware)) {
-                    $this->invokeRequestMiddleware(request: $request, response: $response);
-                }
                 foreach($matchingRoutes as $route) {
-                    if(isset($this->eachRouteRequestMiddleware)) {
-                        $this->eachRouteRequestMiddleware->invoke(request: $request, response: $response, context: $route);
+                    if(isset($this->requestMiddleware)) {
+                        $this->invokeRequestMiddleware(request: $request, response: $response, context: $route);
                     }
                     $result[] = $route->invoke($request, $response);
-                    if(isset($this->eachRouteResponseMiddleware)) {
-                        $this->eachRouteResponseMiddleware->invoke(response: $response, request: $request, context: $route);
+                    if(isset($this->responseMiddleware)) {
+                        $this->invokeResponseMiddleware(response: $response, request: $request, context: $route);
                     }
-                }
-                if(isset($this->responseMiddleware)) {
-                    $this->invokeResponseMiddleware(response: $response, request: $request);
                 }
             }
             catch (Throwable $exception) {

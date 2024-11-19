@@ -22,9 +22,6 @@ class Router implements RouterInterface
     use ExceptionHandlerTrait;
     use MiddlewareAwareTrait;
 
-    protected array $requestHandlers = [];
-    protected array $responseHandlers = [];
-    protected array $exceptionHandlers = [];
     protected array $routeGroups = [];
 
     public function __construct() {
@@ -43,46 +40,62 @@ class Router implements RouterInterface
             default => new Route(pathDefinition: $routeOrPath, handler: $handler)
         });
     }
-    protected function getMatchingRouteGroups(RequestInterface $request, ResponseInterface $response): array
-    {
-        $matchingGroups = \array_filter($this->routeGroups, function (RouteGroup $routeGroup) use ($request, $response) {
-            return $routeGroup->getMatchingRoutes($request, $response);
-        });
-        return $matchingGroups;
+    protected function getMatchesUsingPolicy(RequestInterface $request, ResponseInterface $response, callable $policyCheckFunction): array {
+        $matchingGroupsData = \array_reduce($this->routeGroups, function ($result, RouteGroup $routeGroup) use ($request, $response) {
+            return match($routes = $routeGroup->getMatchingRoutes(request: $request, response: $response)) {
+                [] => $result,
+                default => [...$result, [
+                    'routeGroup' => $routeGroup,
+                    'routes' => $routes
+                ]]
+            };
+        }, []);
+        if(!$policyCheckFunction($matchingGroupsData)) {
+            throw new ErrorException(message: 'Routing policy check failed');
+        }
+        return [
+            $matchingGroupsData[0]['routeGroup'] ?? null,
+            $matchingGroupsData[0]['routes'][0] ?? null
+        ];
     }
     public function invokeMatchingRoutes(RequestInterface &$request, ResponseInterface &$response): mixed
     {
         $result = null;
-        $matchingRouteGroups = $this->getMatchingRouteGroups(request: $request, response: $response);
-        if(\count($matchingRouteGroups) > 1) {
-            throw new ErrorException(message: 'Matching multiple route groups per request is not allowed');
-        }
-        $matchingRoutes = \array_reduce(array: $matchingRouteGroups, callback: function($result, $routeGroup) use ($request, $response): array {
-            return [...$result, ...$routeGroup->getMatchingRoutes($request, $response)];
-        }, initial: []);
-        if(\count($matchingRoutes) > 1) {
-            throw new ErrorException(message: 'Matching multiple routes per request is not allowed');
-        }
+        $matchingRouteGroup = null;
+        $matchingRoute = null;
+        /**
+         * At most one RouteGroup and at most one Route must match per Request
+         */
+        $policyCheckFunction = function(array $matchingGroupsData): bool {
+            return (\count($matchingGroupsData ?? []) <= 1) && (\count($matchingGroupsData[0]['routes'] ?? []) <= 1);
+        };
+        [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
         try {
             if(isset($this->requestMiddleware)) {
-                $this->invokeRequestMiddleware(request: $request, response: $response);
+                $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $matchingRoute)) instanceof RequestInterface) { 
+                    true => $requestMiddlewareResult,
+                    default => $request
+                };
             }
-            if ($matchingRoutes) {
-                foreach($matchingRouteGroups as $routeGroup) {
-                    if($routeGroup->hasMatchingRoutes($request, $response)) {
-                        $result = $routeGroup->invoke($request, $response)[0] ?? null; // we assume there's at most one matching group per request
-                    }
-                }
+            /**
+             * Need to match again in case Request was altered by RequestMiddleware
+             */
+            [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
+            if ($matchingRouteGroup) {
+                $result = $matchingRouteGroup->invoke($request, $response)[0] ?? null;
             }
             if(isset($this->responseMiddleware)) {
-                $this->invokeResponseMiddleware(response: $response, request: $request);
+                $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $matchingRoute)) instanceof ResponseInterface) { 
+                    true => $responseMiddlewareResult,
+                    default => $response
+                };
             }
         }
         catch (Throwable $exception) {
             $handled = false;
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    $result[] = $handler->call($this, $exception, $request, $response);
+                    $result = $handler->call($this, $exception, $request, $response, $matchingRoute);
                     $handled = true;
                 }
             }

@@ -12,6 +12,9 @@ class RequestMiddleware extends AbstractMiddleware
 {
     public function invoke(RequestInterface $request, ResponseInterface $response, mixed $context): mixed
     {
-        return $this->handler->call($context, $request, $response, $context);
+        return match($context) {
+            null => ($this->handler)($request, $response, null),
+            default => $this->handler->call($context, $request, $response, $context),
+        };
     }
 }

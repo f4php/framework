@@ -207,12 +207,18 @@ class Route implements RouteInterface
         $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: [...$serverArguments, ...$queryArguments, ...$pathArguments]);
         try {
             if(isset($this->requestMiddleware)) {
-                $this->requestMiddleware->invoke(request: $request, response: $response, context: $this);
+                $request = match(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
+                    true => $requestMiddlewareResult,
+                    default => $request
+                };
             }
             $result = $this->handler->call($this, ...$arguments);
 
             if(isset($this->responseMiddleware)) {
-                $this->responseMiddleware->invoke(response: $response, request: $request, context: $this);
+                $response = match(($responseMiddlewareResult = $this->responseMiddleware->invoke(response: $response, request: $request, context: $this)) instanceof ResponseInterface) {
+                    true => $responseMiddlewareResult,
+                    default => $response
+                };
             }
         }
         catch (Throwable $exception) {
@@ -220,7 +226,7 @@ class Route implements RouteInterface
             $handled = false;
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    $result = $handler->call($this, $exception, $request, $response);
+                    $result = $handler->call($this, $exception, $request, $response, $this);
                     $handled = true;
                 }
             }

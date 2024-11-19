@@ -68,27 +68,33 @@ class RouteGroup implements RouteGroupInterface
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed {
         $result = [];
         if($matchingRoutes = $this->getMatchingRoutes(request: $request, response: $response)) {
-            try {
-                foreach($matchingRoutes as $route) {
+            foreach($matchingRoutes as $route) {
+                try {
                     if(isset($this->requestMiddleware)) {
-                        $this->invokeRequestMiddleware(request: $request, response: $response, context: $route);
+                        $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $route)) instanceof RequestInterface) {
+                            true => $requestMiddlewareResult,
+                            default => $request
+                        };
                     }
                     $result[] = $route->invoke($request, $response);
                     if(isset($this->responseMiddleware)) {
-                        $this->invokeResponseMiddleware(response: $response, request: $request, context: $route);
+                        $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $route)) instanceof ResponseInterface) {
+                            true => $responseMiddlewareResult,
+                            default => $response
+                        };
                     }
                 }
-            }
-            catch (Throwable $exception) {
-                $handled = false;
-                foreach ($this->exceptionHandlers as $className => $handler) {
-                    if (!$className || ($exception instanceof $className)) {
-                        $result[] = $handler->call($this, $exception, $request, $response);
-                        $handled = true;
+                catch (Throwable $exception) {
+                    $handled = false;
+                    foreach ($this->exceptionHandlers as $className => $handler) {
+                        if (!$className || ($exception instanceof $className)) {
+                            $result = $handler->call($this, $exception, $request, $response, $route);
+                            $handled = true;
+                        }
                     }
-                }
-                if(!$handled) {
-                    throw $exception;
+                    if(!$handled) {
+                        throw $exception;
+                    }
                 }
             }
         }

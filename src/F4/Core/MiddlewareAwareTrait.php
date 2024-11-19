@@ -47,11 +47,11 @@ trait MiddlewareAwareTrait
     }
     public function invokeRequestMiddleware(RequestInterface $request, ResponseInterface $response, mixed $context = null): mixed
     {
-        return $this->requestMiddleware->invoke(request: $request, response: $response, context: $context ?? $this);
+        return $this->requestMiddleware->invoke(request: $request, response: $response, context: $context);
     }
     public function invokeResponseMiddleware(ResponseInterface $response, RequestInterface $request, mixed $context = null): mixed
     {
-        return $this->responseMiddleware->invoke(response: $response, request: $request, context: $context ?? $this);
+        return $this->responseMiddleware->invoke(response: $response, request: $request, context: $context);
     }
     protected function getRequestMiddleware(): RequestMiddleware
     {

@@ -68,7 +68,7 @@ class RouteGroup implements RouteGroupInterface
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed {
         $result = [];
         if($matchingRoutes = $this->getMatchingRoutes(request: $request, response: $response)) {
-            foreach($matchingRoutes as $route) {
+            foreach($matchingRoutes as $index=>$route) {
                 try {
                     if(isset($this->requestMiddleware)) {
                         $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $route)) instanceof RequestInterface) {
@@ -88,8 +88,9 @@ class RouteGroup implements RouteGroupInterface
                     $handled = false;
                     foreach ($this->exceptionHandlers as $className => $handler) {
                         if (!$className || ($exception instanceof $className)) {
-                            $result = $handler->call($this, $exception, $request, $response, $route);
+                            $result[] = $handler->call($this, $exception, $request, $response, $route);
                             $handled = true;
+                            break;
                         }
                     }
                     if(!$handled) {

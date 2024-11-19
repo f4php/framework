@@ -92,16 +92,12 @@ class Router implements RouterInterface
             }
         }
         catch (Throwable $exception) {
-            $handled = false;
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    $result = $handler->call($this, $exception, $request, $response, $matchingRoute);
-                    $handled = true;
+                    return $handler->call($this, $exception, $request, $response, $matchingRoute);
                 }
             }
-            if(!$handled) {
-                throw $exception;
-            }
+            throw $exception;
         }
         return $result;
     }

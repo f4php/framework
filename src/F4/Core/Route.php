@@ -222,17 +222,12 @@ class Route implements RouteInterface
             }
         }
         catch (Throwable $exception) {
-            $result = null;
-            $handled = false;
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    $result = $handler->call($this, $exception, $request, $response, $this);
-                    $handled = true;
+                    return $handler->call($this, $exception, $request, $response, $this);
                 }
             }
-            if(!$handled) {
-                throw $exception;
-            }
+            throw $exception;
         }
         return $result;
     }

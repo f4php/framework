@@ -26,7 +26,6 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
  */
 class Request implements RequestInterface 
 {
-    use StateAwareTrait;
     protected PsrServerRequestInterface $psrRequest;
     protected string $path;
     protected ?string $extension = null;
@@ -120,6 +119,10 @@ class Request implements RequestInterface
     public function getPath(): string
     {
         return $this->path;
+    }
+    public function checkIfPathMatches(string $regexp): bool
+    {
+        return Preg::isMatch($regexp, $this->path);
     }
     public function setPsrRequest(PsrServerRequestInterface $psrRequest): static
     {

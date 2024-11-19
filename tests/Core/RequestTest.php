@@ -9,12 +9,11 @@ use F4\Tests\Core\MockRequest;
 
 final class RequestTest extends TestCase
 {
-    public function testState(): void
+    public function testPathMatching(): void
     {
-        $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
-        $request->setState('test', 'test value 1');
-        ;
-        $this->assertSame('test value 1', $request->getState('test'));
+        $request = new MockRequest(requestMethod: 'GET', requestPath: '/test1/test2');
+        $this->assertSame(true, $request->checkIfPathMatches('/^\/test1\/test2$/'));
+        $this->assertSame(false, $request->checkIfPathMatches('/^non-matching$/'));
     }
 
 }

@@ -22,7 +22,6 @@ use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
  */
 class Response implements ResponseInterface
 {
-    use StateAwareTrait;
     protected PsrResponseInterface $psrResponse;
     protected array $bodyFragments = [];
     protected string $responseFormat = Config::DEFAULT_RESPONSE_FORMAT;

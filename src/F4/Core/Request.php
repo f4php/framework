@@ -45,6 +45,10 @@ class Request implements RequestInterface
             ))->fromGlobals(),
             default => $psrRequest
         });
+        $this->initialize();
+    }
+
+    public function initialize() {
         $languages = [Config::DEFAULT_LANGUAGE, ...array_keys(Config::DICTIONARIES)];
         $languagesPattern =
             \implode(separator: '|', array: \array_map(callback: function ($language): string {
@@ -120,6 +124,7 @@ class Request implements RequestInterface
     public function setPsrRequest(PsrServerRequestInterface $psrRequest): static
     {
         $this->psrRequest = $psrRequest;
+        $this->initialize();
         return $this;
     }
     public function getPsrRequest(): PsrServerRequestInterface

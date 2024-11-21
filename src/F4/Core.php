@@ -1,0 +1,313 @@
+<?php
+/**
+ *      (c) Copyright 2016-2024 Dennis Kreminsky, dennis at kreminsky dot com
+ *
+ *      @package F4
+ *      @author Dennis Kreminsky, dennis at kreminsky dot com
+ *      @copyright Copyright (c) 2012-2024 Dennis Kreminsky, dennis at kreminsky dot com
+ */
+
+declare(strict_types=1);
+
+namespace F4;
+
+use Closure;
+use ErrorException;
+use InvalidArgumentException;
+use Throwable;
+
+use F4\Config;
+use F4\ModuleInterface;
+
+use F4\Core\CanExtractFormatFromExtensionTrait;
+
+use F4\Core\CoreApiInterface;
+use F4\Core\ExceptionRenderer;
+use F4\Core\LocalizerInterface;
+use F4\Core\RequestInterface;
+use F4\Core\ResponseInterface;
+
+use F4\Core\ResponseEmitter\ResponseEmitterInterface;
+
+use F4\Core\Request;
+use F4\Core\Response;
+use F4\Core\Route;
+use F4\Core\RouteGroup;
+use F4\Core\RouterInterface;
+
+class Core implements CoreApiInterface
+{
+    use CanExtractFormatFromExtensionTrait;
+
+    protected array $modules = [];
+    protected CoreApiInterface $coreApiProxy;
+    protected ResponseEmitterInterface $emitter;
+    protected RouterInterface $router;
+    protected LocalizerInterface $localizer;
+    protected RequestInterface $request;
+    protected ResponseInterface $response;
+
+    // TODO: add localizer
+    public function __construct(string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS, string $routerClassName = Config::CORE_ROUTER_CLASS)
+    {
+        $this->setCoreApiProxy(coreApiProxy: new $coreApiProxyClassName($this));
+        $this->setRouter(router: new $routerClassName());
+    }
+
+    public function setUpRequestResponse(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->setUpRequestResponseNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->setUpRequestResponseNormally(...))
+        };
+        return $this;
+    }
+    public function setUpEnvironment(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->setUpEnvironmentNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->setUpEnvironmentNormally(...))
+        };
+        return $this;
+    }
+    public function registerModules(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->registerModulesNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->registerModulesNormally(...))
+        };
+        return $this;
+    }
+    public function processRequest(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->processRequestNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->processRequestNormally(...))
+        };
+        return $this;
+    }
+
+    public function emitResponse(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->emitResponseNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->emitResponseNormally(...))
+        };
+        return $this;
+    }
+    public function restoreEnvironment(?callable $customHandler = null): static
+    {
+        match ($customHandler) {
+            null => $this->restoreEnvironmentNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->restoreEnvironmentNormally(...))
+        };
+        return $this;
+    }
+    protected function setUpRequestResponseNormally(?RequestInterface $request = null, ?ResponseInterface $response = null): void
+    {
+        $this->setRequest(request: $request ?? new Request());
+        $this->setResponse(response: $response ?? new Response());
+    }
+    protected function setUpEnvironmentNormally(bool $skipOutputBuffering = false, bool $skipErrorHandling = false): void
+    {
+        if(!$skipOutputBuffering) {
+            $this->enableOutputBufferCapture();
+        }
+        if(!$skipErrorHandling) {
+            \set_exception_handler(callback: function (Throwable $exception): void {
+                $format = $this->getResponse() ? $this->getResponseFormat() : Config::DEFAULT_RESPONSE_FORMAT;
+                ExceptionRenderer::handleException(exception: $exception, format: $format);
+            });
+            \set_error_handler(callback: function ($errno, $errstr, $errfile, $errline): bool {
+                if (\error_reporting() === 0) {
+                    return true; // originating statement used "@" to disable error checking
+                }
+                throw new ErrorException(message: $errstr, code: 500, severity: $errno, filename: $errfile, line: $errline);
+            }, error_levels: E_ALL);
+        }
+        if (false === \mb_internal_encoding(encoding: Config::RESPONSE_CHARSET)) {
+            throw new ErrorException(message: 'failed to set internal character encoding');
+        }
+        if (false === \mb_regex_encoding(encoding: Config::RESPONSE_CHARSET)) {
+            throw new ErrorException(message: 'failed to set regex character encoding');
+        }
+        if (Config::TIMEZONE) {
+            $this->setTimezone(timezone: Config::TIMEZONE);
+        }
+    }
+    protected function registerModulesNormally(array $modules = Config::MODULES): static
+    {
+        if (Config::DEBUG_MODE && ($debugExtension = $this->getRequest()->getDebugExtension())) {
+            if (!($debugFormat = $this->getDebugFormatFromExtension(debugExtension: $debugExtension))) {
+                throw new ErrorException(message: 'failed to locate debug format configuration for {$debugExtension}');
+            }
+            $this->setResponseFormat(format: $debugFormat);
+            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$debugFormat]['class']) || !\class_exists(class: Config::RESPONSE_EMITTERS[$debugFormat]['class'], autoload: true)) {
+                true => throw new ErrorException(message: "failed to locate emitter for '{$debugFormat}'"),
+                default => new (Config::RESPONSE_EMITTERS[$debugFormat]['class'])($this)
+            };
+        } else {
+            $this->setResponseFormat(format: $format = match ($extension = $this->getRequest()->getExtension()) {
+                null => Config::DEFAULT_RESPONSE_FORMAT,
+                default => $this->getResponseFormatFromExtension(extension: $extension)
+            });
+            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !\class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
+                true => throw new ErrorException(message: "failed to locate emitter for '{$format}'"),
+                default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this)
+            };
+        }
+        foreach ($modules as $name => $module) {
+            if (!\is_a(object_or_class: $module, class: ModuleInterface::class, allow_string: true)) {
+                throw new InvalidArgumentException(message: 'modules must implement ModuleInterface');
+            }
+            $module = match (\is_object(value: $module)) {
+                false => new $module($this->coreApiProxy),
+                default => $module
+            };
+            $name = $name ?: \get_class(object: $module);
+            $this->modules[$name] = $module;
+        }
+        return $this;
+    }
+    protected function processRequestNormally(): void
+    {
+        $this->response->setData($this->router->invokeMatchingRoutes(request: $this->request, response: $this->response));
+    }
+    protected function emitResponseNormally(): void
+    {
+        if (\php_sapi_name() === 'cli') {
+            $this->setResponseFormat(format: Core\ResponseEmitter\Cli::INTERNAL_MIME_TYPE);
+        }
+        if (empty(Config::RESPONSE_EMITTERS[$this->getResponseFormat()])) {
+            throw new ErrorException(message: "failed to find renderer for '{$this->getResponseFormat()}'");
+        }
+        if(!$this->emit(response: $this->getResponse())) {
+            throw new ErrorException(message: 'failed to emit response');
+        }
+    }
+    protected function restoreEnvironmentNormally(bool $skipOutputBuffering = false, bool $skipErrorHandling = false): void
+    {
+        if(!$skipOutputBuffering) {
+            $this->flushOutputBufferCapture();
+        }
+        if(!$skipErrorHandling) {
+            \restore_error_handler();
+            \restore_exception_handler();
+        }
+    }
+
+    protected function enableOutputBufferCapture(): void
+    {
+        if (false === \ob_start()) {
+            throw new ErrorException(message: 'failed to enable output buffer cache');
+        }
+    }
+
+    protected function flushOutputBufferCapture(): void
+    {
+        if (false === \ob_end_flush()) {
+            throw new ErrorException(message: 'failed to flush output buffer cache');
+        }
+    }
+
+    // All Core API methods are to be implemented below
+
+    public function setRequestHandler(callable $handler): static 
+    {
+        $this->router->setRequestMiddleware(requestMiddleware: $handler);
+        return $this;
+    }
+    public function before(callable $handler): static 
+    {
+        return $this->setRequestHandler(handler: $handler);
+    }
+    public function setResponseHandler(callable $handler): static 
+    {
+        $this->router->setResponseMiddleware(responseMiddleware: $handler);
+        return $this;
+    }
+    public function after(callable $handler): static 
+    {
+        return $this->setResponseHandler(handler: $handler);
+    }
+    public function addExceptionHandler(string $exceptionClassName, callable $handler): static 
+    {
+        $this->router->addExceptionHandler(exceptionClassName: $exceptionClassName, exceptionHandler: $handler);
+        return $this;
+    }
+    public function on(string $exceptionClassName, callable $handler): static 
+    {
+        return $this->addExceptionHandler(exceptionClassName: $exceptionClassName,handler: $handler);
+    }
+    public function setRequest(RequestInterface $request): static
+    {
+        $this->request = $request;
+        return $this;
+    }
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+    public function setResponse(ResponseInterface $response): static
+    {
+        $this->response = $response;
+        return $this;
+    }
+    public function getResponse(): ResponseInterface
+    {
+        return $this->response;
+    }
+    public function addRoute(Route|string $routeOrPath, ?callable $handler = null): Route
+    {
+        return $this->router->addRoute(routeOrPath: $routeOrPath, handler: $handler);
+    }
+    public function addRouteGroup(Routegroup $routeGroup): RouteGroup
+    {
+        return $this->router->addRouteGroup(routeGroup: $routeGroup);
+    }
+    public function setResponseFormat(string $format): static
+    {
+        $this->getResponse()->setResponseFormat($format);
+        return $this;
+    }
+    public function getResponseFormat(): string
+    {
+        return $this->getResponse()->getResponseFormat();
+    }
+    public function getTemplate(?string $format = null): string
+    {
+        return $this->getResponse()->getTemplate(format: $format);
+    }
+    public function getRouter(): RouterInterface
+    {
+        return $this->router;
+    }
+    public function setRouter(RouterInterface $router): static
+    {
+        $this->router = $router;
+        return $this;
+    }
+    public function setCoreApiProxy(CoreApiInterface $coreApiProxy): static
+    {
+        $this->coreApiProxy = $coreApiProxy;
+        return $this;
+    }
+    public function getCoreApiProxy(): CoreApiInterface
+    {
+        return $this->coreApiProxy;
+    }
+    public function setTemplate(string $template, ?string $format = null): static
+    {
+        $this->getResponse()->setTemplate(template: $template, format: $format);
+        return $this;
+    }
+    public function setTimezone(string $timezone): static
+    {
+        \date_default_timezone_set(timezoneId: $timezone);
+        return $this;
+    }
+    public function emit(?ResponseInterface $response = null): bool
+    {
+        return $this->emitter->emit($response ?: $this->response, $this->request);
+    }
+}

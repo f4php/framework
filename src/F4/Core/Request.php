@@ -80,9 +80,9 @@ class Request implements RequestInterface
     protected function getAvailableExtensions(): array
     {
         return \array_reduce(
-            array: Config::RESPONSE_RENDERERS,
-            callback: function ($extensions, $rendererConfiguration): array {
-                return [...$extensions, ...$rendererConfiguration['extensions'] ?? []];
+            array: Config::RESPONSE_EMITTERS,
+            callback: function ($extensions, $emitterConfiguration): array {
+                return [...$extensions, ...$emitterConfiguration['extensions'] ?? []];
             },
             initial: []
         );
@@ -92,14 +92,14 @@ class Request implements RequestInterface
         return \array_reduce(
             array: 
                 \array_filter(
-                    array: Config::RESPONSE_RENDERERS, 
-                    callback: function($rendererConfiguration): bool {
-                        return isset($rendererConfiguration['debug-extension']);
+                    array: Config::RESPONSE_EMITTERS, 
+                    callback: function($emitterConfiguration): bool {
+                        return isset($emitterConfiguration['debug-extension']);
                     }
                 ),
             callback: 
-                function ($debugExtensions, $rendererConfiguration): array {
-                    return [...$debugExtensions, $rendererConfiguration['debug-extension'] ?? []];
+                function ($debugExtensions, $emitterConfiguration): array {
+                    return [...$debugExtensions, $emitterConfiguration['debug-extension'] ?? []];
                 },
             initial: []
         );

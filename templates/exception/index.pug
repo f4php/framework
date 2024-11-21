@@ -1,0 +1,41 @@
+html
+    head
+    style.
+        html {
+            background: #123;
+            color: #e0e0e0;
+        }
+        pre.source {
+            counter-reset: line;
+        }
+        pre.source span.line {
+            display: block;
+        }
+        pre.source span.line-number {
+            min-width: 3rem;
+        }
+        pre.source span.highlight {
+            background: rgba(255, 40, 0, 0.2);
+        }
+    body
+        h1
+            = get_class($data['exception'])
+        = $data['exception']->getMessage()
+        if $data['debug']
+            p
+                = $data['exception']->getFile()
+                |(
+                = $data['exception']->getLine()
+                |)
+            hr/
+            pre.source
+                each $line, $number in $data['source']
+                    span(class=($number === ($data['line'] - $data['line-offset'] - 1) ? "highlight" : "" )).line
+                        span.line-number
+                            = $number+$data['line-offset']+1
+                        span
+                            = $line
+                            = "\n"
+            hr/
+            pre
+                = $data['exception']->getTraceAsString()

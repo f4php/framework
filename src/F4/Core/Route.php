@@ -146,7 +146,7 @@ class Route implements RouteInterface
 
     protected function checkIfFormatIsSupported(string $format): bool 
     {
-        return \in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_RENDERERS));
+        return \in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS));
     }
 
     public function setTemplate(string $template, ?string $format=Config::DEFAULT_RESPONSE_FORMAT): static

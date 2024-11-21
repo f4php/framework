@@ -7,8 +7,7 @@ namespace F4\Core;
 use ErrorException;
 use Throwable;
 
-use Composer\Pcre\Preg;
-
+use F4\Core\Exception\HttpException;
 use F4\Core\ExceptionHandlerTrait;
 use F4\Core\MiddlewareAwareTrait;
 use F4\Core\RequestInterface;
@@ -71,33 +70,41 @@ class Router implements RouterInterface
         };
         [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
         try {
-            if(isset($this->requestMiddleware)) {
-                $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $matchingRoute)) instanceof RequestInterface) { 
-                    true => $requestMiddlewareResult,
-                    default => $request
-                };
-            }
-            /**
-             * Need to match again in case Request was altered by RequestMiddleware
-             */
-            [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
-            if ($matchingRouteGroup) {
-                $result = $matchingRouteGroup->invoke($request, $response)[0] ?? null;
-            }
-            if(isset($this->responseMiddleware)) {
-                $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $matchingRoute)) instanceof ResponseInterface) { 
-                    true => $responseMiddlewareResult,
-                    default => $response
-                };
-            }
-        }
-        catch (Throwable $exception) {
-            foreach ($this->exceptionHandlers as $className => $handler) {
-                if (!$className || ($exception instanceof $className)) {
-                    return $handler->call($this, $exception, $request, $response, $matchingRoute);
+            try {
+                if(isset($this->requestMiddleware)) {
+                    $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $matchingRoute)) instanceof RequestInterface) { 
+                        true => $requestMiddlewareResult,
+                        default => $request
+                    };
+                }
+                /**
+                 * Need to match again in case the Request was altered by RequestMiddleware
+                 */
+                [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
+                if ($matchingRouteGroup) {
+                    $result = $matchingRouteGroup->invoke($request, $response)[0] ?? null;
+                    if($template = $matchingRoute->getTemplate($response->getResponseFormat())) {
+                        $response->setTemplate($template);
+                    }
+                }
+                if(isset($this->responseMiddleware)) {
+                    $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $matchingRoute)) instanceof ResponseInterface) { 
+                        true => $responseMiddlewareResult,
+                        default => $response
+                    };
                 }
             }
-            throw $exception;
+            catch (Throwable $exception) {
+                foreach ($this->exceptionHandlers as $className => $handler) {
+                    if (!$className || ($exception instanceof $className)) {
+                        return $handler->call($this, $exception, $request, $response, $matchingRoute);
+                    }
+                }
+                throw $exception;
+            }
+        }
+        catch (HttpException $exception) {
+            $response->setException($exception);
         }
         return $result;
     }

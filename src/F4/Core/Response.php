@@ -8,7 +8,7 @@ use ErrorException;
 
 use F4\Config;
 use F4\Core\ResponseInterface;
-use F4\Core\StateAwareTrait;
+use F4\Core\Exception\HttpException;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -23,12 +23,13 @@ use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 class Response implements ResponseInterface
 {
     protected PsrResponseInterface $psrResponse;
-    protected array $bodyFragments = [];
+    protected mixed $data = null;
+    protected array $metaData = [];
+    protected HttpException $exception;
     protected string $responseFormat = Config::DEFAULT_RESPONSE_FORMAT;
     protected array $templates = [
-        Config::DEFAULT_RESPONSE_FORMAT => Config::DEFAULT_TEMPLATE
+        Config::DEFAULT_RESPONSE_FORMAT => Config::DEFAULT_TEMPLATE,
     ];
-
     public function __construct(?PsrResponseInterface $psrResponse = null)
     {
         $psr17Factory = new Psr17Factory();
@@ -37,7 +38,8 @@ class Response implements ResponseInterface
             default => $psrResponse
         });
     }
-    static public function fromPsr(psrResponseInterface $psrResponse): static {
+    static public function fromPsr(psrResponseInterface $psrResponse): static
+    {
         return new self(psrResponse: $psrResponse);
     }
     public function setPsrResponse(PsrResponseInterface $psrResponse): static
@@ -49,41 +51,58 @@ class Response implements ResponseInterface
     {
         return $this->psrResponse;
     }
-    public function setResponseFormat(string $format): bool {
-        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_RENDERERS)) || empty(Config::RESPONSE_RENDERERS[$format])) {
-            return false;
+    public function setResponseFormat(string $format): static
+    {
+        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
+            throw new ErrorException("format {$format} not supported");
         }
         $this->responseFormat = $format;
-        return true;
+        return $this;
     }
     public function getResponseFormat(): string
     {
         return $this->responseFormat;
     }
-    public function setTemplate(string $template, ?string $format = null): bool
+    public function setTemplate(string $template, ?string $format = null): static
     {
-        $format ??= Config::DEFAULT_RESPONSE_FORMAT;
-        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_RENDERERS)) || empty(Config::RESPONSE_RENDERERS[$format])) {
-            return false;
+        $format ??= $this->responseFormat;
+        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
+            throw new ErrorException("format {$format} not supported");
         }
         $this->templates[$format] = $template;
-        return true;
+        return $this;
     }
     public function getTemplate(?string $format = null): string
     {
-        return $this->templates[$format ?? Config::DEFAULT_RESPONSE_FORMAT] ?? Config::DEFAULT_TEMPLATE;
+        return $this->templates[$format ?? $this->responseFormat] ?? Config::DEFAULT_TEMPLATE;
     }
-    public function addBodyFragment(mixed $part): void {
-        $this->bodyFragments[] = $part;
+    public function addMetaData(mixed $part): void
+    {
+        $this->metaData[] = $part;
     }
-    public function getBodyFragments(): array {
-        return $this->bodyFragments;
+    public function getMetaData(): array
+    {
+        return $this->metaData;
     }
-    public function addHeader(string $name, $value): void {
-        $this->setPsrResponse(psrResponse: $this->psrResponse->withHeader($name, $value));
+    public function setException(HttpException $exception): void
+    {
+        $this->exception = $exception;
     }
-    public function removeHeader(string $name): void {
-        $this->setPsrResponse(psrResponse: $this->psrResponse->withoutHeader($name));
+    public function getException(): ?HttpException
+    {
+        return match(isset($this->exception)) {
+            true => $this->exception,
+            default => null
+        };
+    }
+    public function setData(mixed $data): static
+    {
+        $this->data = $data;
+        return $this;
+    }
+    public function getData(): mixed
+    {
+        return $this->data;
     }
 
     // Wrappers around PSR

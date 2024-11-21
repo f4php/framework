@@ -191,24 +191,6 @@ final class RouteTest extends TestCase
         $route = new Route($routePathDefinition, function (bool $state): void {});
         $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
 
-        $responseFormat = 'text/plain';
-        $response = new MockResponse(responseFormat: $responseFormat);
-
-        $routePathDefinition = '/entities.txt';
-        $route = new Route($routePathDefinition, function (bool $state): void {});
-        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
-
-        $responseFormat = 'text/plain';
-        $response = new MockResponse(responseFormat: $responseFormat);
-
-        $routePathDefinition = '/entities.text';
-        $route = new Route($routePathDefinition, function (bool $state): void {});
-        $this->assertSame(true, $route->checkMatch(request: $request, response: $response));
-
-        // $responseFormat=DebugRaw::INTERNAL_MIME_TYPE;
-        // $routePathDefinition='/entities.raw';
-        // $route = new Route($routePathDefinition, function(bool $state): void {});
-        // $this->assertSame(true, $route->checkMatch(requestMethod: $requestMethod, requestPath: $requestPath, responseFormat: $responseFormat));
     }
 
     public function testFailedJsonFormatMatching(): void

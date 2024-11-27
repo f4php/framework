@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace F4\DB\Adapter;
+
+use F4\DB\PreparedStatement;
+
+interface AdapterInterface
+{
+    public function execute(PreparedStatement $statement): mixed;
+    public function enumerateParameters(int $index): string;
+}
+

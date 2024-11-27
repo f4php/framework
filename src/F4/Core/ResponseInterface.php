@@ -13,7 +13,7 @@ interface ResponseInterface extends PsrResponseInterface
     public function getPsrResponse(): PsrResponseInterface;
     public function setResponseFormat(string $format): static;
     public function getResponseFormat(): string;
-    public function setTemplate(string $template, string $format = null): static;
+    public function setTemplate(string $template, ?string $format = null): static;
     public function getTemplate(?string $format = null): string;
     public function addMetaData(mixed $fragment): void;
     public function getMetaData(): array;

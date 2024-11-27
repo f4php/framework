@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace F4\DB;
 
-use InvalidArgumentException;
-use F4\DB\Reference\SimpleReference;
-use F4\DB\Reference\TableReferenceWithAlias;
-
 use function array_map;
-use function is_numeric;
-use function mb_trim;
+use function implode;
+use function sprintf;
 
 /**
  * 
@@ -23,7 +19,7 @@ use function mb_trim;
 class Parenthesize extends FragmentCollection
 {
     public function __construct(...$arguments) {
-        \array_map(function($argument) {
+        array_map(function($argument) {
             $this->append($argument);
         }, $arguments);
     }

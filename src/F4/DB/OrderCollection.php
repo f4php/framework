@@ -8,7 +8,6 @@ use Composer\Pcre\Preg;
 
 use InvalidArgumentException;
 use F4\DB\Reference\SimpleReference;
-use F4\DB\Reference\ColumnReferenceWithAlias;
 
 use function is_array;
 use function is_scalar;

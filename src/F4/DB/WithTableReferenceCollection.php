@@ -10,7 +10,7 @@ use F4\DB\Reference\TableReferenceWithAlias;
 
 use function is_array;
 use function is_numeric;
-use function mb_trim;
+use function sprintf;
 
 /**
  * 

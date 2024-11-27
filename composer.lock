@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f29a5fecde92627343584e3d91ae3f79",
+    "content-hash": "5b2eaa37f56ef16c8eeae1e933b56e3e",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -3163,7 +3163,10 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.3"
+        "ext-filter": "*",
+        "ext-mbstring": "*",
+        "ext-pgsql": "*",
+        "php": "^8.4.1"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"

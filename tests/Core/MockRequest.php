@@ -11,7 +11,7 @@ use Nyholm\Psr7Server\ServerRequestCreator;
 
 class MockRequest extends Request {
 
-    public function __construct(string $requestMethod, string $requestPath, string $queryString=null) { 
+    public function __construct(string $requestMethod, string $requestPath, ?string $queryString = null) { 
         $psr17Factory = new Psr17Factory();
         $creator = new ServerRequestCreator(
             $psr17Factory, // ServerRequestFactory

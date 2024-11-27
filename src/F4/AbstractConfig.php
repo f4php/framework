@@ -7,8 +7,7 @@ namespace F4;
 use F4\Config\SensitiveParameter;
 use F4\Config\SensitiveParameterKey;
 
-use F4\DB\Adapter\PostgreSQL;
-use F4\DB\Adapter\PostgreSQL\TypeCaster;
+use F4\DB\Adapter\PostgresqlAdapter;
 
 use F4\Core\Localizer;
 use F4\Core\Router;
@@ -31,15 +30,11 @@ abstract class AbstractConfig
     public const string DB_PASSWORD = '';
     public const string DB_SCHEMA = '';
     public const ?string DB_APP_NAME = null;
-    public const bool DB_TRACE = false;
-    public const bool DB_ALLOW_UNSAFE_RAW_QUERIES = false;
-    public const string DB_ADAPTER_CLASS = PostgreSQL::class;
-    public const string DB_ADAPTER_ALIAS = '\F4\DB';
-
-    public const string DB_TYPE_CASTER_CLASS = TypeCaster::class;
+    // public const bool DB_ALLOW_UNSAFE_RAW_QUERIES = false;
+    public const string DB_ADAPTER_CLASS = PostgresqlAdapter::class;
 
     public const bool DB_PERSIST = true;
-    public const bool DB_KEEP_NULLS = true;
+    // public const bool DB_KEEP_NULLS = true;
 
     public const array MODULES = [];
 

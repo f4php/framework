@@ -8,10 +8,10 @@ use ErrorException;
 
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
-use F4\Core\ResponseEmitter\ResponseEmitter;
+use F4\Core\ResponseEmitter\AbstractResponseEmitter;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-class Cli extends ResponseEmitter implements ResponseEmitterInterface
+class Cli extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
     public const string INTERNAL_MIME_TYPE = 'application/x.f4.cli';
 

@@ -8,10 +8,10 @@ use F4\Config;
 use F4\Core\Exception\HttpException;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
-use F4\Core\ResponseEmitter\ResponseEmitter;
+use F4\Core\ResponseEmitter\AbstractResponseEmitter;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-class Json extends ResponseEmitter implements ResponseEmitterInterface
+class Json extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
     public function emit(ResponseInterface $response, ?RequestInterface $request=null): bool
     {

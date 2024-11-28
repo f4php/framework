@@ -11,7 +11,7 @@ use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-class ResponseEmitter implements ResponseEmitterInterface
+abstract class AbstractResponseEmitter implements ResponseEmitterInterface
 {
     public function __construct(protected CoreApiInterface $f4) {}
     private function checkForNoPreviousOutput(): void

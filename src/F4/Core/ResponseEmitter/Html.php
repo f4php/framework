@@ -11,12 +11,12 @@ use F4\Core\Exception\HttpException;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 
-use F4\Core\ResponseEmitter\ResponseEmitter;
+use F4\Core\ResponseEmitter\AbstractResponseEmitter;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
 use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
 
-class Html extends ResponseEmitter implements ResponseEmitterInterface
+class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
     public function emit(ResponseInterface $response, ?RequestInterface $request = null): bool
     {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace F4;
 
-
+use BadMethodCallException;
 use InvalidArgumentException;
 
 use F4\DB\Adapter\AdapterInterface;
-use F4\DB\Exception\SyntaxErrorException;
 use F4\DB\AssignmentCollection;
 use F4\DB\ConditionCollection;
 use F4\DB\FragmentInterface;
@@ -135,6 +134,8 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'order', 'orderBy' => $this
                 ->append('ORDER BY')
                 ->append(new OrderCollection(...$arguments)),
+            'raw' => $this
+                ->append(new FragmentCollection(...$arguments)),
             'returning' => $this
                 ->append('RETURNING')
                 ->append(new SimpleColumnReferenceCollection($arguments ?: '*')),
@@ -176,7 +177,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'withRecursive' => $this
                 ->append('WITH RECURSIVE')
                 ->append(new WithTableReferenceCollection(...$arguments)),
-            default => throw new SyntaxErrorException(message: "Unsupported method {$method}()")
+            default => throw new BadMethodCallException(message: "Unsupported method {$method}()")
         };
         return $this;
     }
@@ -184,7 +185,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
     public static function __callStatic(string $method, array $arguments): mixed
     {
         return match ($method) {
-            'raw' => (new self())->append(new FragmentCollection(...$arguments)),
+            'raw',
             'delete',
             'dropTable',
             'dropTableIfExists',
@@ -198,7 +199,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'withRecursive' 
                 => call_user_func_array(callback: [new self(), $method], args: $arguments),
             default =>
-                throw new SyntaxErrorException(message: "Unsupported method {$method}()")
+                throw new BadMethodCallException(message: "Unsupported method {$method}()")
         };
     }
 

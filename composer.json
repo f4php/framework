@@ -13,7 +13,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "F4\\Tests\\": "tests/"
+            "F4\\": "tests/F4"
         }
     },
     "authors": [
@@ -26,7 +26,7 @@
         "optimize-autoloader": true
     },
     "scripts": {
-        "test": "phpunit --bootstrap tests/Config.php --display-warnings --display-phpunit-deprecations tests",
+        "test": "phpunit --bootstrap tests/F4/Config.php --display-warnings --display-phpunit-deprecations tests",
         "phpstan": "phpstan --level=1 analyse src tests"
     },
     "require": {
@@ -47,6 +47,7 @@
     "require-dev": {
         "kint-php/kint": "^5.1",
         "phpunit/phpunit": "^11.4",
-        "phpstan/phpstan": "^2.0"
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0"
     }
 }

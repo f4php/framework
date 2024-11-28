@@ -1,0 +1,8 @@
+parameters:
+    bootstrapFiles:
+        - tests/F4/Config.php
+services:
+	-
+		class: F4\PHPStan\Reflection\DB\DBClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

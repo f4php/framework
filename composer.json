@@ -27,7 +27,7 @@
     },
     "scripts": {
         "test": "phpunit --bootstrap tests/Config.php --display-warnings --display-phpunit-deprecations tests",
-        "phpstan": "phpstan analyse src tests"
+        "phpstan": "phpstan --level=1 analyse src tests"
     },
     "require": {
         "ext-filter": "*",
@@ -47,6 +47,6 @@
     "require-dev": {
         "kint-php/kint": "^5.1",
         "phpunit/phpunit": "^11.4",
-        "phpstan/phpstan": "^1.12"
+        "phpstan/phpstan": "^2.0"
     }
 }

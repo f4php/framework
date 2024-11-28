@@ -19,7 +19,7 @@ use function sprintf;
 class Parenthesize extends FragmentCollection
 {
     public function __construct(...$arguments) {
-        array_map(function($argument) {
+        array_map(function($argument): void {
             $this->append($argument);
         }, $arguments);
     }

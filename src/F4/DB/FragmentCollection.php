@@ -25,54 +25,59 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     protected const string GLUE = ' ';
     protected array $fragments = [];
 
-    public function __construct(...$arguments) {
+    public function __construct(...$arguments)
+    {
         $this->addExpression($arguments);
     }
-    public function append(FragmentInterface|string $fragment): static {
-        $this->fragments[] = match($fragment instanceof FragmentInterface) {
+    public function append(FragmentInterface|string $fragment): static
+    {
+        $this->fragments[] = match ($fragment instanceof FragmentInterface) {
             true => $fragment,
             default => new Fragment($fragment)
         };
         return $this;
     }
-    public function getFragments(): array {
+    public function getFragments(): array
+    {
         return $this->fragments;
     }
-    public function getQuery(): string {
-        return implode(static::GLUE, array_map(function(FragmentInterface $fragment): string {
+    public function getQuery(): string
+    {
+        return implode(static::GLUE, array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
         }, $this->fragments));
     }
-    public function getParameters(): array {
-        return array_reduce($this->fragments,function($result, FragmentInterface $fragment): array {
+    public function getParameters(): array
+    {
+        return array_reduce($this->fragments, function ($result, FragmentInterface $fragment): array {
             return [...$result, ...$fragment->getParameters()];
         }, []);
     }
-    public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement {
+    public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement
+    {
         $fragment = new Fragment(
             query: $this->getQuery(),
-            parameters: $this->getParameters()
+            parameters: $this->getParameters(),
         );
         return $fragment->getPreparedStatement($enumeratorFunction);
     }
-    public function setQuery(string $query, array $parameters = []): static {
+    public function setQuery(string $query, array $parameters = []): static
+    {
         throw new InvalidArgumentException('Setting collection query and parameters directly is not supported, use append() instead');
     }
-    protected function addExpression($expression) {
-        if(is_array($expression)) {
-            foreach($expression as $key=>$value) {
-                if(is_numeric($key)) {
+    protected function addExpression(mixed $expression): void
+    {
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                if (is_numeric($key)) {
                     $this->addExpression($value);
-                }
-                else {
+                } else {
                     $this->append(new Fragment($key, $value));
                 }
             }
-        }
-        elseif($expression instanceof FragmentInterface) {
+        } elseif ($expression instanceof FragmentInterface) {
             $this->append($expression);
-        }
-        else {
+        } else {
             $this->append(new Fragment($expression, []));
         }
     }

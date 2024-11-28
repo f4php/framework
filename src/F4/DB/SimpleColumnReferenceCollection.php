@@ -26,7 +26,7 @@ class SimpleColumnReferenceCollection extends FragmentCollection
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression) {
+    protected function addExpression($expression): void {
         if(is_array($expression)) {
             foreach($expression as $key=>$value) {
                 if(is_numeric($key)) {
@@ -41,7 +41,7 @@ class SimpleColumnReferenceCollection extends FragmentCollection
             $this->append($expression);
         }
         else {
-            $query = match($quoted = new ColumnReference((string)$expression)->delimitedIdentifier) {
+            $query = match($quoted = (new ColumnReference((string)$expression))->delimitedIdentifier) {
                 null => (string)$expression,
                 default => $quoted
             };

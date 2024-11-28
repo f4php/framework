@@ -12,20 +12,20 @@ use Phug\Component\ComponentExtension;
 class TemplateRenderer extends Renderer 
 {
 
-    public function __construct($options = null)
+    public function __construct(array $options = [])
     {
         // workaround for undefined stdout
         if (!defined(constant_name: 'STDOUT')) {
             define(constant_name: 'STDOUT', value: fopen(filename: 'php://stdout', mode: 'wb'));
         }
-        parent::__construct(options: [
+        parent::__construct(options: [...[
             'debug'                 => Config::DEBUG_MODE,
             'exit_on_error'         => Config::DEBUG_MODE,
             'pretty'                => false,
             'cache_dir'             => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : (Config::TEMPLATE_CACHE_PATH ?: sys_get_temp_dir()),
             'cache_lifetime'        => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : Config::TEMPLATE_CACHE_LIFETIME,
             'paths'                 => self::getPaths()
-        ]);
+        ], ...$options]);
         ComponentExtension::enable(renderer: $this);
     }
 

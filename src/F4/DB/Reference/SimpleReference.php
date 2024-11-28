@@ -40,7 +40,7 @@ class SimpleReference implements ReferenceInterface
     }
     static public function fromString(string $reference): ReferenceInterface
     {
-        return new static($reference);
+        return new self($reference);
     }
     protected function extractDelimitedIdentifier($matches): string
     {

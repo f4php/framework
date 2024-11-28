@@ -184,7 +184,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
     public static function __callStatic(string $method, array $arguments): mixed
     {
         return match ($method) {
-            'raw' => (new static())->append(new FragmentCollection(...$arguments)),
+            'raw' => (new self())->append(new FragmentCollection(...$arguments)),
             'delete',
             'dropTable',
             'dropTableIfExists',
@@ -196,7 +196,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'update',
             'with',
             'withRecursive' 
-                => call_user_func_array(callback: [new static(), $method], args: $arguments),
+                => call_user_func_array(callback: [new self(), $method], args: $arguments),
             default =>
                 throw new SyntaxErrorException(message: "Unsupported method {$method}()")
         };

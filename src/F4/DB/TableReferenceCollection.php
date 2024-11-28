@@ -10,6 +10,7 @@ use F4\DB\Reference\TableReferenceWithAlias;
 
 use function is_array;
 use function is_numeric;
+use function is_scalar;
 use function sprintf;
 
 /**
@@ -27,7 +28,7 @@ class TableReferenceCollection extends FragmentCollection
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression) {
+    protected function addExpression(mixed $expression): void {
         if(is_array($expression)) {
             foreach($expression as $key=>$value) {
                 if(is_numeric($key)) {
@@ -35,7 +36,7 @@ class TableReferenceCollection extends FragmentCollection
                 }
                 else {
                     if($value instanceof FragmentInterface) {
-                        $query = match($quoted = new SimpleReference($key)->delimitedIdentifier) {
+                        $query = match($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('({#::#}) AS %s', $quoted)
                         };
@@ -54,7 +55,7 @@ class TableReferenceCollection extends FragmentCollection
             throw new InvalidArgumentException('Subqueries must have an alias');
         }
         else {
-            $query = match($quoted = new TableReferenceWithAlias((string)$expression)->delimitedIdentifier) {
+            $query = match($quoted = (new TableReferenceWithAlias((string)$expression))->delimitedIdentifier) {
                 null => (string)$expression,
                 default => $quoted
             };

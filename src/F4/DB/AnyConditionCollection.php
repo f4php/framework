@@ -19,8 +19,14 @@ use function sprintf;
 class AnyConditionCollection extends ConditionCollection
 {
     protected const string GLUE = ' OR ';
-    public function getQuery(): string {
+    public function getQuery(): string
+    {
         return sprintf('(%s)', parent::getQuery());
+    }
+    static public function of(...$arguments): ConditionCollection
+    {
+        $instance = new self(...$arguments);
+        return $instance;
     }
 
 }

@@ -6,12 +6,14 @@ namespace F4\Core\ResponseEmitter;
 
 use ErrorException;
 
+use F4\Core\CoreApiInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
 class ResponseEmitter implements ResponseEmitterInterface
 {
+    public function __construct(protected CoreApiInterface $f4) {}
     private function checkForNoPreviousOutput(): void
     {
         $filename = null;

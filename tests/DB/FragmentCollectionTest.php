@@ -12,7 +12,7 @@ use InvalidArgumentException;
 final class FragmentCollectionTest extends TestCase
 {
     public function testSimpleFragments(): void {
-        $fragmentCollection = new FragmentCollection()
+        $fragmentCollection = (new FragmentCollection())
             ->append(new Fragment('SELECT'))
             ->append(new Fragment('fieldA'));
         $this->assertSame('SELECT fieldA', $fragmentCollection->getPreparedStatement()->query);

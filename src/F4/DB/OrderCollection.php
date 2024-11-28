@@ -24,32 +24,30 @@ use function mb_strtoupper;
 class OrderCollection extends FragmentCollection
 {
     protected const string GLUE = ', ';
-    public function __construct(...$arguments) {
+    public function __construct(...$arguments)
+    {
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression) {
-        if(is_array($expression)) {
-            foreach($expression as $key=>$value) {
-                if(is_numeric($key)) {
+    protected function addExpression(mixed $expression): void
+    {
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                if (is_numeric($key)) {
                     $this->addExpression($value);
-                }
-                elseif(is_scalar($value) && ((mb_trim(mb_strtoupper($value)) === 'ASC') || (mb_trim(mb_strtoupper($value)) === 'DESC'))) {
-                    $query = match($quoted = new SimpleReference($key)->delimitedIdentifier) {
+                } elseif (is_scalar($value) && ((mb_trim(mb_strtoupper($value)) === 'ASC') || (mb_trim(mb_strtoupper($value)) === 'DESC'))) {
+                    $query = match ($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                         null => sprintf('%s %s', $key, mb_trim(mb_strtoupper($value))),
                         default => sprintf('%s %s', $quoted, mb_trim(mb_strtoupper($value)))
                     };
                     $this->append(new Fragment($query));
-                }
-                else {
+                } else {
                     throw new InvalidArgumentException("Order epxression must be an array in the form 'field_name'=>'asc' or 'field_name'=>'desc'");
                 }
             }
-        }
-        elseif($expression instanceof FragmentInterface) {
+        } elseif ($expression instanceof FragmentInterface) {
             $this->append($expression);
-        }
-        else {
+        } else {
             throw new InvalidArgumentException("Order epxression must be an array in the form 'field_name'=>'asc' or 'field_name'=>'desc'");
         }
     }

@@ -10,7 +10,7 @@ use F4\Core\Exception\Exception;
 class HttpException extends Exception
 {
     protected $code = 500;
-    public const PHRASES = [
+    public const array PHRASES = [
         100 => 'Continue', 101 => 'Switching Protocols', 102 => 'Processing',
         200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information', 204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content', 207 => 'Multi-status', 208 => 'Already Reported',
         300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found', 303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 306 => 'Switch Proxy', 307 => 'Temporary Redirect',
@@ -18,8 +18,9 @@ class HttpException extends Exception
         500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway', 503 => 'Service Unavailable', 504 => 'Gateway Time-out', 505 => 'HTTP Version not supported', 506 => 'Variant Also Negotiates', 507 => 'Insufficient Storage', 508 => 'Loop Detected', 511 => 'Network Authentication Required',
     ];
     protected $message = 'Internal Server Error';
-    public function __construct($message = null, $code = null) {
+    public function __construct(string $message, ?int $code = null) {
         if($code < 400) {
+            
             throw new ErrorException('HTTP error code must be 400 or higher');
         }
         parent::__construct($message, $code);

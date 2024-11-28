@@ -24,7 +24,7 @@ class MockRequest extends Request {
             'REQUEST_METHOD' => $requestMethod,
             'REQUEST_URI' => "{$requestPath}?{$queryString}",
             'QUERY_STRING' => $queryString,
-        ], [], [], $queryParams ?? [], null, [], null));
+        ], [], [], $queryParams, null, [], null));
     }
 
 }

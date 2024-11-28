@@ -113,7 +113,7 @@ class Fragment implements FragmentInterface
         $unpackedQuery = Preg::replaceCallback("/({$regExpPattern})/u", function ($matches) use (&$parameters, &$unpackedParameters) {
             $pattern = $matches[1];
             if ($pattern === self::COMMA_PARAMETER_PLACEHOLDER) {
-                return implode(',', array_map(function($value) use (&$parameters, &$unpackedParameters) {
+                return implode(',', array_map(function($value) use (&$unpackedParameters) {
                     $unpackedParameters[] = $value;
                     return self::SINGLE_PARAMETER_PLACEHOLDER;
                 }, array_shift($parameters)));

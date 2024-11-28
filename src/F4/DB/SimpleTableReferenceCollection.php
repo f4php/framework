@@ -26,7 +26,7 @@ class SimpleTableReferenceCollection extends FragmentCollection
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression) {
+    protected function addExpression(mixed $expression): void {
         if(is_array($expression)) {
             foreach($expression as $key=>$value) {
                 if(is_numeric($key)) {
@@ -41,7 +41,7 @@ class SimpleTableReferenceCollection extends FragmentCollection
             $this->append($expression);
         }
         else {
-            $query = match($quoted = new TableReference((string)$expression)->delimitedIdentifier) {
+            $query = match($quoted = (new TableReference((string)$expression))->delimitedIdentifier) {
                 null => (string)$expression,
                 default => $quoted
             };

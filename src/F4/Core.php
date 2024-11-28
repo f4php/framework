@@ -131,7 +131,7 @@ class Core implements CoreApiInterface
         if (false === \mb_regex_encoding(encoding: Config::RESPONSE_CHARSET)) {
             throw new ErrorException(message: 'failed to set regex character encoding');
         }
-        if (Config::TIMEZONE) {
+        if (!empty(Config::TIMEZONE)) {
             $this->setTimezone(timezone: Config::TIMEZONE);
         }
     }

@@ -29,7 +29,7 @@ class FromIniFile extends ConfigAttribute
         }
     }
 
-    public function setPath($path): void
+    public function setPath(string $path): void
     {
         $this->path = $path;
     }

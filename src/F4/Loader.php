@@ -21,6 +21,11 @@ use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PsrPrinter;
 use Nette\PhpGenerator\Constant;
 
+use function json_decode;
+use function file_get_contents;
+use function file_exists;
+use function mb_substr;
+
 class Loader
 {
 
@@ -28,25 +33,26 @@ class Loader
 
     static private string $path = __DIR__ . '/../../'; // project root, should be replaced with application project root via ::setPath()
 
-    public static function setPath($path): void
+    public static function setPath(string $path): void
     {
-        $path .= \mb_substr(string: $path, start: -1) == '/' ? '' : '/';
+        $path .= mb_substr(string: $path, start: -1) == '/' ? '' : '/';
         self::$path = $path;
     }
-
     public static function getEnvironments(): array
     {
-        $composerConfiguration = \json_decode(json: \file_get_contents(filename: self::$path . "/composer.json"), associative: true, flags: JSON_THROW_ON_ERROR);
-        return $composerConfiguration['extra']['f4']['environments'] ?? [];
+        if(!$fileContents = file_get_contents(filename: self::$path . "/composer.json")) {
+            throw new ErrorException('Faile to locate composer.json file');
+        }
+        $composerConfiguration = json_decode(json: $fileContents, associative: true, flags: JSON_THROW_ON_ERROR);
+        return $composerConfiguration['extra']['f4']['environments'] ?? [] ?: [];
     }
-
     public static function loadEnvironmentConfig(array $environments = self::DEFAULT_ENVIRONMENTS): void
     {
         $configuredEnvironments = static::getEnvironments();
         foreach ($environments as $environment) {
             if (isset($configuredEnvironments[$environment])) {
                 $filename = $configuredEnvironments[$environment];
-                if ($filename && \file_exists(filename: self::$path . $filename)) {
+                if ($filename && file_exists(filename: self::$path . $filename)) {
                     require_once self::$path . $filename;
                     return;
                 }
@@ -54,12 +60,10 @@ class Loader
         }
         throw new ErrorException(message: 'cannot load configuration file');
     }
-
     protected static function stripSensitiveDataFromArrayValue(ReflectionClassConstant &$reflectionConstant): void
     {
-        ;
+        // todo
     }
-
     public static function generateConfigurationFile(string $templateClassName = \F4\Config::class, ?string $comment = null, string $targetNamespace = __NAMESPACE__, string $targetClassName = 'Config', bool $stripSensitiveData = true): string
     {
         $file = new PhpFile();
@@ -76,8 +80,9 @@ class Loader
                 if ($reflectionClassConstant->getModifiers() === ReflectionClassConstant::IS_PUBLIC) {
                     $configConstant = new Constant($reflectionClassConstant->getName());
                     $configConstant->setPublic();
+                    // todo implement better reflectiontype once the docs are updated
                     if ($reflectionClassConstant->hasType()) {
-                        $configConstant->setType(($reflectionClassConstant->getType()->allowsNull() ? '?' : '') . $reflectionClassConstant->getType()->getName());
+                        $configConstant->setType(($reflectionClassConstant->getType()->allowsNull() ? 'null|' : '') . $reflectionClassConstant->getType()->getName());
                     }
                     $constantAttributes = [];
                     $constantComments = [];

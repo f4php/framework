@@ -29,7 +29,7 @@ class SelectExpressionCollection extends FragmentCollection
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression) {
+    protected function addExpression(mixed $expression): void {
         if(is_array($expression)) {
             foreach($expression as $key=>$value) {
                 if(is_numeric($key)) {
@@ -37,21 +37,21 @@ class SelectExpressionCollection extends FragmentCollection
                 }
                 else {
                     if(is_scalar($value)) {
-                        $query = match($quoted = new SimpleReference($key)->delimitedIdentifier) {
+                        $query = match($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('{#} AS %s', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
                     }
                     elseif(is_array($value)) {
-                        $query = match($quoted = new SimpleReference($key)->delimitedIdentifier) {
+                        $query = match($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('({#,...#}) AS %s', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
                     }
                     elseif($value instanceof FragmentInterface) {
-                        $query = match($quoted = new SimpleReference($key)->delimitedIdentifier) {
+                        $query = match($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('({#::#}) AS %s', $quoted)
                         };
@@ -64,7 +64,7 @@ class SelectExpressionCollection extends FragmentCollection
             $this->append($expression);
         }
         else {
-            $query = match($quoted = new ColumnReferenceWithAlias((string)$expression)->delimitedIdentifier) {
+            $query = match($quoted = (new ColumnReferenceWithAlias((string)$expression))->delimitedIdentifier) {
                 null => (string)$expression,
                 default => $quoted
             };

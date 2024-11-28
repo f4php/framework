@@ -16,6 +16,9 @@ use F4\Core\Route;
 
 use F4\Core\RouterInterface;
 
+use function array_reduce;
+use function count;
+
 class Router implements RouterInterface
 {
     use ExceptionHandlerTrait;
@@ -40,7 +43,7 @@ class Router implements RouterInterface
         });
     }
     protected function getMatchesUsingPolicy(RequestInterface $request, ResponseInterface $response, callable $policyCheckFunction): array {
-        $matchingGroupsData = \array_reduce($this->routeGroups, function ($result, RouteGroup $routeGroup) use ($request, $response) {
+        $matchingGroupsData = array_reduce($this->routeGroups, function ($result, RouteGroup $routeGroup) use ($request, $response) {
             return match($routes = $routeGroup->getMatchingRoutes(request: $request, response: $response)) {
                 [] => $result,
                 default => [...$result, [
@@ -66,7 +69,7 @@ class Router implements RouterInterface
          * At most one RouteGroup and at most one Route must match per Request
          */
         $policyCheckFunction = function(array $matchingGroupsData): bool {
-            return (\count($matchingGroupsData ?? []) <= 1) && (\count($matchingGroupsData[0]['routes'] ?? []) <= 1);
+            return (count($matchingGroupsData) <= 1) && (count($matchingGroupsData[0]['routes'] ?? []) <= 1);
         };
         [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
         try {

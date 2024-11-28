@@ -26,7 +26,7 @@ class Json extends ResponseEmitter implements ResponseEmitterInterface
                 'type' => get_class($exception),
                 'code' => $code,
             ];
-            if(Config::DEBUG_MODE) {
+            if(Config::DEBUG_MODE === true) {
                 $data['backtrace'] = $exception->getTrace();
             }
             $response = $response->withStatus($code, HttpException::PHRASES[$code] ?? 'Internal Server Error');

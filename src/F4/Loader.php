@@ -9,6 +9,8 @@ use ErrorException;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionClassConstant;
+use ReflectionNamedType;
+use ReflectionUnionType;
 
 use F4\AbstractConfig;
 use F4\Config\FromEnvironmentVariable;
@@ -31,7 +33,7 @@ class Loader
 
     public const array DEFAULT_ENVIRONMENTS = ['local', 'default'];
 
-    static private string $path = __DIR__ . '/../../'; // project root, should be replaced with application project root via ::setPath()
+    static private string $path = __DIR__ . '/../../'; // project root, should be updated with application project root via ::setPath()
 
     public static function setPath(string $path): void
     {
@@ -60,10 +62,6 @@ class Loader
         }
         throw new ErrorException(message: 'cannot load configuration file');
     }
-    protected static function stripSensitiveDataFromArrayValue(ReflectionClassConstant &$reflectionConstant): void
-    {
-        // todo
-    }
     public static function generateConfigurationFile(string $templateClassName = \F4\Config::class, ?string $comment = null, string $targetNamespace = __NAMESPACE__, string $targetClassName = 'Config', bool $stripSensitiveData = true): string
     {
         $file = new PhpFile();
@@ -78,11 +76,14 @@ class Loader
         if ($reflectionClassConstants = $reflectionClass->getReflectionConstants()) {
             foreach ($reflectionClassConstants as $reflectionClassConstant) {
                 if ($reflectionClassConstant->getModifiers() === ReflectionClassConstant::IS_PUBLIC) {
-                    $configConstant = new Constant($reflectionClassConstant->getName());
+                    $configConstantName = $reflectionClassConstant->getName();
+                    $configConstant = new Constant($configConstantName);
                     $configConstant->setPublic();
-                    // todo implement better reflectiontype once the docs are updated
                     if ($reflectionClassConstant->hasType()) {
-                        $configConstant->setType(($reflectionClassConstant->getType()->allowsNull() ? 'null|' : '') . $reflectionClassConstant->getType()->getName());
+                        match(($type = $reflectionClassConstant->getType()) instanceof ReflectionNamedType) {
+                            true => $configConstant->setType(($type->allowsNull()?'?':'').$type->getName()),
+                            default => throw new ErrorException("Class constant {$configConstantName} uses an unsupported type")
+                        };
                     }
                     $constantAttributes = [];
                     $constantComments = [];
@@ -131,6 +132,15 @@ class Loader
             }
         }
         return (new PsrPrinter)->printFile($file);
+    }
+
+    public static function getAssetsManifest(): array
+    {
+        $filename = self::$path.'/public/assets/.vite/manifest.json';
+        if(!file_exists($filename)) {
+            throw new ErrorException('Cannot locate manifest file, did you forget to run `npm run build` in project root?');
+        }
+        return json_decode(json: file_get_contents(filename: $filename), associative: true, flags: JSON_THROW_ON_ERROR);
     }
 
 }

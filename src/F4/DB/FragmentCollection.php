@@ -63,7 +63,7 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
         $this->name = $name;
         return $this;
     }
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -75,10 +75,10 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
         );
         return $fragment->getPreparedStatement($enumeratorFunction);
     }
-    public function findFragmentByName(string $name): ?FragmentInterface
+    public function findFragmentCollectionByName(string $name): ?FragmentCollectionInterface
     {
-        $fragment = array_find($this->fragments, function(FragmentInterface $fragment) use ($name) {
-            return $fragment->getName() === $name;
+        $fragment = array_find($this->getFragments(), function(FragmentInterface $fragment) use ($name) {
+            return ($fragment instanceof FragmentCollection) && ($fragment->getName() === $name);
         });
         return $fragment;
     }

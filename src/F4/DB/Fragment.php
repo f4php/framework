@@ -34,6 +34,7 @@ class Fragment implements FragmentInterface
 {
     protected string $query;
     protected array $parameters = [];
+    protected ?string $name = null;
     public const string SINGLE_PARAMETER_PLACEHOLDER = '{#}';
     public const string COMMA_PARAMETER_PLACEHOLDER = '{#,...#}';
     public const string SUBQUERY_PARAMETER_PLACEHOLDER = '{#::#}';
@@ -64,13 +65,22 @@ class Fragment implements FragmentInterface
         $this->parameters = $parameters;
         return $this;
     }
+    public function getQuery(): string
+    {
+        return $this->query;
+    }
     public function getParameters(): array
     {
         return $this->parameters;
     }
-    public function getQuery(): string
+    public function setName(string $name): static
     {
-        return $this->query;
+        $this->name = $name;
+        return $this;
+    }
+    public function getName(): string
+    {
+        return $this->name;
     }
     public function getPreparedStatement(?callable $enumeratorCallback = null): PreparedStatement {
         /**

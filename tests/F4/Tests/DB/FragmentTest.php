@@ -10,6 +10,12 @@ use InvalidArgumentException;
 
 final class FragmentTest extends TestCase
 {
+    public function testNames(): void
+    {
+        $fragment = new Fragment();
+        $fragment->setName('test_name');
+        $this->assertSame('test_name', $fragment->getName());
+    }
     public function testParametersBasics(): void
     {
         $fragment = new Fragment();

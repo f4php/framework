@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use F4\DB\FragmentInterface;
 use F4\DB\PreparedStatement;
 
+use function array_find;
 use function array_map;
 use function array_reduce;
 use function implode;
@@ -24,7 +25,7 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
 {
     protected const string GLUE = ' ';
     protected array $fragments = [];
-
+    protected ?string $name = null;
     public function __construct(...$arguments)
     {
         $this->addExpression($arguments);
@@ -53,6 +54,19 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
             return [...$result, ...$fragment->getParameters()];
         }, []);
     }
+    public function setQuery(string $query, array $parameters = []): static
+    {
+        throw new InvalidArgumentException('Setting collection query and parameters directly is not supported, use append() instead');
+    }
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
+    public function getName(): string
+    {
+        return $this->name;
+    }
     public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement
     {
         $fragment = new Fragment(
@@ -61,9 +75,12 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
         );
         return $fragment->getPreparedStatement($enumeratorFunction);
     }
-    public function setQuery(string $query, array $parameters = []): static
+    public function findFragmentByName(string $name): ?FragmentInterface
     {
-        throw new InvalidArgumentException('Setting collection query and parameters directly is not supported, use append() instead');
+        $fragment = array_find($this->fragments, function(FragmentInterface $fragment) use ($name) {
+            return $fragment->getName() === $name;
+        });
+        return $fragment;
     }
     protected function addExpression(mixed $expression): void
     {

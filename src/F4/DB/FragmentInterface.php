@@ -11,6 +11,8 @@ interface FragmentInterface
     public function setQuery(string $query, array $parameters = []): static;
     public function getParameters(): array;
     public function getQuery(): string;
+    public function setName(string $name): static;
+    public function getName(): string;
     public function getPreparedStatement(?callable $enumeratorCallback = null): PreparedStatement;
 }
 

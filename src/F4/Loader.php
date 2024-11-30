@@ -24,6 +24,7 @@ use Nette\PhpGenerator\PsrPrinter;
 use Nette\PhpGenerator\Constant;
 
 use function json_decode;
+use function is_array;
 use function file_get_contents;
 use function file_exists;
 use function mb_substr;
@@ -34,11 +35,21 @@ class Loader
     public const array DEFAULT_ENVIRONMENTS = ['local', 'default'];
 
     static private string $path = __DIR__ . '/../../'; // project root, should be updated with application project root via ::setPath()
+    static private string $assetPath = '/assets/';
 
     public static function setPath(string $path): void
     {
-        $path .= mb_substr(string: $path, start: -1) == '/' ? '' : '/';
+        $path .= mb_substr(string: $path, start: -1) === '/' ? '' : '/';
         self::$path = $path;
+    }
+    public static function setAssetPath(string $path): void
+    {
+        $path .= mb_substr(string: $path, start: -1) === '/' ? '' : '/';
+        self::$assetPath = $path;
+    }
+    public static function getAssetPath(): string
+    {
+        return '/public'.self::$assetPath;
     }
     public static function getEnvironments(): array
     {
@@ -80,8 +91,8 @@ class Loader
                     $configConstant = new Constant($configConstantName);
                     $configConstant->setPublic();
                     if ($reflectionClassConstant->hasType()) {
-                        match(($type = $reflectionClassConstant->getType()) instanceof ReflectionNamedType) {
-                            true => $configConstant->setType(($type->allowsNull()?'?':'').$type->getName()),
+                        match(($cofigConstantType = $reflectionClassConstant->getType()) instanceof ReflectionNamedType) {
+                            true => $configConstant->setType(($cofigConstantType->allowsNull()?'?':'').$cofigConstantType->getName()),
                             default => throw new ErrorException("Class constant {$configConstantName} uses an unsupported type")
                         };
                     }
@@ -91,11 +102,11 @@ class Loader
                     if ($reflectionClassConstant->getAttributes(name: SensitiveParameter::class, flags: ReflectionAttribute::IS_INSTANCEOF)) {
                         $constantAttributes[SensitiveParameter::class] = [];
                         if ($stripSensitiveData) {
-                            $constantValue = null;
-                            $constantComments[] = 'Default value was stripped as sensitive';
+                            $constantValue = $cofigConstantType->allowsNull()?null:'';
+                            $constantComments[] = "Default value for {$configConstantName} was stripped as sensitive";
                         }
                     }
-                    if ($stripSensitiveData && \is_array(value: $constantValue) && ($reflectionAttributesSensitiveKey = $reflectionClassConstant->getAttributes(name: SensitiveParameterKey::class, flags: ReflectionAttribute::IS_INSTANCEOF))) {
+                    if ($stripSensitiveData && is_array(value: $constantValue) && ($reflectionAttributesSensitiveKey = $reflectionClassConstant->getAttributes(name: SensitiveParameterKey::class, flags: ReflectionAttribute::IS_INSTANCEOF))) {
                         foreach ($reflectionAttributesSensitiveKey as $reflectionAttribute) {
                             $attributeInstance = $reflectionAttribute->newInstance();
                             $sensitiveKey = $attributeInstance->getValue();
@@ -136,7 +147,7 @@ class Loader
 
     public static function getAssetsManifest(): array
     {
-        $filename = self::$path.'/public/assets/.vite/manifest.json';
+        $filename = self::$path.'/public'.self::$assetPath.'.vite/manifest.json';
         if(!file_exists($filename)) {
             throw new ErrorException('Cannot locate manifest file, did you forget to run `npm run build` in project root?');
         }

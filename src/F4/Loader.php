@@ -49,7 +49,7 @@ class Loader
     }
     public static function getAssetPath(): string
     {
-        return '/public'.self::$assetPath;
+        return self::$assetPath;
     }
     public static function getEnvironments(): array
     {
@@ -64,14 +64,14 @@ class Loader
         $configuredEnvironments = static::getEnvironments();
         foreach ($environments as $environment) {
             if (isset($configuredEnvironments[$environment])) {
-                $filename = $configuredEnvironments[$environment];
+                $filename = $configuredEnvironments[$environment]['config'] ?? null;
                 if ($filename && file_exists(filename: self::$path . $filename)) {
                     require_once self::$path . $filename;
                     return;
                 }
             }
         }
-        throw new ErrorException(message: 'cannot load configuration file');
+        throw new ErrorException(message: 'Cannot load configuration file');
     }
     public static function generateConfigurationFile(string $templateClassName = \F4\Config::class, ?string $comment = null, string $targetNamespace = __NAMESPACE__, string $targetClassName = 'Config', bool $stripSensitiveData = true): string
     {
@@ -145,9 +145,9 @@ class Loader
         return (new PsrPrinter)->printFile($file);
     }
 
-    public static function getAssetsManifest(): array
+    public static function getAssetsManifest(?string $path=null): array
     {
-        $filename = self::$path.'/public'.self::$assetPath.'.vite/manifest.json';
+        $filename = self::$path.'/public'.self::$assetPath.($path??'.vite/manifest.json');
         if(!file_exists($filename)) {
             throw new ErrorException('Cannot locate manifest file, did you forget to run `npm run build` in project root?');
         }

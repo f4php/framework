@@ -188,6 +188,13 @@ class Route implements RouteInterface
     {
         return $this->requestPathRegExp;
     }
+    public function getRequestParameters(RequestInterface $request): array
+    {
+        $pathArguments = $this->extractPathArgumentsFromRequest(request: $request) ?? [];
+        $queryArguments = $request->getQueryParams() ?? [];
+        $bodyArguments = $request->getParsedBody() ?? [];
+        return [...$bodyArguments, ...$queryArguments, ...$pathArguments];
+    }
     public function checkMatch(RequestInterface $request, ResponseInterface $response): bool
     {
         $requestMethod = $request->getMethod();
@@ -201,10 +208,10 @@ class Route implements RouteInterface
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed
     {
         $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
-        $pathArguments = $this->extractPathArgumentsFromRequest(request: $request);
-        $queryArguments = $request->getQueryParams();
-        $serverArguments = $request->getServerParams();
-        $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: [...$serverArguments, ...$queryArguments, ...$pathArguments]);
+        $parameters = $this->getRequestParameters($request);
+        $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: $parameters);
+        $request->setParameters($parameters);
+        $request->setValidatedParameters($arguments);
         try {
             if(isset($this->requestMiddleware)) {
                 $request = match(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {

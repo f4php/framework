@@ -15,6 +15,9 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 
+use function array_keys;
+use function in_array;
+
 /**
  * 
  * Directly extending Nyholm\Psr7\Response is heavily discouraged by the developers of Nyholm\* package
@@ -53,7 +56,7 @@ class Response implements ResponseInterface
     }
     public function setResponseFormat(string $format): static
     {
-        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
+        if (!in_array(needle: $format, haystack: array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
             throw new ErrorException("format {$format} not supported");
         }
         $this->responseFormat = $format;
@@ -66,7 +69,7 @@ class Response implements ResponseInterface
     public function setTemplate(string $template, ?string $format = null): static
     {
         $format ??= $this->responseFormat;
-        if (!\in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
+        if (!in_array(needle: $format, haystack: array_keys(Config::RESPONSE_EMITTERS)) || empty(Config::RESPONSE_EMITTERS[$format])) {
             throw new ErrorException("format {$format} not supported");
         }
         $this->templates[$format] = $template;
@@ -90,7 +93,7 @@ class Response implements ResponseInterface
     }
     public function getException(): ?HttpException
     {
-        return match(isset($this->exception)) {
+        return match (isset($this->exception)) {
             true => $this->exception,
             default => null
         };
@@ -104,7 +107,6 @@ class Response implements ResponseInterface
     {
         return $this->data;
     }
-
     // Wrappers around PSR
 
     // MessageInterface
@@ -175,5 +177,19 @@ class Response implements ResponseInterface
     public function getReasonPhrase(): string
     {
         return $this->psrResponse->getReasonPhrase();
+    }
+    public function asString(): string
+    {
+        return (string) $this->data;
+    }
+    public function asArray(): array
+    {
+        return [
+            'headers' => $this->getHeaders(),
+            'data' => $this->data,
+            'meta' => $this->metaData,
+            'exception' => $this->exception ?? null,
+            'responseFormat' => $this->responseFormat,
+        ];
     }
 }

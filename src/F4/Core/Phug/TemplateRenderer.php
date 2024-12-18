@@ -6,32 +6,48 @@ namespace F4\Core\Phug;
 
 use F4\Config;
 
-use Phug\Renderer;
+use F4\Core\Phug\{ViteBundleModule, StripViteResourceModule};
+use Phug;
 use Phug\Component\ComponentExtension;
+use Phug\Optimizer;
 
-class TemplateRenderer extends Renderer 
+use function sys_get_temp_dir;
+
+class TemplateRenderer
 {
 
-    public function __construct(array $options = [])
+    public function __construct(protected $options = [])
     {
         // workaround for undefined stdout
         if (!defined(constant_name: 'STDOUT')) {
             define(constant_name: 'STDOUT', value: fopen(filename: 'php://stdout', mode: 'wb'));
         }
-        parent::__construct(options: [...[
-            'debug'                 => Config::DEBUG_MODE,
-            'exit_on_error'         => Config::DEBUG_MODE,
-            'pretty'                => false,
-            'cache_dir'             => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : (Config::TEMPLATE_CACHE_PATH ?: sys_get_temp_dir()),
-            'cache_lifetime'        => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : Config::TEMPLATE_CACHE_LIFETIME,
-            'paths'                 => self::getPaths()
-        ], ...$options]);
-        ComponentExtension::enable(renderer: $this);
+        Phug::setOptions(options: [
+            ...[
+                'debug' => Config::DEBUG_MODE,
+                'exit_on_error' => Config::DEBUG_MODE,
+                'cache_dir' => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : (Config::TEMPLATE_CACHE_PATH ?: sys_get_temp_dir()),
+                'up_to_date_check' => Config::DEBUG_MODE,
+                'paths' => self::getPaths(),
+                'enable_profiler' => false,
+                'modules' => [
+                    // Order is important
+                    ViteBundleModule::class,
+                    StripViteResourceModule::class,
+                ]
+            ],
+            ...$options
+        ]);
+        ComponentExtension::enable();
     }
 
-    public function renderTemplate(string $file, array $args = []): string
+    public function displayFile(string $file, array $args = []): void
     {
-        return $this->renderFile(path: $file, parameters: $args);
+        if (Config::DEBUG_MODE === true) {
+            Phug::displayFile(path: $file, parameters: $args);
+        } else {
+            Optimizer::call('displayFile', [$file, $args]);
+        }
     }
 
     protected static function getPaths(?array $paths = null): array

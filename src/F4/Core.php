@@ -35,6 +35,22 @@ use F4\Core\Route;
 use F4\Core\RouteGroup;
 use F4\Core\RouterInterface;
 
+use function class_exists;
+use function date_default_timezone_set;
+use function error_reporting;
+use function get_class;
+use function is_a;
+use function is_object;
+use function mb_internal_encoding;
+use function mb_regex_encoding;
+use function ob_end_flush;
+use function ob_start;
+use function php_sapi_name;
+use function restore_error_handler;
+use function restore_exception_handler;
+use function set_error_handler;
+use function set_exception_handler;
+
 class Core implements CoreApiInterface
 {
     use CanExtractFormatFromExtensionTrait;
@@ -114,21 +130,21 @@ class Core implements CoreApiInterface
             $this->enableOutputBufferCapture();
         }
         if(!$skipErrorHandling) {
-            \set_exception_handler(callback: function (Throwable $exception): void {
+            set_exception_handler(callback: function (Throwable $exception): void {
                 $format = $this->getResponse() ? $this->getResponseFormat() : Config::DEFAULT_RESPONSE_FORMAT;
                 ExceptionRenderer::handleException(exception: $exception, format: $format);
             });
-            \set_error_handler(callback: function ($errno, $errstr, $errfile, $errline): bool {
-                if (\error_reporting() === 0) {
+            set_error_handler(callback: function ($errno, $errstr, $errfile, $errline): bool {
+                if (error_reporting() === 0) {
                     return true; // originating statement used "@" to disable error checking
                 }
                 throw new ErrorException(message: $errstr, code: 500, severity: $errno, filename: $errfile, line: $errline);
             }, error_levels: E_ALL);
         }
-        if (false === \mb_internal_encoding(encoding: Config::RESPONSE_CHARSET)) {
+        if (false === mb_internal_encoding(encoding: Config::RESPONSE_CHARSET)) {
             throw new ErrorException(message: 'failed to set internal character encoding');
         }
-        if (false === \mb_regex_encoding(encoding: Config::RESPONSE_CHARSET)) {
+        if (false === mb_regex_encoding(encoding: Config::RESPONSE_CHARSET)) {
             throw new ErrorException(message: 'failed to set regex character encoding');
         }
         if (!empty(Config::TIMEZONE)) {
@@ -142,7 +158,7 @@ class Core implements CoreApiInterface
                 throw new ErrorException(message: 'failed to locate debug format configuration for {$debugExtension}');
             }
             $this->setResponseFormat(format: $debugFormat);
-            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$debugFormat]['class']) || !\class_exists(class: Config::RESPONSE_EMITTERS[$debugFormat]['class'], autoload: true)) {
+            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$debugFormat]['class']) || !class_exists(class: Config::RESPONSE_EMITTERS[$debugFormat]['class'], autoload: true)) {
                 true => throw new ErrorException(message: "failed to locate emitter for '{$debugFormat}'"),
                 default => new (Config::RESPONSE_EMITTERS[$debugFormat]['class'])($this)
             };
@@ -151,20 +167,20 @@ class Core implements CoreApiInterface
                 null => Config::DEFAULT_RESPONSE_FORMAT,
                 default => $this->getResponseFormatFromExtension(extension: $extension)
             });
-            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !\class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
+            $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
                 true => throw new ErrorException(message: "failed to locate emitter for '{$format}'"),
                 default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this)
             };
         }
         foreach ($modules as $name => $module) {
-            if (!\is_a(object_or_class: $module, class: ModuleInterface::class, allow_string: true)) {
+            if (!is_a(object_or_class: $module, class: ModuleInterface::class, allow_string: true)) {
                 throw new InvalidArgumentException(message: 'modules must implement ModuleInterface');
             }
-            $module = match (\is_object(value: $module)) {
+            $module = match (is_object(value: $module)) {
                 false => new $module($this->coreApiProxy),
                 default => $module
             };
-            $name = $name ?: \get_class(object: $module);
+            $name = $name ?: get_class(object: $module);
             $this->modules[$name] = $module;
         }
         return $this;
@@ -175,7 +191,7 @@ class Core implements CoreApiInterface
     }
     protected function emitResponseNormally(): void
     {
-        if (\php_sapi_name() === 'cli') {
+        if (php_sapi_name() === 'cli') {
             $this->setResponseFormat(format: Core\ResponseEmitter\Cli::INTERNAL_MIME_TYPE);
         }
         if (empty(Config::RESPONSE_EMITTERS[$this->getResponseFormat()])) {
@@ -191,21 +207,21 @@ class Core implements CoreApiInterface
             $this->flushOutputBufferCapture();
         }
         if(!$skipErrorHandling) {
-            \restore_error_handler();
-            \restore_exception_handler();
+            restore_error_handler();
+            restore_exception_handler();
         }
     }
 
     protected function enableOutputBufferCapture(): void
     {
-        if (false === \ob_start()) {
+        if (false === ob_start()) {
             throw new ErrorException(message: 'failed to enable output buffer cache');
         }
     }
 
     protected function flushOutputBufferCapture(): void
     {
-        if (false === \ob_end_flush()) {
+        if (false === ob_end_flush()) {
             throw new ErrorException(message: 'failed to flush output buffer cache');
         }
     }
@@ -303,7 +319,7 @@ class Core implements CoreApiInterface
     }
     public function setTimezone(string $timezone): static
     {
-        \date_default_timezone_set(timezoneId: $timezone);
+        date_default_timezone_set(timezoneId: $timezone);
         return $this;
     }
     public function emit(?ResponseInterface $response = null): bool

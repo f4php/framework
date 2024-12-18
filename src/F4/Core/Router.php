@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use ErrorException;
+use InvalidArgumentException;
 use Throwable;
 
 use F4\Core\Exception\HttpException;
@@ -17,6 +18,7 @@ use F4\Core\Route;
 use F4\Core\RouterInterface;
 
 use function array_reduce;
+use function is_callable;
 use function count;
 
 class Router implements RouterInterface
@@ -25,12 +27,23 @@ class Router implements RouterInterface
     use MiddlewareAwareTrait;
 
     protected array $routeGroups = [];
+    protected mixed $policyCheckFunction {
+        set(mixed $function) {
+            if(!is_callable(value: $function)) {
+                throw new InvalidArgumentException(message: "Policy function must be callable");
+            }
+            $this->policyCheckFunction = $function;
+        }
+    }
 
-    public function __construct() {
+    public function __construct(?callable $policyCheckFunction = null) {
         /**
          * This is the default group, all ungrouped routes end up here
          */
         $this->routeGroups[0] = new RouteGroup();
+        $this->policyCheckFunction = $policyCheckFunction ?: function(array $matchingGroupsData): bool {
+            return (count($matchingGroupsData) <= 1) && (count($matchingGroupsData[0]['routes'] ?? []) <= 1);
+        };
     }
     public function addRouteGroup(RouteGroup $routeGroup): RouteGroup {
         return $this->routeGroups[] = $routeGroup;
@@ -68,10 +81,7 @@ class Router implements RouterInterface
         /**
          * At most one RouteGroup and at most one Route must match per Request
          */
-        $policyCheckFunction = function(array $matchingGroupsData): bool {
-            return (count($matchingGroupsData) <= 1) && (count($matchingGroupsData[0]['routes'] ?? []) <= 1);
-        };
-        [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
+        [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $this->policyCheckFunction);
         try {
             try {
                 if(isset($this->requestMiddleware)) {
@@ -83,7 +93,7 @@ class Router implements RouterInterface
                 /**
                  * Need to match again in case the Request was altered by RequestMiddleware
                  */
-                [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $policyCheckFunction);
+                [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $this->policyCheckFunction);
                 if ($matchingRouteGroup) {
                     $result = $matchingRouteGroup->invoke($request, $response)[0] ?? null;
                     if($template = $matchingRoute->getTemplate($response->getResponseFormat())) {

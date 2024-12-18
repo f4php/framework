@@ -10,7 +10,6 @@ use Composer\Pcre\Preg;
 
 use F4\Config;
 use F4\Core\RequestInterface;
-use F4\Core\StateAwareTrait;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
@@ -18,6 +17,14 @@ use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+
+use function array_filter;
+use function array_keys;
+use function array_map;
+use function array_reduce;
+use function implode;
+use function preg_quote;
+use function sprintf;
 
 /**
  * 
@@ -31,6 +38,8 @@ class Request implements RequestInterface
     protected ?string $extension = null;
     protected ?string $debugExtension = null;
     protected ?string $language = null;
+    protected mixed $parameters = [];
+    protected mixed $validatedParameters = [];
 
     public function __construct(?PsrServerRequestInterface $psrRequest = null)
     {
@@ -50,18 +59,18 @@ class Request implements RequestInterface
     public function initialize() {
         $languages = [Config::DEFAULT_LANGUAGE, ...array_keys(Config::DICTIONARIES)];
         $languagesPattern =
-            \implode(separator: '|', array: \array_map(callback: function ($language): string {
-                return \preg_quote(str: $language, delimiter: '/');
+            implode(separator: '|', array: array_map(callback: function ($language): string {
+                return preg_quote(str: $language, delimiter: '/');
             }, array: $languages));
         $extensions = $this->getAvailableExtensions();
         $extensionsPattern =
-            \implode(separator: '|', array: \array_map(callback: function ($extension): string {
-                return \preg_quote(str: $extension, delimiter: '/');
+            implode(separator: '|', array: array_map(callback: function ($extension): string {
+                return preg_quote(str: $extension, delimiter: '/');
             }, array: $extensions));
         $debugExtensions = $this->getAvailableDebugExtensions();
         $debugExtensionsPattern =
-            \implode(separator: '|', array: \array_map(callback: function ($debugExtension): string {
-                return \preg_quote(str: $debugExtension, delimiter: '/');
+            implode(separator: '|', array: array_map(callback: function ($debugExtension): string {
+                return preg_quote(str: $debugExtension, delimiter: '/');
             }, array: $debugExtensions));
         if (!Preg::isMatch(pattern: "/(?<path>\/.*?)(?<extension>{$extensionsPattern})?(\((?<language>{$languagesPattern})\))?(?<debugExtension>{$debugExtensionsPattern})?$/Anu", subject: $this->getUri()->getPath(), matches: $matches)) {
             throw new ErrorException(message: 'request-uri-cannot-be-parsed');
@@ -73,13 +82,17 @@ class Request implements RequestInterface
             true => $matches['debugExtension'],
             default => null
         };
+        $this->setParameters([
+            ...$this->getQueryParams() ?? [],
+            ...$this->getParsedBody() ?? []
+        ]);
     }
     static public function fromPsr(psrServerRequestInterface $psrRequest): static {
         return new self(psrRequest: $psrRequest);
     }
     protected function getAvailableExtensions(): array
     {
-        return \array_reduce(
+        return array_reduce(
             array: Config::RESPONSE_EMITTERS,
             callback: function ($extensions, $emitterConfiguration): array {
                 return [...$extensions, ...$emitterConfiguration['extensions'] ?? []];
@@ -89,9 +102,9 @@ class Request implements RequestInterface
     }
     protected function getAvailableDebugExtensions(): array
     {
-        return \array_reduce(
+        return array_reduce(
             array: 
-                \array_filter(
+                array_filter(
                     array: Config::RESPONSE_EMITTERS, 
                     callback: function($emitterConfiguration): bool {
                         return isset($emitterConfiguration['debug-extension']);
@@ -134,7 +147,24 @@ class Request implements RequestInterface
     {
         return $this->psrRequest;
     }
-
+    public function setParameters(array $parameters): static
+    {
+        $this->parameters = $parameters;
+        return $this;
+    }
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+    public function setValidatedParameters(array $parameters): static
+    {
+        $this->validatedParameters = $parameters;
+        return $this;
+    }
+    public function getValidatedParameters(): array
+    {
+        return $this->validatedParameters;
+    }
     // Wrappers around PSR
 
     // MessageInterface
@@ -290,5 +320,17 @@ class Request implements RequestInterface
         $new->setPsrRequest(psrRequest: $this->psrRequest->withoutAttribute($name));
         return $new;
     }
-
+    public function asString(): string {
+        return match($params = $this->getQueryParams()) {
+            [] => sprintf('%s %s', $this->getMethod(), $this->getUri()->getPath()),
+            default => sprintf('%s %s?%s', $this->getMethod(), $this->getUri()->getPath(), http_build_query($this->getQueryParams())),
+        };
+    }
+    public function asArray(): array {
+        return [
+            'method' => $this->getMethod(),
+            'path' => $this->getUri()->getPath(),
+            'parameters' => $this->getQueryParams(),
+        ];
+    }
 }

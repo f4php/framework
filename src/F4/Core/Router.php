@@ -8,6 +8,7 @@ use ErrorException;
 use InvalidArgumentException;
 use Throwable;
 
+use F4\Core\CoreApiInterface;
 use F4\Core\Exception\HttpException;
 use F4\Core\ExceptionHandlerTrait;
 use F4\Core\MiddlewareAwareTrait;
@@ -35,7 +36,6 @@ class Router implements RouterInterface
             $this->policyCheckFunction = $function;
         }
     }
-
     public function __construct(?callable $policyCheckFunction = null) {
         /**
          * This is the default group, all ungrouped routes end up here
@@ -85,26 +85,32 @@ class Router implements RouterInterface
         try {
             try {
                 if(isset($this->requestMiddleware)) {
+                    HookManager::triggerHook(hookName: HookManager::BEFORE_REQUEST_MIDDLEWARE, context: ['request'=>$request]);
                     $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $matchingRoute)) instanceof RequestInterface) { 
                         true => $requestMiddlewareResult,
                         default => $request
                     };
+                    HookManager::triggerHook(hookName: HookManager::AFTER_REQUEST_MIDDLEWARE, context: ['request'=>$request]);
                 }
                 /**
                  * Need to match again in case the Request was altered by RequestMiddleware
                  */
                 [$matchingRouteGroup, $matchingRoute] = $this->getMatchesUsingPolicy($request, $response, $this->policyCheckFunction);
                 if ($matchingRouteGroup) {
+                    HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTING, context: ['route'=>$matchingRoute]);
                     $result = $matchingRouteGroup->invoke($request, $response)[0] ?? null;
                     if($template = $matchingRoute->getTemplate($response->getResponseFormat())) {
                         $response->setTemplate($template);
                     }
+                    HookManager::triggerHook(hookName: HookManager::AFTER_ROUTING, context: ['route'=>$matchingRoute, 'result'=>$result]);
                 }
                 if(isset($this->responseMiddleware)) {
+                    HookManager::triggerHook(hookName: HookManager::BEFORE_RESPONSE_MIDDLEWARE, context: ['response'=>$response]);
                     $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $matchingRoute)) instanceof ResponseInterface) { 
                         true => $responseMiddlewareResult,
                         default => $response
                     };
+                    HookManager::triggerHook(hookName: HookManager::AFTER_RESPONSE_MIDDLEWARE, context: ['response'=>$response]);
                 }
             }
             catch (Throwable $exception) {

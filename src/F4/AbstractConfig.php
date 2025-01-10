@@ -16,11 +16,9 @@ use F4\Core\CoreApiProxy;
 abstract class AbstractConfig
 {
     public const bool DEBUG_MODE = false;
-
-    public const bool DEBUG_EXTENDED_ERROR_OUTPUT = false;
-
+    public const string CORE_DEBUGGER_CLASS = Core\Debugger::class;
+    public const string DEBUG_EXTENSION = '+debug';
     public const bool VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES = true;
-
     public const string DB_HOST = 'localhost';
     public const string DB_CHARSET = 'UTF8';
     public const string DB_PORT = '5432';
@@ -72,8 +70,6 @@ abstract class AbstractConfig
      */
     public const bool STRICT_RESPONSE_FORMAT_MATCHING = false;
 
-    #[SensitiveParameterKey(Core\ResponseEmitter\Debug::INTERNAL_MIME_TYPE)]
-    #[SensitiveParameterKey(Core\ResponseEmitter\DebugRoutes::INTERNAL_MIME_TYPE)]
     public const array RESPONSE_EMITTERS = [
         'text/html' => [
             'extensions' => ['.html', '.htm'],
@@ -83,16 +79,6 @@ abstract class AbstractConfig
             'extensions' => ['.json'],
             'class' => \F4\Core\ResponseEmitter\Json::class,
         ],
-        Core\ResponseEmitter\Debug::INTERNAL_MIME_TYPE => [
-            'extensions' => [],
-            'class' => \F4\Core\ResponseEmitter\Debug::class,
-            'debug-extension' => '+debug',
-        ],
-        Core\ResponseEmitter\DebugRoutes::INTERNAL_MIME_TYPE => [
-            'extensions' => [],
-            'class' => \F4\Core\ResponseEmitter\DebugRoutes::class,
-            'debug-extension' => '+routes',
-        ],
         // this emitter only supports command-line invokation
         Core\ResponseEmitter\Cli::INTERNAL_MIME_TYPE => [
             'extensions' => [],
@@ -101,6 +87,7 @@ abstract class AbstractConfig
         ],
     ];
 
+    public const bool SESSION_ENABLED = true;
     public const string SESSION_COOKIE_NAME = 'F4_SESSION_ID';
     public const ?string SESSION_DOMAIN = null;
     public const ?string SESSION_HANDLER = null;

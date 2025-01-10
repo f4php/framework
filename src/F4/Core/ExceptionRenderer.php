@@ -54,7 +54,7 @@ class ExceptionRenderer
                     'class' => get_class($exception),
                     'message' => $exception->getMessage(),
                 ],
-                'meta' => match(Config::DEBUG_MODE && Config::DEBUG_EXTENDED_ERROR_OUTPUT) {
+                'meta' => match(Config::DEBUG_MODE) {
                     true => [
                         'debug' => true,
                         'source' => $lines,
@@ -71,7 +71,7 @@ class ExceptionRenderer
         } catch (Throwable $e) {
             header(header: "Content-Type: text/plain; charset=" . Config::RESPONSE_CHARSET);
             echo $e->getMessage();
-            if(Config::DEBUG_MODE && Config::DEBUG_EXTENDED_ERROR_OUTPUT) {
+            if(Config::DEBUG_MODE) {
                 echo $e->getTraceAsString();
             }
         }
@@ -86,7 +86,7 @@ class ExceptionRenderer
             'type' => get_class(object: $exception),
             'code' => $exception->getCode()
         ];
-        if (Config::DEBUG_MODE && Config::DEBUG_EXTENDED_ERROR_OUTPUT) {
+        if (Config::DEBUG_MODE) {
             $data['trace'] = $exception->getTrace();
         }
         echo json_encode(value: $data);
@@ -97,7 +97,7 @@ class ExceptionRenderer
         static::sendCommonHttpHeaders(exception: $exception);
         header(header: "Content-Type: text/plain; charset=" . Config::RESPONSE_CHARSET);
         echo get_class(object: $exception) . ": " . $exception->getMessage() . "\n";
-        if (Config::DEBUG_MODE && Config::DEBUG_EXTENDED_ERROR_OUTPUT) {
+        if (Config::DEBUG_MODE) {
             echo $exception->getTraceAsString() . "\n";
         }
         exit();
@@ -105,7 +105,7 @@ class ExceptionRenderer
     public static function asConsoleText(Throwable $exception): never
     {
         echo get_class(object: $exception) . ": " . $exception->getMessage() . "\n";
-        if (Config::DEBUG_MODE && Config::DEBUG_EXTENDED_ERROR_OUTPUT) {
+        if (Config::DEBUG_MODE) {
             echo $exception->getTraceAsString() . "\n";
         }
         exit(1);

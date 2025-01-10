@@ -9,7 +9,7 @@ use F4\Core\RouteGroup;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\RouterInterface;
-use F4\ModuleInterface;
+use F4\Core\HookManagerInterface;
 
 interface CoreApiInterface
 {
@@ -28,9 +28,12 @@ interface CoreApiInterface
     public function on(string $exceptionClassName, callable $handler): static;
     public function setRouter(RouterInterface $router): static;
     public function getRouter(): RouterInterface;
+    public function setDebugger(DebuggerInterface $debugger): static;
+    public function getDebugger(): DebuggerInterface;
+    public function addHook(string $hookName, callable $callback): static;
     public function setRequest(RequestInterface $request): static;
     public function getRequest(): RequestInterface;
     public function setResponse(ResponseInterface $response): static;
     public function getResponse(): ResponseInterface;
-    public function emit(?ResponseInterface $response = null): bool;
+    public function emit(ResponseInterface $response, ?RequestInterface $request = null): bool;
 }

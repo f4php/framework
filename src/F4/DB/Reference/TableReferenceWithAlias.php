@@ -9,7 +9,7 @@ use F4\DB\Reference\SimpleReference;
 
 /**
  * 
- * TableReference is a class used to detect table references and convert them to delimeted identifiers
+ * TableReferenceWithAlias is a class used to detect table references with optional alias and convert them to delimeted identifiers
  * 
  * @package F4\DB
  * @author Dennis Kreminsky <dennis@kreminsky.com>

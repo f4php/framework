@@ -22,6 +22,4 @@ interface ResponseInterface extends PsrResponseInterface
     public function setData(mixed $data): static;
     public function getData(): mixed;
     static public function fromPsr(psrResponseInterface $psrResponse): self;
-    public function asString(): string;
-    public function asArray(): array;
 }

@@ -14,10 +14,7 @@ use F4\ModuleInterface;
 
 class CoreApiProxy implements CoreApiInterface
 {
-    public function __construct(protected Core $core)
-    {
-
-    }
+    public function __construct(protected Core $core) {}
     public function addRoute(Route|string $routeOrPath, ?callable $handler = null): Route
     {
         return $this->core->addRoute(routeOrPath: $routeOrPath, handler: $handler);
@@ -31,14 +28,28 @@ class CoreApiProxy implements CoreApiInterface
         $this->core->setResponseFormat(format: $format);
         return $this;
     }
-    public function setRouter(RouterInterface $router): static
+    public function getDebugger(): DebuggerInterface
     {
-        $this->core->setRouter(router: $router);
+        return $this->core->getDebugger();
+    }
+    public function setDebugger(DebuggerInterface $debugger): static
+    {
+        $this->core->setDebugger(debugger: $debugger);
         return $this;
     }
     public function getRouter(): RouterInterface
     {
         return $this->core->getRouter();
+    }
+    public function setRouter(RouterInterface $router): static
+    {
+        $this->core->setRouter(router: $router);
+        return $this;
+    }
+    public function addHook(string $hookName, callable $callback): static
+    {
+        $this->core->addHook(hookName: $hookName, callback: $callback);
+        return $this;
     }
     public function getResponseFormat(): string
     {
@@ -103,8 +114,8 @@ class CoreApiProxy implements CoreApiInterface
     {
         return $this->core->getResponse();
     }
-    public function emit(?ResponseInterface $response = null): bool
+    public function emit(ResponseInterface $response, ?RequestInterface $request = null): bool
     {
-        return $this->core->emit($response);
+        return $this->core->emit($response, $request);
     }
 }

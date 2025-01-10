@@ -17,10 +17,8 @@ use F4\DB\OrderCollection;
 use F4\DB\Parenthesize;
 use F4\DB\SelectExpressionCollection;
 use F4\DB\SimpleColumnReferenceCollection;
-use F4\DB\SimpleTableReferenceCollection;
 use F4\DB\TableReferenceCollection;
 use F4\DB\WithTableReferenceCollection;
-
 
 use F4\Config;
 
@@ -235,7 +233,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'selectDistinct',
             'update',
             'with',
-            'withRecursive' 
+            'withRecursive'
                 => call_user_func_array(callback: [new self(), $method], args: $arguments),
             default =>
                 throw new BadMethodCallException(message: "Unsupported method {$method}()")

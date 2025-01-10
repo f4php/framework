@@ -5,22 +5,13 @@ declare(strict_types=1);
 namespace F4\Tests;
 use PHPUnit\Framework\TestCase;
 
-use F4\Core;
-use F4\Core\CoreApiInterface;
-use F4\Core\Request;
-use F4\Core\Response;
-use F4\Core\Route;
-use F4\Core\Router;
-use F4\ModuleInterface;
-
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7Server\ServerRequestCreator;
-
+use F4\Tests\Core\MockCore;
 
 final class CoreTest extends TestCase
 {
 
     public function testIncomplete(): void {
+        $mockCore = new MockCore();
         $this->markTestIncomplete(
             'This test has not been implemented yet.',
         );

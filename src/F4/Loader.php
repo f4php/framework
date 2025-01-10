@@ -88,6 +88,7 @@ class Loader
             foreach ($reflectionClassConstants as $reflectionClassConstant) {
                 if ($reflectionClassConstant->getModifiers() === ReflectionClassConstant::IS_PUBLIC) {
                     $configConstantName = $reflectionClassConstant->getName();
+                    $cofigConstantType = null;
                     $configConstant = new Constant($configConstantName);
                     $configConstant->setPublic();
                     if ($reflectionClassConstant->hasType()) {
@@ -101,7 +102,7 @@ class Loader
                     $constantValue = $reflectionClassConstant->getValue();
                     if ($reflectionClassConstant->getAttributes(name: SensitiveParameter::class, flags: ReflectionAttribute::IS_INSTANCEOF)) {
                         $constantAttributes[SensitiveParameter::class] = [];
-                        if ($stripSensitiveData) {
+                        if ($cofigConstantType && $stripSensitiveData) {
                             $constantValue = $cofigConstantType->allowsNull()?null:'';
                             $constantComments[] = "Default value for {$configConstantName} was stripped as sensitive";
                         }

@@ -23,6 +23,14 @@ use F4\Core\ResponseInterface;
 use F4\Core\RouteInterface;
 use F4\Core\Validator;
 
+use function array_map;
+use function array_keys;
+use function array_walk;
+use function implode;
+use function in_array;
+use function is_numeric;
+use function preg_quote;
+
 class Route implements RouteInterface
 {
     use CanExtractFormatFromExtensionTrait;
@@ -44,8 +52,8 @@ class Route implements RouteInterface
     {
         [$this->requestPathRegExp, $extension] = $this->unpackPath(path: $pathDefinition);
         $this->responseFormatRegExp = match($extension) {
-            null => Config::STRICT_RESPONSE_FORMAT_MATCHING ? \preg_quote(str: Config::DEFAULT_RESPONSE_FORMAT, delimiter: '/') : '.+',
-            default => \preg_quote(str: $this->getResponseFormatFromExtension(extension: $extension), delimiter: '/')
+            null => Config::STRICT_RESPONSE_FORMAT_MATCHING ? preg_quote(str: Config::DEFAULT_RESPONSE_FORMAT, delimiter: '/') : '.+',
+            default => preg_quote(str: $this->getResponseFormatFromExtension(extension: $extension), delimiter: '/')
         };
         $this->setHandler(handler: $handler);
     }
@@ -90,15 +98,15 @@ class Route implements RouteInterface
     protected function unpackPath(string $path): array {
         $regexpPieces = ['^'];
         $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
-        $methodDefinitionPattern = \implode(separator: '|', array: $methods).')(\|('.implode(separator: '|', array: $methods).')){,'.(count(value: $methods)-1).'}';
+        $methodDefinitionPattern = implode(separator: '|', array: $methods).')(\|('.implode(separator: '|', array: $methods).')){,'.(count(value: $methods)-1).'}';
         $parameterNameDefinitionPattern = '(?<parameterNameDefinition>[a-zA-Z_][a-zA-Z0-9_]*?)';
         $parameterTypeDefinitionPattern = "(?<parameterTypeDefinition>(any|bool|float|int|regexp|string|uuid|uuid4))";
         $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>[^\)]*?)\)';
         $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
         $extensions = $this->getAvailableExtensions();
-        $extensionDefinitionPattern = \implode(separator: '|', array: \array_map(callback: function($extension):string {
-            return \preg_quote(str: $extension, delimiter: '/');
+        $extensionDefinitionPattern = implode(separator: '|', array: array_map(callback: function($extension):string {
+            return preg_quote(str: $extension, delimiter: '/');
         }, array: $extensions));
         $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern})+";
         $definitionPattern = "^\s*((?i)(?<methodDefinition>({$methodDefinitionPattern})\s+)?(?<pathDefinition>({$pathDefinitionPattern}))(?<extensionDefinition>{$extensionDefinitionPattern})?\s*$";
@@ -112,7 +120,7 @@ class Route implements RouteInterface
         $quoteLiterals = function (string $string) use ($literalPathDefinitionPattern): string {
             return Preg::replaceCallback(pattern: "/{$literalPathDefinitionPattern}/nu",
                 replacement: function ($match): string {
-                    return \preg_quote(str: $match['literalPathDefinition'], delimiter: '/');
+                    return preg_quote(str: $match['literalPathDefinition'], delimiter: '/');
                 }, subject: $string);
         };
         $regexpPieces[] = match(Preg::isMatchAll(pattern: "/{$parameterDefinitionPattern}/nu", subject: $matches['pathDefinition'], matches: $parameterMatches)) {
@@ -139,14 +147,14 @@ class Route implements RouteInterface
         };
         $regexpPieces[] = '$';
         return [
-            \implode(separator: '', array: $regexpPieces),
+            implode(separator: '', array: $regexpPieces),
             $matches['extensionDefinition'] ?? null
         ];
     }
 
     protected function checkIfFormatIsSupported(string $format): bool 
     {
-        return \in_array(needle: $format, haystack: \array_keys(Config::RESPONSE_EMITTERS));
+        return in_array(needle: $format, haystack: array_keys(Config::RESPONSE_EMITTERS));
     }
 
     public function setTemplate(string $template, ?string $format=Config::DEFAULT_RESPONSE_FORMAT): static
@@ -214,18 +222,23 @@ class Route implements RouteInterface
         $request->setValidatedParameters($arguments);
         try {
             if(isset($this->requestMiddleware)) {
+                HookManager::triggerHook(hookName: HookManager::BEFORE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
                 $request = match(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
                     true => $requestMiddlewareResult,
                     default => $request
                 };
+                HookManager::triggerHook(hookName: HookManager::AFTER_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
             }
+            HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route'=>$this, 'handler'=>$this->handler]);
             $result = $this->handler->call($this, ...$arguments);
-
+            HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route'=>$this, 'result'=>$result]);
             if(isset($this->responseMiddleware)) {
+                HookManager::triggerHook(hookName: HookManager::BEFORE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
                 $response = match(($responseMiddlewareResult = $this->responseMiddleware->invoke(response: $response, request: $request, context: $this)) instanceof ResponseInterface) {
                     true => $responseMiddlewareResult,
                     default => $response
                 };
+                HookManager::triggerHook(hookName: HookManager::AFTER_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
             }
         }
         catch (Throwable $exception) {
@@ -243,8 +256,8 @@ class Route implements RouteInterface
         if(!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
             return [];
         }
-        \array_walk(array: $matches, callback: function($value, $key) use (&$matches): void {
-            if(\is_numeric(value: $key)) {
+        array_walk(array: $matches, callback: function($value, $key) use (&$matches): void {
+            if(is_numeric(value: $key)) {
                 unset($matches[$key]);
             }
         });

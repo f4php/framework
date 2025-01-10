@@ -12,6 +12,8 @@ use function array_find;
 use function array_map;
 use function array_reduce;
 use function implode;
+use function is_array;
+use function is_numeric;
 
 /**
  * 

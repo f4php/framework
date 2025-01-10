@@ -14,6 +14,13 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 use ReflectionAttribute;
 use ReflectionFunction;
 
+use function array_intersect;
+use function array_map;
+use function class_exists;
+use function count;
+use function explode;
+use function is_string;
+
 class Validator
 {
     public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
@@ -33,7 +40,7 @@ class Validator
     }
     protected function findInvalidAttributeName(array $attributes): ?string {
         foreach($attributes as $attribute) {
-            if(!\class_exists(class: $name = $attribute->getName())) {
+            if(!class_exists(class: $name = $attribute->getName())) {
                 return $name;
             }
         }
@@ -52,7 +59,7 @@ class Validator
                 ) {
                     throw new ValidationFailedException(message: "All argument must be valid class names, '{$invalidAttributeName}' is not");
                 }
-                $hasAttributeDefaults = \count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
+                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
@@ -63,7 +70,7 @@ class Validator
                     if ($attributes) {
                         $filters = [
                             ...$filters,
-                            ...\array_map(
+                            ...array_map(
                                 callback: fn($attribute): mixed => $attribute->newInstance(),
                                 array: $attributes
                             )
@@ -71,9 +78,9 @@ class Validator
                     }
                     elseif(
                         ($this->flags & self::SANITIZE_STRINGS_BY_DEFAULT) && (
-                        (\array_intersect(\explode(separator: '|', string: $type), ['',  'string', '?string']))
+                        (array_intersect(explode(separator: '|', string: $type), ['',  'string', '?string']))
                         || 
-                        ($parameter->isDefaultValueAvailable() && \is_string(value: $parameter->getDefaultValue()))
+                        ($parameter->isDefaultValueAvailable() && is_string(value: $parameter->getDefaultValue()))
                     )) {
                         $filters[] = new SanitizedString();
                     }

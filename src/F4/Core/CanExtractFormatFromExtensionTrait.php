@@ -28,14 +28,4 @@ trait CanExtractFormatFromExtensionTrait
         return null;
     }
 
-    protected function getDebugFormatFromExtension(string $debugExtension): ?string
-    {
-        foreach (Config::RESPONSE_EMITTERS as $format => $details) {
-            if ($debugExtension === ($details['debug-extension'] ?? null)) {
-                return $format;
-            }
-        }
-        return null;
-    }
-
 }

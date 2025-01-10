@@ -7,13 +7,15 @@ namespace F4\Core;
 use InvalidArgumentException;
 use Throwable;
 
+use function is_subclass_of;
+
 trait ExceptionHandlerTrait
 {
     protected array $exceptionHandlers = [];
 
     public function addExceptionHandler(string $exceptionClassName, callable $exceptionHandler): static
     {
-        if (!\is_subclass_of(object_or_class: $exceptionClassName, class: Throwable::class)) {
+        if (!is_subclass_of(object_or_class: $exceptionClassName, class: Throwable::class)) {
             throw new InvalidArgumentException(message: '${exceptionClassName} is not throwable');
         }
         if (isset($this->exceptionHandlers[$exceptionClassName])) {

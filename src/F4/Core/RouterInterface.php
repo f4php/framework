@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
+use F4\Core\CoreApiInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\Route;

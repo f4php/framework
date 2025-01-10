@@ -102,20 +102,10 @@ class Request implements RequestInterface
     }
     protected function getAvailableDebugExtensions(): array
     {
-        return array_reduce(
-            array: 
-                array_filter(
-                    array: Config::RESPONSE_EMITTERS, 
-                    callback: function($emitterConfiguration): bool {
-                        return isset($emitterConfiguration['debug-extension']);
-                    }
-                ),
-            callback: 
-                function ($debugExtensions, $emitterConfiguration): array {
-                    return [...$debugExtensions, $emitterConfiguration['debug-extension'] ?? []];
-                },
-            initial: []
-        );
+        return match(Config::DEBUG_MODE && !empty(Config::DEBUG_EXTENSION)) {
+            true => [Config::DEBUG_EXTENSION],
+            default => []
+        };
     }
     public function getDebugExtension(): ?string
     {
@@ -319,18 +309,5 @@ class Request implements RequestInterface
         $new = clone $this;
         $new->setPsrRequest(psrRequest: $this->psrRequest->withoutAttribute($name));
         return $new;
-    }
-    public function asString(): string {
-        return match($params = $this->getQueryParams()) {
-            [] => sprintf('%s %s', $this->getMethod(), $this->getUri()->getPath()),
-            default => sprintf('%s %s?%s', $this->getMethod(), $this->getUri()->getPath(), http_build_query($this->getQueryParams())),
-        };
-    }
-    public function asArray(): array {
-        return [
-            'method' => $this->getMethod(),
-            'path' => $this->getUri()->getPath(),
-            'parameters' => $this->getQueryParams(),
-        ];
     }
 }

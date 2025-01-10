@@ -178,18 +178,4 @@ class Response implements ResponseInterface
     {
         return $this->psrResponse->getReasonPhrase();
     }
-    public function asString(): string
-    {
-        return (string) $this->data;
-    }
-    public function asArray(): array
-    {
-        return [
-            'headers' => $this->getHeaders(),
-            'data' => $this->data,
-            'meta' => $this->metaData,
-            'exception' => $this->exception ?? null,
-            'responseFormat' => $this->responseFormat,
-        ];
-    }
 }

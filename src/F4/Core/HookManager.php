@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use F4\Core\CoreApiInterface;
 
 class HookManager
 {
@@ -18,17 +17,25 @@ class HookManager
     public const string BEFORE_REGISTER_MODULES = 'beforeRegisterModules';
     public const string AFTER_REGISTER_MODULES = 'afterRegisterModules';
     public const string BEFORE_PROCESS_REQUEST = 'beforeProcessRequest';
-    public const string AFTER_PROCESS_REQUEST = 'afterProcessRequest';
     public const string BEFORE_REQUEST_MIDDLEWARE = 'beforeRequestMiddleware';
     public const string AFTER_REQUEST_MIDDLEWARE = 'afterRequestMiddleware';
+    public const string BEFORE_ROUTING = 'beforeRouting';
+    public const string BEFORE_ROUTE_GROUP_REQUEST_MIDDLEWARE = 'beforeRouteGroupRequestMiddleware';
+    public const string AFTER_ROUTE_GROUP_REQUEST_MIDDLEWARE = 'afterRouteGroupRequestMiddleware';
     public const string BEFORE_ROUTE_GROUP = 'beforeRouteGroup';
-    public const string AFTER_ROUTE_GROUP = 'afterRouteGroup';
+    public const string BEFORE_ROUTE_REQUEST_MIDDLEWARE = 'beforeRouteRequestMiddleware';
+    public const string AFTER_ROUTE_REQUEST_MIDDLEWARE = 'afterRouteRequestMiddleware';
     public const string BEFORE_ROUTE = 'beforeRoute';
     public const string AFTER_ROUTE = 'afterRoute';
-    public const string BEFORE_ROUTING = 'beforeRouting';
+    public const string BEFORE_ROUTE_RESPONSE_MIDDLEWARE = 'beforeRouteResponseMiddleware';
+    public const string AFTER_ROUTE_RESPONSE_MIDDLEWARE = 'afterRouteResponseMiddleware';
+    public const string AFTER_ROUTE_GROUP = 'afterRouteGroup';
+    public const string BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE = 'beforeRouteGroupResponseMiddleware';
+    public const string AFTER_ROUTE_GROUP_RESPONSE_MIDDLEWARE = 'afterRouteGroupResponseMiddleware';
     public const string AFTER_ROUTING = 'afterRouting';
     public const string BEFORE_RESPONSE_MIDDLEWARE = 'beforeResponseMiddleware';
     public const string AFTER_RESPONSE_MIDDLEWARE = 'afterResponseMiddleware';
+    public const string AFTER_PROCESS_REQUEST = 'afterProcessRequest';
     public const string BEFORE_EMIT_RESPONSE = 'beforeEmitResponse';
     public const string AFTER_EMIT_RESPONSE = 'afterEmitResponse';
 

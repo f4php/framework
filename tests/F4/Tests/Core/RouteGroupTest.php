@@ -90,7 +90,7 @@ final class RouteGroupTest extends TestCase
                     $this->setState('test', $request->getHeaderLine('X-Test-Header'));
                 })
         )
-        ->before(function(RequestInterface $request, ResponseInterface $response, ?Route $route) {
+        ->before(function(RequestInterface $request, ResponseInterface $response, ?RouteGroup $routeGroup) {
             return $request->withHeader('X-Test-Header', 'test-value-1');
         });
         $result = $routeGroup->invoke(request: $request, response: $response);
@@ -120,7 +120,7 @@ final class RouteGroupTest extends TestCase
                     return $response->withHeader('X-Test-Header', $route->getState('test'));
                 })
         )
-        ->after(function(ResponseInterface $response, RequestInterface $request, ?Route $route) {
+        ->after(function(ResponseInterface $response, RequestInterface $request, ?RouteGroup $routeGroup) {
             return $response->withHeader('X-Test-Header-2', $response->getHeaderLine('X-Test-Header'));
         });
         $routeGroup->invoke(request: $request, response: $response);
@@ -159,7 +159,7 @@ final class RouteGroupTest extends TestCase
         $routePathDefinition = 'GET /';
         $routeGroup = RouteGroup::withRoutes(
             new Route($routePathDefinition, function (): string {
-                throw new TestException('test');
+                throw new TestException('test-value-1');
             }),
             new Route($routePathDefinition, function (): string {
                 /**
@@ -169,11 +169,14 @@ final class RouteGroupTest extends TestCase
                 throw new Exception();
             })
         )
-        ->on(TestException::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response, ?Route $route) {
-            return 'test-value-1';
+        ->on(TestException::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response) {
+            return $exception->getMessage();
         })
-        ->on(Exception::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response, ?Route $route) {
-            return $route->getState('test');
+        ->on(Exception::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response, null|Route|RouteGroup $context) {
+            return match($context instanceof Route) {
+                true =>$context->getState('test'),
+                default => null
+            };
         });
         $result = $routeGroup->invoke(request: $request, response: $response);
         $this->assertSame('test-value-1', $result[0]);
@@ -203,5 +206,37 @@ final class RouteGroupTest extends TestCase
         })
         ;
         $result = $routeGroup->invoke(request: $request, response: $response);
+    }
+    public function testPathPrefix(): void
+    {
+        $requestMethod = 'GET';
+        $requestPath = '/group/route';
+        $responseFormat = 'text/html';
+
+        $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath);
+        $response = new MockResponse(responseFormat: $responseFormat);
+        
+        $routeGroupPathPrefix = '/group';
+        $routePathDefinition = 'GET /route';
+        $routeGroup1 = new RouteGroup($routeGroupPathPrefix, [
+            new Route($routePathDefinition, function (): string {
+                return 'test 1';
+            })
+        ]);
+        $routeGroup2 = RouteGroup::fromRoutes(
+            new Route($routePathDefinition, function (): string {
+                return 'test 2';
+            })
+        )
+            ->setPathPrefix($routeGroupPathPrefix);
+        $routeGroup3 = RouteGroup::fromRoutes(
+            new Route('GET /group', function (): string {
+                return 'test 3';
+            })
+        )
+            ->setPathPrefix($routeGroupPathPrefix);
+        $this->assertSame('test 1', $routeGroup1->invoke(request: $request, response: $response)[0]);
+        $this->assertSame('test 2', $routeGroup2->invoke(request: $request, response: $response)[0]);
+        $this->assertSame([], $routeGroup3->invoke(request: $request, response: $response));
     }
 }

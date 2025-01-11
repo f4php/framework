@@ -66,7 +66,7 @@ class Router implements RouterInterface
             };
         }, []);
         if(!$policyCheckFunction($matchingGroupsData)) {
-            throw new ErrorException(message: 'Routing policy check failed');
+            throw new ErrorException(message: 'Routing policy check failed (by default, multiple route matches are not supported)');
         }
         return [
             $matchingGroupsData[0]['routeGroup'] ?? null,

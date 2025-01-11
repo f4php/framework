@@ -31,7 +31,6 @@ use F4\Core\ResponseInterface;
 
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-use F4\Core\Profiler;
 use F4\Core\Request;
 use F4\Core\Response;
 use F4\Core\Route;

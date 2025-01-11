@@ -22,6 +22,8 @@ interface RouteGroupInterface
     public function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array;
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed;
     public function addRoutes(...$routes): static;
+    public function setPathPrefix(string $pathPrefix): static;
+    public function getPathPrefix(): string;
     static public function withRoutes(...$routes): static;
     static public function fromRoutes(...$routes): static;
 

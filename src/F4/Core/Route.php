@@ -203,11 +203,15 @@ class Route implements RouteInterface
         $bodyArguments = $request->getParsedBody() ?? [];
         return [...$bodyArguments, ...$queryArguments, ...$pathArguments];
     }
-    public function checkMatch(RequestInterface $request, ResponseInterface $response): bool
+    public function checkMatch(RequestInterface $request, ResponseInterface $response, ?string $pathPrefix = null): bool
     {
         $requestMethod = $request->getMethod();
         $requestPath = $request->getPath();
         $responseFormat = $response->getResponseFormat();
+        $requestPath = match($pathPrefix) {
+            null => $requestPath,
+            default => preg_replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath)
+        };
         return 
             Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")
             &&
@@ -222,23 +226,23 @@ class Route implements RouteInterface
         $request->setValidatedParameters($arguments);
         try {
             if(isset($this->requestMiddleware)) {
-                HookManager::triggerHook(hookName: HookManager::BEFORE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
                 $request = match(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
                     true => $requestMiddlewareResult,
                     default => $request
                 };
-                HookManager::triggerHook(hookName: HookManager::AFTER_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
             }
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route'=>$this, 'handler'=>$this->handler]);
             $result = $this->handler->call($this, ...$arguments);
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route'=>$this, 'result'=>$result]);
             if(isset($this->responseMiddleware)) {
-                HookManager::triggerHook(hookName: HookManager::BEFORE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
                 $response = match(($responseMiddlewareResult = $this->responseMiddleware->invoke(response: $response, request: $request, context: $this)) instanceof ResponseInterface) {
                     true => $responseMiddlewareResult,
                     default => $response
                 };
-                HookManager::triggerHook(hookName: HookManager::AFTER_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
             }
         }
         catch (Throwable $exception) {

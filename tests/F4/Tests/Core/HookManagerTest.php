@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace F4\Tests\Core;
 use PHPUnit\Framework\TestCase;
 
-use F4\Core\HookManager;
+use F4\HookManager;
 use F4\Tests\MockModule;
 use F4\Tests\Core\MockCore;
 use F4\Tests\Core\MockRequest;

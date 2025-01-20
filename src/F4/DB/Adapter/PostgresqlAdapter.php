@@ -85,7 +85,7 @@ class PostgresqlAdapter implements AdapterInterface
             };
         }
         $result = pg_get_result($this->connection);
-        if (!is_resource($result) || (!$result instanceof Result)) {
+        if (!is_resource($result) && (!$result instanceof Result)) {
             match(Config::DEBUG_MODE) {
                 true => throw new ErrorException(message: pg_last_error($this->connection), code: 500),
                 default => throw new ErrorException('Failed to retrieve query result from the database', 500)

@@ -75,13 +75,13 @@ class Response implements ResponseInterface
         $this->templates[$format] = $template;
         return $this;
     }
-    public function getTemplate(?string $format = null): string
+    public function getTemplate(?string $format = null): ?string
     {
-        return $this->templates[$format ?? $this->responseFormat] ?? Config::DEFAULT_TEMPLATE;
+        return $this->templates[$format ?? $this->responseFormat] ?? (($format === Config::DEFAULT_RESPONSE_FORMAT) ? Config::DEFAULT_TEMPLATE : null);
     }
-    public function addMetaData(mixed $part): void
+    public function setMetaData(string $name, mixed $value): void
     {
-        $this->metaData[] = $part;
+        $this->metaData[$name] = $value;
     }
     public function getMetaData(): array
     {
@@ -106,6 +106,14 @@ class Response implements ResponseInterface
     public function getData(): mixed
     {
         return $this->data;
+    }
+    public function withRedirect(string $location, bool $permanent = false): static
+    {
+        return $this->withHeader('Location', $location)->withStatus($permanent ? 301 : 302);
+    }
+    public function withPermanentRedirect(string $location): static
+    {
+        return $this->withRedirect($location, true);
     }
     // Wrappers around PSR
 

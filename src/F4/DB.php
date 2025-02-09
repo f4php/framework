@@ -20,6 +20,8 @@ use F4\DB\SimpleColumnReferenceCollection;
 use F4\DB\TableReferenceCollection;
 use F4\DB\WithTableReferenceCollection;
 
+use F4\HookManager;
+
 use F4\Config;
 
 use function call_user_func_array;
@@ -42,14 +44,14 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
         $this->adapter = new $adapterClass($connectionString);
     }
 
-    public function __call(string $method, array $arguments) : static
+    public function __call(string $method, array $arguments): static
     {
         match ($method) {
             'delete' => $this
                 ->append('DELETE'),
             'doNothing' => $this
                 ->append('DO NOTHING'),
-            'doUpdateSet' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('do_update_set')) {
+            'doUpdateSet' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('do_update_set')) {
                     null => $this
                         ->append('DO UPDATE SET')
                         ->append((new AssignmentCollection(...$arguments))->setName('do_update_set')),
@@ -72,7 +74,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('CASCADE'),
             'except' => $this
                 ->append('EXCEPT'),
-                // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
+            // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
             'exceptAll' => $this
                 ->append('EXCEPT ALL'),
             'from' => $this
@@ -80,7 +82,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append(new TableReferenceCollection(...$arguments)),
             'fullOuterJoin' => $this
                 ->append('FULL OUTER JOIN'),
-            'group', 'groupBy' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
+            'group', 'groupBy' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
                         ->append('GROUP BY')
                         ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
@@ -88,7 +90,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
-            'groupByAll' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
+            'groupByAll' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
                         ->append('GROUP BY ALL')
                         ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
@@ -96,7 +98,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
-            'groupByDistinct' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
+            'groupByDistinct' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
                         ->append('GROUP BY DISTINCT')
                         ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
@@ -104,7 +106,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
-            'having' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
+            'having' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
                     null => $this
                         ->append('HAVING')
                         ->append((new ConditionCollection(...$arguments))->setName('having')),
@@ -115,7 +117,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('INSERT'),
             'intersect' => $this
                 ->append('INTERSECT'),
-                // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
+            // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
             'intersectAll' => $this
                 ->append('INTERSECT ALL'),
             'into' => $this
@@ -131,28 +133,28 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('LEFT OUTER JOIN')
                 ->append(new TableReferenceCollection(...$arguments)),
             'limit' => $this
-                ->append(match(!isset($arguments[0]) || !is_int($arguments[0])) {
-                    true => throw new InvalidArgumentException('Limit must have at least one integer argument'),
-                    default => match(!isset($arguments[1]) || !is_int($arguments[1])) {
-                        true => sprintf('LIMIT %d', $arguments[0]),
-                        default => sprintf('LIMIT %d OFFSET %d', $arguments[0], $arguments[1])
-                    },
-                }),
+                ->append(match (!isset($arguments[0]) || !is_int($arguments[0])) {
+                        true => throw new InvalidArgumentException('Limit must have at least one integer argument'),
+                        default => match (!isset($arguments[1]) || !is_int($arguments[1])) {
+                                true => sprintf('LIMIT %d', $arguments[0]),
+                                default => sprintf('LIMIT %d OFFSET %d', $arguments[0], $arguments[1])
+                            },
+                    }),
             'offset' => $this
-                ->append(match(!isset($arguments[0]) || !is_int($arguments[0])) {
-                    true => throw new InvalidArgumentException('Offset must have exactly one integer argument'),
-                    default => sprintf('OFFSET %d', $arguments[0]),
-                }),
+                ->append(match (!isset($arguments[0]) || !is_int($arguments[0])) {
+                        true => throw new InvalidArgumentException('Offset must have exactly one integer argument'),
+                        default => sprintf('OFFSET %d', $arguments[0]),
+                    }),
             'on' => $this
                 ->append('ON')
                 ->append(new ConditionCollection(...$arguments)),
             'onConflict' => $this
                 ->append('ON CONFLICT')
-                ->append(match(count($arguments) > 0) {
-                    true => new Parenthesize(new SimpleColumnReferenceCollection($arguments)),
-                    default => '',
-                }),
-            'order', 'orderBy' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('order_by')) {
+                ->append(match (count($arguments) > 0) {
+                        true => new Parenthesize(new SimpleColumnReferenceCollection($arguments)),
+                        default => '',
+                    }),
+            'order', 'orderBy' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('order_by')) {
                     null => $this
                         ->append('ORDER BY')
                         ->append((new OrderCollection(...$arguments))->setName('order_by')),
@@ -176,7 +178,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'selectDistinct' => $this
                 ->append('SELECT DISTINCT')
                 ->append(new SelectExpressionCollection($arguments ?: '*')),
-            'set' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('set')) {
+            'set' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('set')) {
                     null => $this
                         ->append('SET')
                         ->append((new AssignmentCollection(...$arguments))->setName('set')),
@@ -188,20 +190,20 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append(new TableReferenceCollection(...$arguments)),
             'union' => $this
                 ->append('UNION'),
-                // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
+            // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
             'unionAll' => $this
                 ->append('UNION ALL'),
             'using' => $this
                 ->append('USING')
                 ->append(new Parenthesize(new SimpleColumnReferenceCollection(...$arguments))),
-            'values' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('values')) {
+            'values' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('values')) {
                     null => $this
                         ->append('VALUES')
                         ->append((new AssignmentCollection(...$arguments))->setName('values')),
                     default => $existingNamedFragmentCollection
                         ->append(new AssignmentCollection(...$arguments))
                 }),
-            'where' => (match($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
+            'where' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
                     null => $this
                         ->append('WHERE')
                         ->append((new ConditionCollection(...$arguments))->setName('where')),
@@ -235,12 +237,32 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'with',
             'withRecursive'
                 => call_user_func_array(callback: [new self(), $method], args: $arguments),
-            default =>
-                throw new BadMethodCallException(message: "Unsupported method {$method}()")
+            default
+                => throw new BadMethodCallException(message: "Unsupported method {$method}()")
         };
     }
 
-    public function commit(): mixed {
-        return $this->adapter->execute(statement: $this->getPreparedStatement($this->adapter->enumerateParameters(...)));
+    public function commit(?int $stopAfter = null): mixed
+    {
+        $preparedStatement = $this->getPreparedStatement($this->adapter->enumerateParameters(...));
+        HookManager::triggerHook(HookManager::BEFORE_SQL_SUBMIT, ['statement' => $preparedStatement->query, 'parameters' => $preparedStatement->parameters]);
+        $result = $this->adapter->execute(statement: $preparedStatement, stopAfter: $stopAfter);
+        HookManager::triggerHook(HookManager::AFTER_SQL_SUBMIT, ['statement' => $preparedStatement->query, 'parameters' => $preparedStatement->parameters, 'result' => $result]);
+        return $result;
+    }
+    public function asTable(): mixed
+    {
+        return $this->commit();
+    }
+    public function asRow(): mixed
+    {
+        return $this->commit(stopAfter: 1)[0] ?? null;
+    }
+    public function asValue(mixed $index = 0): mixed
+    {
+        return match(is_int($index)) {
+            true => array_values($this->commit(stopAfter: 1)[0] ?? [])[$index] ?? null,
+            default => ($this->commit(stopAfter: 1)[0][$index] ?? null)
+        };
     }
 }

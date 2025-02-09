@@ -8,7 +8,7 @@ use F4\DB\PreparedStatement;
 
 interface AdapterInterface
 {
-    public function execute(PreparedStatement $statement): mixed;
+    public function execute(PreparedStatement $statement, ?int $stopAfter = null): mixed;
     public function enumerateParameters(int $index): string;
 }
 

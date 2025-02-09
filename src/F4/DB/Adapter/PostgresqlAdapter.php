@@ -33,6 +33,7 @@ use function mb_substr;
 use function mb_trim;
 use function pg_get_result;
 use function pg_fetch_row;
+use function pg_free_result;
 use function pg_escape_string;
 use function pg_field_name;
 use function pg_field_type;
@@ -66,7 +67,7 @@ class PostgresqlAdapter implements AdapterInterface
         };
         $this->connection = $this->connect(connectionString: $connectionString, connectionFlags: $connectionFlags);
     }
-    public function execute(PreparedStatement $statement): mixed 
+    public function execute(PreparedStatement $statement, ?int $stopAfter = null): mixed 
     {
         $query = $statement->query;
         $parameters = $statement->parameters;
@@ -98,7 +99,7 @@ class PostgresqlAdapter implements AdapterInterface
             };
         }
         $data = [];
-        while (($row = pg_fetch_row($result)) !== FALSE) {
+        while ((($stopAfter === null) || ($stopAfter > 0)) && ($row = pg_fetch_row($result)) !== FALSE) {
             if (is_array($row)) {
                 $processedRow = [];
                 for ($i = 0; $i < count($row); $i++) {
@@ -108,7 +109,11 @@ class PostgresqlAdapter implements AdapterInterface
                 $processedRow = $row;
             }
             $data[] = $processedRow;
+            if(($stopAfter !== null) && (count($data) >= $stopAfter)) {
+                break;
+            }
         }
+        pg_free_result($result);
         return $data;
     }
     public function enumerateParameters(int $index): string {

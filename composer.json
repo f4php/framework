@@ -23,7 +23,10 @@
         }
     ],
     "config": {
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "nodejs-php-fallback/nodejs-php-fallback": true
+        }
     },
     "scripts": {
         "test": "phpunit --bootstrap tests/F4/Config.php --display-warnings --display-phpunit-deprecations --fail-on-deprecation tests",
@@ -42,10 +45,10 @@
         "nyholm/psr7": "^1.8",
         "nette/php-generator": "^4.1",
         "composer/pcre": "^3.3",
-        "nyholm/psr7-server": "^1.1"
+        "nyholm/psr7-server": "^1.1",
+        "spatie/backtrace": "^1.7"
     },
     "require-dev": {
-        "kint-php/kint": "^5.1",
         "phpunit/phpunit": "^11.4",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0"

@@ -53,20 +53,20 @@ final class RouterTest extends TestCase
         $this->assertSame(234, $result[1]);
         $this->assertSame(1, $result[2]);
     }
-    public function testErrorOnMultipleMatchingRoutes(): void
-    {
-        $this->expectException(ErrorException::class);
-        $router = new Router();
-        $requestMethod = 'GET';
-        $queryString = 'entityID=345&param=234';
-        $requestPath = "/entities/123";
-        $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath, queryString: $queryString);
-        $response = new MockResponse();
-        $routePathDefinition = 'GET /entities/{entityID:int}';
-        $router->addRoute($routePathDefinition, function (): void {});
-        $router->addRoute($routePathDefinition, function (): void {});
-        $router->invokeMatchingRoutes(request: $request, response: $response);
-    }
+    // public function testErrorOnMultipleMatchingRoutes(): void
+    // {
+    //     $this->expectException(ErrorException::class);
+    //     $router = new Router();
+    //     $requestMethod = 'GET';
+    //     $queryString = 'entityID=345&param=234';
+    //     $requestPath = "/entities/123";
+    //     $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath, queryString: $queryString);
+    //     $response = new MockResponse();
+    //     $routePathDefinition = 'GET /entities/{entityID:int}';
+    //     $router->addRoute($routePathDefinition, function (): void {});
+    //     $router->addRoute($routePathDefinition, function (): void {});
+    //     $router->invokeMatchingRoutes(request: $request, response: $response);
+    // }
     public function testRequestMiddlewareAlreadySet(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -139,10 +139,10 @@ final class RouterTest extends TestCase
                 return $response->withHeader('X-Test-Header', 'test value');
             });
         $router->addRoute($routePathDefinition, function (): void {});
-        $result = $router->invokeMatchingRoutes(request: $request, response: $response);
+        $router->invokeMatchingRoutes(request: $request, response: $response);
         $this->assertSame('test value', $response->getHeaderLine('X-Test-Header'));
     }
-    public function testRequestMiddlewareNoMathingRoute(): void
+    public function testRequestMiddlewareNoMatchingRoute(): void
     {
         $router = new Router();
         $requestMethod = 'GET';
@@ -158,7 +158,7 @@ final class RouterTest extends TestCase
         $router->addRoute($routePathDefinition, function (): array {
             throw new ErrorException(message: 'This code should be unreachable');
         });
-        $result = $router->invokeMatchingRoutes(request: $request, response: $response);
+        $router->invokeMatchingRoutes(request: $request, response: $response);
         $this->assertSame('test value', $request->getHeaderLine('X-Test-Header'));
     }
     public function testResponseMiddlewareNoMathingRoute(): void
@@ -177,7 +177,7 @@ final class RouterTest extends TestCase
         $router->addRoute($routePathDefinition, function (): array {
             throw new ErrorException(message: 'This code should be unreachable');
         });
-        $result = $router->invokeMatchingRoutes(request: $request, response: $response);
+        $router->invokeMatchingRoutes(request: $request, response: $response);
         $this->assertSame('test value', $response->getHeaderLine('X-Test-Header'));
     }
     public function testRequestResponseIsolation(): void

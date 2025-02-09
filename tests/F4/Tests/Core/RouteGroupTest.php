@@ -36,16 +36,12 @@ final class RouteGroupTest extends TestCase
                 new Route($routePathDefinition, function (): string {
                         return 'test-value-1';
                 }),
-                new Route($routePathDefinition, function (): string {
-                        return 'test-value-2';
-                }),
             ]);
         $results = $routeGroup->invoke(request: $request, response: $response);
-        $this->assertSame('test-value-1', $results[0]);
-        $this->assertSame('test-value-2', $results[1]);
+        $this->assertSame('test-value-1', $results);
     }
 
-    public function testStaticCreation(): void
+    public function testStaticCreationGet(): void
     {
         $requestMethod = 'GET';
         $requestPath = '/';
@@ -58,13 +54,26 @@ final class RouteGroupTest extends TestCase
             Route::get('/', function (): string {
                     return 'test-value-1';
             }),
+        );
+        $results = $routeGroup->invoke(request: $request, response: $response);
+        $this->assertSame('test-value-1', $results);
+    }
+    public function testStaticCreationAny(): void
+    {
+        $requestMethod = 'GET';
+        $requestPath = '/';
+        $responseFormat = 'text/html';
+
+        $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath);
+        $response = new MockResponse(responseFormat: $responseFormat);
+        
+        $routeGroup = RouteGroup::withRoutes(
             Route::any('/', function (): string {
                     return 'test-value-2';
             }),
         );
         $results = $routeGroup->invoke(request: $request, response: $response);
-        $this->assertSame('test-value-1', $results[0]);
-        $this->assertSame('test-value-2', $results[1]);
+        $this->assertSame('test-value-2', $results);
     }
     public function testRequestHandlers(): void
     {
@@ -94,7 +103,7 @@ final class RouteGroupTest extends TestCase
             return $request->withHeader('X-Test-Header', 'test-value-1');
         });
         $result = $routeGroup->invoke(request: $request, response: $response);
-        $this->assertSame('test-value-1', $result[0]);
+        $this->assertSame('test-value-1', $result);
     }
     public function testResponseHandlers(): void
     {
@@ -145,42 +154,7 @@ final class RouteGroupTest extends TestCase
                 })
         );
         $result = $routeGroup->invoke(request: $request, response: $response);
-        $this->assertSame('test-value-1', $result[0]);
-    }
-    public function testMultipleExceptionHandling(): void
-    {
-        $requestMethod = 'GET';
-        $requestPath = '/';
-        $responseFormat = 'text/html';
-
-        $request = new MockRequest(requestMethod: $requestMethod, requestPath: $requestPath);
-        $response = new MockResponse(responseFormat: $responseFormat);
-        
-        $routePathDefinition = 'GET /';
-        $routeGroup = RouteGroup::withRoutes(
-            new Route($routePathDefinition, function (): string {
-                throw new TestException('test-value-1');
-            }),
-            new Route($routePathDefinition, function (): string {
-                /**
-                 * @var Route $this
-                 */
-                $this->setState('test', 'test-value-2');
-                throw new Exception();
-            })
-        )
-        ->on(TestException::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response) {
-            return $exception->getMessage();
-        })
-        ->on(Exception::class, function(Throwable $exception, RequestInterface $request, ResponseInterface $response, null|Route|RouteGroup $context) {
-            return match($context instanceof Route) {
-                true =>$context->getState('test'),
-                default => null
-            };
-        });
-        $result = $routeGroup->invoke(request: $request, response: $response);
-        $this->assertSame('test-value-1', $result[0]);
-        $this->assertSame('test-value-2', $result[1]);
+        $this->assertSame('test-value-1', $result);
     }
     public function testInvalidMultipleExceptionHandling(): void
     {
@@ -235,8 +209,8 @@ final class RouteGroupTest extends TestCase
             })
         )
             ->setPathPrefix($routeGroupPathPrefix);
-        $this->assertSame('test 1', $routeGroup1->invoke(request: $request, response: $response)[0]);
-        $this->assertSame('test 2', $routeGroup2->invoke(request: $request, response: $response)[0]);
+        $this->assertSame('test 1', $routeGroup1->invoke(request: $request, response: $response));
+        $this->assertSame('test 2', $routeGroup2->invoke(request: $request, response: $response));
         $this->assertSame([], $routeGroup3->invoke(request: $request, response: $response));
     }
 }

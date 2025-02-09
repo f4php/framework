@@ -9,7 +9,6 @@ use F4\Core\Exception\Exception;
 
 class HttpException extends Exception
 {
-    protected $code = 500;
     public const array PHRASES = [
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -71,29 +70,11 @@ class HttpException extends Exception
         511 => 'Network Authentication Required',
     ];
     protected $message = 'Internal Server Error';
-    public function __construct(string $message, ?int $code = null)
+    public function __construct(string $message, int $code = 500)
     {
         if ($code < 400) {
-
             throw new ErrorException('HTTP error code must be 400 or higher');
         }
         parent::__construct($message, $code);
-    }
-
-    public function asArray(bool $debug = false): array
-    {
-        return match ($debug) {
-            true => [
-                'code' => $this->getCode(),
-                'message' => $this->getMessage(),
-                'file' => $this->getFile(),
-                'line' => $this->getLine(),
-                'trace' => $this->getTrace(),
-            ],
-            default => [
-                'code' => $this->getCode(),
-                'message' => $this->getMessage()
-            ]
-        };
     }
 }

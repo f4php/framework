@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Closure;
+use F4\Core\MiddlewareInterface;
 
-class AbstractMiddleware
+abstract class AbstractMiddleware implements MiddlewareInterface
 {
     protected Closure $handler;
     public function __construct(callable $handler)

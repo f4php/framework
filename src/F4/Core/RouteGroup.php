@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Throwable;
+use ErrorException;
 
+use F4\HookManager;
 use F4\Core\ExceptionHandlerTrait;
 use F4\Core\MiddlewareAwareTrait;
-use F4\Core\PriorityAwareTrait;
+use F4\Core\Route;
 
-use function array_filter;
+use function array_find;
 use function array_map;
 use function array_reduce;
-use function usort;
 
 class RouteGroup implements RouteGroupInterface
 {
     use ExceptionHandlerTrait;
     use MiddlewareAwareTrait;
-    use PriorityAwareTrait;
 
     protected string $pathPrefix = '';
     protected array $routes = [];
@@ -49,11 +49,11 @@ class RouteGroup implements RouteGroupInterface
         }, array: $routes);
         return $this;
     }
-    static public function withRoutes(...$routes): static
+    public static function withRoutes(...$routes): static
     {
         return (new self())->addRoutes(...$routes);
     }
-    static public function fromRoutes(...$routes): static
+    public static function fromRoutes(...$routes): static
     {
         return self::withRoutes(...$routes);
     }
@@ -67,75 +67,54 @@ class RouteGroup implements RouteGroupInterface
     public function getPathPrefix(): string {
         return $this->pathPrefix;
     }
-    public function hasMatchingRoutes(RequestInterface $request, ResponseInterface $response): bool
+    public function hasMatchingRoute(RequestInterface $request, ResponseInterface $response): bool
     {
         return array_reduce($this->routes,function ($result, Route $route) use ($request, $response): bool {
             return $result || $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix);
         }, false);
     }
-    public function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array
+    public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route
     {
-        $routes = array_filter(array: $this->routes, callback: function (Route $route) use ($request, $response): bool {
+        return array_find(array: $this->routes, callback: function (Route $route) use ($request, $response): bool {
             return $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix);
         });
-        usort(array: $routes, callback: function (Route $routeA, Route $routeB): int {
-            return (int) $routeB->getPriority() - (int) $routeA->getPriority();
-        });
-        return $routes;
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed {
         $result = [];
-        if($matchingRoutes = $this->getMatchingRoutes(request: $request, response: $response)) {
+        if($route = $this->getMatchingRoute(request: $request, response: $response)) {
             try {
                 if(isset($this->requestMiddleware)) {
-                    HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'routeGroup'=>$this]);
+                    HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'routeGroup'=>$this, 'middleware'=>$this->requestMiddleware]);
                     $request = match(($requestMiddlewareResult = $this->invokeRequestMiddleware(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
                         true => $requestMiddlewareResult,
                         default => $request
                     };
-                    HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'routeGroup'=>$this]);
+                    HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'routeGroup'=>$this, 'middleware'=>$this->requestMiddleware]);
                 }
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP, context: ['routeGroup'=>$this]);
-                foreach($matchingRoutes as $route) {
-                    try {
-                        $result[] = $route->invoke($request, $response);
-                    }
-                    catch (Throwable $exception) {
-                        $handled = false;
-                        foreach ($this->exceptionHandlers as $className => $handler) {
-                            if (!$className || ($exception instanceof $className)) {
-                                $result[] = $handler->call($this, $exception, $request, $response, $route);
-                                $handled = true;
-                                break;
-                            }
-                        }
-                        if(!$handled) {
-                            throw $exception;
-                        }
-                    }
-                }
+                $result = $route->invoke($request, $response);
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP, context: ['routeGroup'=>$this]);
                 if(isset($this->responseMiddleware)) {
-                    HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'routeGroup'=>$this]);
+                    HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'routeGroup'=>$this, 'middleware'=>$this->responseMiddleware]);
                     $response = match(($responseMiddlewareResult = $this->invokeResponseMiddleware(response: $response, request: $request, context: $this)) instanceof ResponseInterface) {
                         true => $responseMiddlewareResult,
                         default => $response
                     };
-                    HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'routeGroup'=>$this]);
+                    HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'routeGroup'=>$this, 'middleware'=>$this->responseMiddleware]);
                 }
             }
             catch (Throwable $exception) {
-                $handled = false;
                 foreach ($this->exceptionHandlers as $className => $handler) {
                     if (!$className || ($exception instanceof $className)) {
-                        $result[] = $handler->call($this, $exception, $request, $response, $this);
-                        $handled = true;
-                        break;
+                        if(($result = $handler->call($this, $exception, $request, $response, $route)) instanceof ResponseInterface) {
+                            $response = $result;
+                            return null;
+                        }
+                        $response->setData($result);
+                        return $result;
                     }
                 }
-                if(!$handled) {
-                    throw $exception;
-                }
+                throw $exception;
             }
         }
         return $result;

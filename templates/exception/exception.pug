@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    vite:resource(src="exception.js" bundle="exception")
+    vite:bundle(name="exception")
+  body
+    #exception-app(
+      data-exception = $exception
+    )

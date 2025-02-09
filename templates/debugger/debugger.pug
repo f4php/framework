@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    vite:resource(src="debugger.js" bundle="debugger")
+    vite:bundle(name="debugger")
+  body
+    #debugger-app(
+      data-config = $config['value'] ?? []
+      data-log = $log ?? []
+      data-profiler = $profiler
+      data-project = $project
+      data-queries = $queries['value'] ?? []
+      data-response = $response
+      data-request = $request
+      data-route = $route
+      data-session = $session['value'] ?? []
+      data-system = $system['value'] ?? []
+    )

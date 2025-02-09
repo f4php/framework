@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace F4\Core\ResponseEmitter;
 
 use ErrorException;
+use ReflectionObject;
+use ReflectionClassConstant;
 
 use F4\Config;
+use F4\HookManager;
+use F4\Config\SensitiveParameter;
 use F4\Core\Exception\HttpException;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
@@ -33,19 +37,45 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         $response = $response->withHeader('Content-Type', "text/html; charset=" . Config::RESPONSE_CHARSET);
         $data = [
             // todo: convert config and request to data structure
-            'config' => [],
+            'config' => $this->getConfigConstants(),
             'request' => [
+                'headers' => $request->getHeaders(),
                 'parameters' => $request->getParameters(),
-                'validated-parameters' => $request->getValidatedParameters()
+                'validated-parameters' => $request->getValidatedParameters(),
             ],
-            'response' => $response->getData(),
-            'exception' => $response->getException(),
-            'meta' => $response->getMetaData(),
+            'response' => [
+                'headers' => $response->getHeaders(),
+                'meta' => $response->getMetaData(),
+                'data' => $response->getData(),
+                'exception' => match($exception = $response->getException()) {
+                    null => null,
+                    default => [
+                        'code' => $exception->getCode(),
+                        'message' => $exception->getMessage(),
+                    ]
+                },
+            ],
         ];
+        HookManager::triggerHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, [
+            'context'=>$data
+        ]);
         $pugRenderer = new PhugTemplateRenderer();
         parent::emitHeaders($response);
         $pugRenderer->displayFile(file: $template, args: $data);
         return true;
+    }
+
+    protected function getConfigConstants(): array {
+        $object = new Config();
+        $reflectionObject = new ReflectionObject($object);
+        $constants = $reflectionObject->getConstants();
+        return array_reduce(array_keys($constants), function ($result, $constantName) use ($constants, $object): array {
+            $reflectionClassConstant = new ReflectionClassConstant($object, $constantName);
+            $name = $reflectionClassConstant->name;
+            $value = count($reflectionClassConstant->getAttributes(SensitiveParameter::class)) ? null : $constants[$constantName];
+            $result[$name] = $value;
+            return $result;
+        }, []);
     }
 
 }

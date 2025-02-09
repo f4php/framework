@@ -25,14 +25,11 @@ class Json extends AbstractResponseEmitter implements ResponseEmitterInterface
             };
             $data = [
                 'error' => $exception->getMessage(),
-                'type' => get_class($exception),
+                // 'type' => get_class($exception), // this may be revealing too much internal information, so commented out for now
                 'code' => $code,
             ];
-            if (Config::DEBUG_MODE === true) {
-                $data['backtrace'] = $exception->getTrace();
-            }
             $response = $response->withStatus($code, HttpException::PHRASES[$code] ?? 'Internal Server Error');
-            $response->getBody()->write(json_encode($data));
+            $response->getBody()->write(json_encode($data, JSON_THROW_ON_ERROR));
             return parent::emit($response);
         }
         $response->getBody()->write(json_encode($response->getData()));

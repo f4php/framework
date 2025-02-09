@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace F4\Tests\Core;
+namespace F4\Tests;
 use PHPUnit\Framework\TestCase;
 
 use F4\HookManager;
@@ -129,6 +129,7 @@ final class HookManagerTest extends TestCase
                 /**
                  * @var MockCore $this
                  * @suppresswarnings PHP1416
+                 * @phpstan-ignore method.protected
                  */
                 $this->setUpRequestResponseNormally($mockRequest, $mockResponse);
             })
@@ -136,6 +137,7 @@ final class HookManagerTest extends TestCase
                 /**
                  * @var MockCore $this
                  * @suppresswarnings PHP1416
+                 * @phpstan-ignore method.protected
                  */
                 $this->setUpEnvironmentNormally(false, true);
             })
@@ -144,6 +146,7 @@ final class HookManagerTest extends TestCase
                 /**
                  * @var MockCore $this
                  * @suppresswarnings PHP1416
+                 * @phpstan-ignore method.protected
                  */
                 $this->registerModulesNormally([MockModule::class]);
             })
@@ -161,6 +164,7 @@ final class HookManagerTest extends TestCase
                 /**
                  * @var MockCore $this
                  * @suppresswarnings PHP1416
+                 * @phpstan-ignore method.protected
                  */
                 $this->restoreEnvironmentNormally(false, true);
             });

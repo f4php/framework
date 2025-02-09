@@ -78,13 +78,14 @@ class ViteBundleModule extends AbstractCompilerModule
                                     $containerNode->appendChild($linkNode);
                                 }
                             }
-                            else {
+                            else if($linkHrefs) {
                                 $linkNode = clone $linkNodeTemplate;
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHrefs)));
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue(sprintf('"%s"', 'stylesheet')));
                                 $containerNode->appendChild($linkNode);
                             }
                         }
+
                         $event->setNode($containerNode);
                     }
                 }

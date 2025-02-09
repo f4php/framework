@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace F4\Core\Phug;
 
 use F4\Config;
-
 use F4\Core\Phug\{ViteBundleModule, StripViteResourceModule};
+
 use Phug;
 use Phug\Component\ComponentExtension;
 use Phug\Optimizer;
 
+use function fopen;
 use function sys_get_temp_dir;
 
 class TemplateRenderer
@@ -27,11 +28,9 @@ class TemplateRenderer
                 'debug' => Config::DEBUG_MODE,
                 'exit_on_error' => Config::DEBUG_MODE,
                 'cache_dir' => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : (Config::TEMPLATE_CACHE_PATH ?: sys_get_temp_dir()),
-                'up_to_date_check' => Config::DEBUG_MODE,
                 'paths' => self::getPaths(),
                 'enable_profiler' => false,
                 'modules' => [
-                    // Order is important
                     ViteBundleModule::class,
                     StripViteResourceModule::class,
                 ]
@@ -50,7 +49,7 @@ class TemplateRenderer
         }
     }
 
-    protected static function getPaths(?array $paths = null): array
+    public static function getPaths(?array $paths = null): array
     {
         $paths = Config::TEMPLATE_RELATIVE_PATHS ? (array) $paths : [];
         if (Config::TEMPLATE_PATHS) {

@@ -14,12 +14,14 @@ interface ResponseInterface extends PsrResponseInterface
     public function setResponseFormat(string $format): static;
     public function getResponseFormat(): string;
     public function setTemplate(string $template, ?string $format = null): static;
-    public function getTemplate(?string $format = null): string;
-    public function addMetaData(mixed $fragment): void;
+    public function getTemplate(?string $format = null): ?string;
+    public function setMetaData(string $name, mixed $fragment): void;
     public function getMetaData(): array;
     public function setException(HttpException $exception): void;
     public function getException(): ?HttpException;
     public function setData(mixed $data): static;
     public function getData(): mixed;
-    static public function fromPsr(psrResponseInterface $psrResponse): self;
+    public function withRedirect(string $location, bool $permanent = false): static;
+    public function withPermanentRedirect(string $location): static;
+    public static function fromPsr(psrResponseInterface $psrResponse): self;
 }

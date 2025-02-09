@@ -14,6 +14,7 @@ use Composer\Pcre\Preg;
 
 use F4\Config;
 
+use F4\HookManager;
 use F4\Core\CanExtractFormatFromExtensionTrait;
 use F4\Core\ExceptionHandlerTrait;
 use F4\Core\MiddlewareAwareTrait;
@@ -36,7 +37,6 @@ class Route implements RouteInterface
     use CanExtractFormatFromExtensionTrait;
     use ExceptionHandlerTrait;
     use MiddlewareAwareTrait;
-    use PriorityAwareTrait;
     use StateAwareTrait;
 
     protected Closure $handler;
@@ -226,29 +226,34 @@ class Route implements RouteInterface
         $request->setValidatedParameters($arguments);
         try {
             if(isset($this->requestMiddleware)) {
-                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this, 'middleware'=>$this->requestMiddleware]);
                 $request = match(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
                     true => $requestMiddlewareResult,
                     default => $request
                 };
-                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this, 'middleware'=>$this->requestMiddleware]);
             }
-            HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route'=>$this, 'handler'=>$this->handler]);
-            $result = $this->handler->call($this, ...$arguments);
+            HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route'=>$this, 'handler'=>$this->handler, 'parameters'=>$arguments]);
+            $response->setData($result = $this->handler->call($this, ...$arguments));
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route'=>$this, 'result'=>$result]);
             if(isset($this->responseMiddleware)) {
-                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this, 'middleware'=>$this->responseMiddleware]);
                 $response = match(($responseMiddlewareResult = $this->responseMiddleware->invoke(response: $response, request: $request, context: $this)) instanceof ResponseInterface) {
                     true => $responseMiddlewareResult,
                     default => $response
                 };
-                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this]);
+                HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this, 'middleware'=>$this->responseMiddleware]);
             }
         }
         catch (Throwable $exception) {
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    return $handler->call($this, $exception, $request, $response, $this);
+                    if(($result = $handler->call($this, $exception, $request, $response, $this)) instanceof ResponseInterface) {
+                        $response = $result;
+                        return null;
+                    }
+                    $response->setData($result);
+                    return $result;
                 }
             }
             throw $exception;

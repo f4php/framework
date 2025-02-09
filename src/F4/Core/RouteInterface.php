@@ -15,8 +15,6 @@ interface RouteInterface
     public function setTemplate(string $template, ?string $format = Config::DEFAULT_RESPONSE_FORMAT): static;
     public function getTemplate(string $format = Config::DEFAULT_RESPONSE_FORMAT): ?string;
     public function setName($name): static;
-    public function setPriority(int $priority): static;
-    public function getPriority(): int;
     public function getName(): string|null;
     public function getHandler(): Closure;
     public function getRequestPathRegExp(): string;

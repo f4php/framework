@@ -8,6 +8,7 @@ use F4\Core\RequestInterface;
 use F4\Core\RequestMiddleware;
 use F4\Core\ResponseInterface;
 use F4\Core\ResponseMiddleware;
+use F4\Core\Route;
 
 interface RouteGroupInterface
 {
@@ -18,8 +19,8 @@ interface RouteGroupInterface
     public function addExceptionHandler(string $exceptionClassName, callable $exceptionHandler): static;
     public function on(string $exceptionClassName, callable $exceptionHandler): static;
     public function getExceptionHandlers(?string $exceptionClass = null): array;
-    public function hasMatchingRoutes(RequestInterface $request, ResponseInterface $response): bool;
-    public function getMatchingRoutes(RequestInterface $request, ResponseInterface $response): array;
+    public function hasMatchingRoute(RequestInterface $request, ResponseInterface $response): bool;
+    public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route;
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed;
     public function addRoutes(...$routes): static;
     public function setPathPrefix(string $pathPrefix): static;

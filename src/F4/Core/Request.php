@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use ErrorException;
+use RuntimeException;
 
 use Composer\Pcre\Preg;
 
@@ -18,13 +19,14 @@ use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 
-use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_reduce;
 use function implode;
+use function in_array;
+use function json_decode;
+use function mb_strpos;
 use function preg_quote;
-use function sprintf;
 
 /**
  * 
@@ -44,7 +46,7 @@ class Request implements RequestInterface
     public function __construct(?PsrServerRequestInterface $psrRequest = null)
     {
         $psr17Factory = new Psr17Factory();
-        $this->setPsrRequest(psrRequest: match($psrRequest) {
+        $request = match($psrRequest) {
             null => (new ServerRequestCreator(
                 $psr17Factory, // ServerRequestFactory
                 $psr17Factory, // UriFactory
@@ -52,7 +54,12 @@ class Request implements RequestInterface
                 $psr17Factory  // StreamFactory
             ))->fromGlobals(),
             default => $psrRequest
-        });
+        };
+        if (in_array(needle: $request->getMethod(), haystack: ['DELETE', 'PATCH', 'POST', 'PUT']) && mb_strpos(haystack: $request->getHeaderLine('Content-Type'), needle: 'application/json') !== false) {
+            $data = json_decode(json: $request->getBody()->getContents(), associative: true, flags: JSON_THROW_ON_ERROR);
+            $request = $request->withParsedBody($data);
+        }
+        $this->setPsrRequest(psrRequest: $request);
         $this->initialize();
     }
 
@@ -82,6 +89,7 @@ class Request implements RequestInterface
             true => $matches['debugExtension'],
             default => null
         };
+
         $this->setParameters([
             ...$this->getQueryParams() ?? [],
             ...$this->getParsedBody() ?? []

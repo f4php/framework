@@ -118,4 +118,8 @@ class CoreApiProxy implements CoreApiInterface
     {
         return $this->core->emit($response, $request);
     }
+    public function log(mixed $value, ?string $description = null): void {
+        $this->core->log($value, $description);
+    }
+
 }

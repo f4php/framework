@@ -9,7 +9,6 @@ use F4\Core\RouteGroup;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\RouterInterface;
-use F4\Core\HookManagerInterface;
 
 interface CoreApiInterface
 {
@@ -36,4 +35,5 @@ interface CoreApiInterface
     public function setResponse(ResponseInterface $response): static;
     public function getResponse(): ResponseInterface;
     public function emit(ResponseInterface $response, ?RequestInterface $request = null): bool;
+    public function log(mixed $value, ?string $description = null): void;
 }

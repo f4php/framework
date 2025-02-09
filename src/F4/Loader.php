@@ -34,13 +34,18 @@ class Loader
 
     public const array DEFAULT_ENVIRONMENTS = ['local', 'default'];
 
-    static private string $path = __DIR__ . '/../../'; // project root, should be updated with application project root via ::setPath()
-    static private string $assetPath = '/assets/';
+    private static string $path = __DIR__ . '/../../'; // project root, should be updated with application project root via ::setPath()
+    private static string $assetPath = '/assets/';
+    private static string $currentEnvironment;
 
     public static function setPath(string $path): void
     {
         $path .= mb_substr(string: $path, start: -1) === '/' ? '' : '/';
         self::$path = $path;
+    }
+    public static function getPath(): string
+    {
+        return self::$path;
     }
     public static function setAssetPath(string $path): void
     {
@@ -50,6 +55,10 @@ class Loader
     public static function getAssetPath(): string
     {
         return self::$assetPath;
+    }
+    public static function getCurrentEnvironment(): string
+    {
+        return self::$currentEnvironment;
     }
     public static function getEnvironments(): array
     {
@@ -66,6 +75,7 @@ class Loader
             if (isset($configuredEnvironments[$environment])) {
                 $filename = $configuredEnvironments[$environment]['config'] ?? null;
                 if ($filename && file_exists(filename: self::$path . $filename)) {
+                    self::$currentEnvironment = $environment;
                     require_once self::$path . $filename;
                     return;
                 }

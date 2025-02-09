@@ -1,6 +1,6 @@
 <?php
 /**
- *      (c) Copyright 2016-2024 Dennis Kreminsky, dennis at kreminsky dot com
+ *      This is the Core of F4 framework
  *
  *      @package F4
  *      @author Dennis Kreminsky, dennis at kreminsky dot com
@@ -18,13 +18,14 @@ use Throwable;
 
 use F4\Config;
 use F4\ModuleInterface;
+use F4\HookManager;
 
 use F4\Core\CanExtractFormatFromExtensionTrait;
 
 use F4\Core\CoreApiInterface;
 use F4\Core\DebuggerInterface;
 use F4\Core\ExceptionRenderer;
-use F4\Core\HookManager;
+
 use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
@@ -237,7 +238,7 @@ class Core implements CoreApiInterface
     }
     protected function processRequestNormally(): void
     {
-        $this->response->setData($this->router->invokeMatchingRoutes(request: $this->request, response: $this->response));
+        $this->router->invokeMatchingRoutes(request: $this->request, response: $this->response);
     }
     protected function emitResponseNormally(): void
     {
@@ -386,5 +387,11 @@ class Core implements CoreApiInterface
     public function emit(?ResponseInterface $response = null, ?RequestInterface $request = null): bool
     {
         return $this->emitter->emit(response: $response, request: $request);
+    }
+    public function log(mixed $value, ?string $description = null): void
+    {
+        if(isset($this->debugger)) {
+            $this->debugger->log($value, $description);
+        }
     }
 }

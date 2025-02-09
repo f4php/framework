@@ -1,0 +1,116 @@
+doctype html
+html
+  head
+    meta(name="description" content="F4 is a lightweight web app development framework")
+    meta(charset=$config['RESPONSE_CHARSET'])
+    title
+      | F4: it worked!
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="author" content="")
+    style.
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        font-family: sans-serif;
+        --transition-duration: 0.5s;
+      }
+      .page {
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(to bottom, #f0f0f0 0%, #ffffff 53%, #f8f8f8 53%, #a0a0a0 100%);
+        position: relative;
+        transition-duration: var(--transition-duration);
+        pointer-events: none;
+        background-position: center center;
+        background-size: 100vw 100vh;
+      }
+      .page:hover {
+        background-size: 100vw 150vh;
+      }
+      .banner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        color: #909090;
+        background: #fff;
+        padding: 30px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 5px 10px 0px rgba(0, 0, 0, 0.04);
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 50px;
+        transform-origin: 50% 50%;
+        transition-duration: var(--transition-duration);
+        transform: translate(-50%, -50%) scale(0.4) rotate(-5deg);
+        pointer-events: auto;
+        white-space: nowrap;
+      }
+      .banner:after {
+        content: '';
+        position: absolute;
+        bottom: -85%;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 100%;
+        transform: translate(-5%,0) scale(1.05,1) rotate(5deg);
+        box-shadow: 0 0 15px 15px rgba(0,0,0,0.05);
+        pointer-events: none;
+      }
+      .banner:hover {
+        padding-left: 5rem;
+        transform: translate(-50%, -50%) scale(1) rotate(-5deg);
+      }
+      .check {
+        position: absolute;
+        left: 1.5rem;
+        top: 50%;
+        display: inline-block;
+        transform: translate(0, -50%) scale(1);
+        transform-origin: left center; 
+        transition-duration: var(--transition-duration);
+        color: #50f050;
+        opacity: 0;
+      }
+      .banner:hover .check {
+        animation-name: check;
+        animation-duration: 0.75s;
+        animation-iteration-count: 1;
+        animation-timing-function: ease;
+        opacity: 1;
+        visibility: visible;
+      }
+      @keyframes check {
+        0% {
+          opacity: 0;
+          transform: translate(0, -150%) scale(0);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-60%, -40%) scale(2);
+        }
+        100% {
+          transform: translate(0, -50%) scale(1);
+        }
+      }
+      .subtext {
+        font-size: 0;
+        font-weight: normal;
+        transform-origin: left center;
+        transition-duration: var(--transition-duration);
+      }
+      .banner:hover .subtext {
+        font-size: 1.5rem;
+      }
+body
+  .page
+    .banner
+      span.check
+        | ✓
+      span.text
+        | it worked!
+        .subtext
+          | F4 is up and running

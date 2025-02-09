@@ -16,6 +16,7 @@ use F4\Core\CoreApiProxy;
 abstract class AbstractConfig
 {
     public const bool DEBUG_MODE = false;
+    public const bool DEBUG_DB_QUERIES = true;
     public const string CORE_DEBUGGER_CLASS = Core\Debugger::class;
     public const string DEBUG_EXTENSION = '+debug';
     public const bool VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES = true;
@@ -45,7 +46,7 @@ abstract class AbstractConfig
     ];
 
     public const string RESPONSE_CHARSET = 'utf-8';
-    public const string FILESYSTEM_CHARSET = 'utf-8';
+    //public const string FILESYSTEM_CHARSET = 'utf-8';
 
     /**
      * Response format defines which emitter will be used for emitting response
@@ -83,20 +84,18 @@ abstract class AbstractConfig
         Core\ResponseEmitter\Cli::INTERNAL_MIME_TYPE => [
             'extensions' => [],
             'class' => \F4\Core\ResponseEmitter\Cli::class,
-            'debug-extension' => '',
         ],
     ];
 
     public const bool SESSION_ENABLED = true;
     public const string SESSION_COOKIE_NAME = 'F4_SESSION_ID';
     public const ?string SESSION_DOMAIN = null;
-    public const ?string SESSION_HANDLER = null;
     public const bool SESSION_HTTP_ONLY = false;
-    public const bool SESSION_REQUIRED = true;
     public const string SESSION_LIFETIME = '';
     public const string SESSION_PATH = '/';
     public const string SESSION_SAME_SITE = 'Strict';
     public const bool SESSION_SECURE_ONLY = true;
+    // public const ?string SESSION_HANDLER = null;
     // public const bool SESSION_IGNORE_IP_ADDRESS = false;
 
     public const string TIMEZONE = '';
@@ -105,10 +104,9 @@ abstract class AbstractConfig
     public const string DEFAULT_LANGUAGE = 'en';
 
     public const string CORE_ROUTER_CLASS = Router::class;
-    public const string CORE_LOCALIZER_CLASS = Localizer::class;
+    // public const string CORE_LOCALIZER_CLASS = Localizer::class;
     public const string CORE_API_PROXY_CLASS = CoreApiProxy::class;
-    public const string DEFAULT_TEMPLATE = '';
-    // public const bool APPEND_FORMAT_SUFFIX_ON_REDIRECT = true;
+    public const string DEFAULT_TEMPLATE = __DIR__ . '/../../templates/it-worked.pug';
 
 }
 

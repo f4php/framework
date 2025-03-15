@@ -29,7 +29,7 @@ class SimpleReference implements ReferenceInterface
      * https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
      *
      */
-    public const string IDENTIFIER_PATTERN = '(?<identifier>[a-zA-Z_][a-zA-Z0-9_]{,62})';
+    public const string IDENTIFIER_PATTERN = '(?<identifier>[a-zA-Z_][a-zA-Z0-9_]{0,62})';
 
     public function __construct(string $reference)
     {

@@ -17,7 +17,7 @@ use F4\DB\Reference\SimpleReference;
  */
 class ColumnReference extends SimpleReference
 {
-    public const string IDENTIFIER_PATTERN = '((?<table>[a-zA-Z_][a-zA-Z0-9_]{,62})\s*\.\s*)?(?<column>[a-zA-Z_][a-zA-Z0-9_]{,62})';
+    public const string IDENTIFIER_PATTERN = '((?<table>[a-zA-Z_][a-zA-Z0-9_]{0,62})\s*\.\s*)?(?<column>[a-zA-Z_][a-zA-Z0-9_]{0,62})';
     protected function extractDelimitedIdentifier($matches): string
     {
         if (empty($matches['column'])) {

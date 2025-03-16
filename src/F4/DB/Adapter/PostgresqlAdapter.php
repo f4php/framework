@@ -26,8 +26,10 @@ use F4\DB\Exception\UnknownTableException;
 use PgSql\Connection;
 use PgSql\Result;
 
+use function array_map;
 use function count;
 use function is_array;
+use function is_bool;
 use function is_resource;
 use function mb_substr;
 use function mb_trim;
@@ -57,22 +59,29 @@ class PostgresqlAdapter implements AdapterInterface
 {
     protected Connection $connection;
 
-    public function __construct(?string $connectionString = null, int $connectionFlags = 0) {
-        $connectionString = match(!empty($connectionString)) {
+    public function __construct(?string $connectionString = null, int $connectionFlags = 0)
+    {
+        $connectionString = match (!empty($connectionString)) {
             true => $connectionString,
-            default => match(mb_substr(mb_trim(Config::DB_HOST), 0, 1) === '/') {
-                true => sprintf("host='%s' dbname='%s' user='%s' password='%s'", Config::DB_HOST, Config::DB_NAME, Config::DB_USERNAME, Config::DB_PASSWORD),
-                default => sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s'", Config::DB_HOST, Config::DB_PORT, Config::DB_NAME, Config::DB_USERNAME, Config::DB_PASSWORD)
-            }
+            default => match (mb_substr(mb_trim(Config::DB_HOST), 0, 1) === '/') {
+                    true => sprintf("host='%s' dbname='%s' user='%s' password='%s'", Config::DB_HOST, Config::DB_NAME, Config::DB_USERNAME, Config::DB_PASSWORD),
+                    default => sprintf("host='%s' port='%s' dbname='%s' user='%s' password='%s'", Config::DB_HOST, Config::DB_PORT, Config::DB_NAME, Config::DB_USERNAME, Config::DB_PASSWORD)
+                }
         };
         $this->connection = $this->connect(connectionString: $connectionString, connectionFlags: $connectionFlags);
     }
-    public function execute(PreparedStatement $statement, ?int $stopAfter = null): mixed 
+    public function execute(PreparedStatement $statement, ?int $stopAfter = null): mixed
     {
         $query = $statement->query;
-        $parameters = $statement->parameters;
+        // native booleans are passed as empty strings by default, which requires a workaround
+        $parameters = array_map(function ($parameter) {
+            return match (is_bool($parameter)) {
+                true => $parameter ? 'true' : 'false',
+                default => $parameter
+            };
+        }, $statement->parameters);
 
-        if(!isset($this->connection)) {
+        if (!isset($this->connection)) {
             throw new ErrorException('Database connection not set', 500);
         }
         if (
@@ -80,20 +89,20 @@ class PostgresqlAdapter implements AdapterInterface
             ||
             (!count($parameters) && !pg_send_query($this->connection, $query))
         ) {
-            match(Config::DEBUG_MODE) {
+            match (Config::DEBUG_MODE) {
                 true => throw new ErrorException(message: pg_last_error($this->connection), code: 500),
                 default => throw new ErrorException('Failed to retrieve query result from the database', 500)
             };
         }
         $result = pg_get_result($this->connection);
         if (!is_resource($result) && (!$result instanceof Result)) {
-            match(Config::DEBUG_MODE) {
+            match (Config::DEBUG_MODE) {
                 true => throw new ErrorException(message: pg_last_error($this->connection), code: 500),
                 default => throw new ErrorException('Failed to retrieve query result from the database', 500)
             };
         }
         if (($code = pg_result_error_field($result, PGSQL_DIAG_SQLSTATE)) !== null) {
-            match(Config::DEBUG_MODE) {
+            match (Config::DEBUG_MODE) {
                 true => throw $this->convertErrorToException($code, pg_last_error($this->connection)),
                 default => throw new ErrorException('Error running database query', 500)
             };
@@ -109,14 +118,15 @@ class PostgresqlAdapter implements AdapterInterface
                 $processedRow = $row;
             }
             $data[] = $processedRow;
-            if(($stopAfter !== null) && (count($data) >= $stopAfter)) {
+            if (($stopAfter !== null) && (count($data) >= $stopAfter)) {
                 break;
             }
         }
         pg_free_result($result);
         return $data;
     }
-    public function enumerateParameters(int $index): string {
+    public function enumerateParameters(int $index): string
+    {
         return sprintf('$%d', $index);
     }
     protected function castType(mixed $value, string $type): mixed
@@ -151,10 +161,10 @@ class PostgresqlAdapter implements AdapterInterface
                     break;
                 case 'boolean':
                 case 'bool':
-                    $value = match($value) {
+                    $value = match ($value) {
                         't' => true,
                         'f' => false,
-                        default =>null
+                        default => null
                     };
                     break;
                 // TODO: process psql arrays http://stackoverflow.com/questions/9169176/accessing-psql-array-directly-in-php
@@ -190,21 +200,19 @@ class PostgresqlAdapter implements AdapterInterface
     {
         $connection = null;
         try {
-            $connection = match(Config::DB_PERSIST) {
+            $connection = match (Config::DB_PERSIST) {
                 true => @pg_pconnect(connection_string: $connectionString, flags: $connectionFlags),
                 default => @pg_connect(connection_string: $connectionString, flags: $connectionFlags)
             };
             if ((false === $connection) || (pg_connection_status(connection: $connection) !== PGSQL_CONNECTION_OK)) {
                 throw new ErrorException('Database connection failed', 500);
             }
-        }
-        catch(ErrorException $e) {
-            match(Config::DEBUG_MODE) {
+        } catch (ErrorException $e) {
+            match (Config::DEBUG_MODE) {
                 true => throw new ErrorException(message: sprintf("Database connection error: %s", pg_last_error($connection)), code: 500, previous: $e),
                 default => throw $e
             };
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         }
         try {
@@ -220,9 +228,8 @@ class PostgresqlAdapter implements AdapterInterface
             if (Config::DB_APP_NAME && !@pg_query(connection: $connection, query: sprintf('SET "application_name" = \'%s\'', pg_escape_string($connection, Config::DB_APP_NAME)))) {
                 throw new ErrorException('Failed to set database application name', 500);
             }
-        }
-        catch(ErrorException $e) {
-            match(Config::DEBUG_MODE) {
+        } catch (ErrorException $e) {
+            match (Config::DEBUG_MODE) {
                 true => throw new ErrorException(message: sprintf("Database error: %s", pg_last_error($connection)), code: 500, previous: $e),
                 default => throw $e
             };

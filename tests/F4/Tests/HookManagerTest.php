@@ -200,6 +200,7 @@ final class HookManagerTest extends TestCase
         $this->assertSame(29, $result[28]);
         $this->assertSame(30, $result[29]);
         $this->assertSame(31, $result[30]);
+        $this->expectOutputString('<!DOCTYPE html><html><head><title>test</title></head><body>This is a test template</body></html>');
     }
 
 }

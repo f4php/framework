@@ -7,6 +7,8 @@ namespace F4;
 use F4\AbstractConfig;
 
 class Config extends AbstractConfig {
+
+    // public const bool DEBUG_MODE = true;
     public const string DB_ADAPTER_CLASS = \F4\Tests\DB\MockAdapter::class;
     public const array TEMPLATE_PATHS = [
         __DIR__ . ''

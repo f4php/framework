@@ -107,9 +107,12 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
             'having' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
-                    null => $this
-                        ->append('HAVING')
-                        ->append((new ConditionCollection(...$arguments))->setName('having')),
+                    null => match(empty($arguments)) {
+                        true => null,
+                        default => $this
+                            ->append('HAVING')
+                            ->append((new ConditionCollection(...$arguments))->setName('having'))
+                    },
                     default => $existingNamedFragmentCollection
                         ->append(new ConditionCollection(...$arguments))
                 }),
@@ -204,9 +207,12 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->append(new AssignmentCollection(...$arguments))
                 }),
             'where' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
-                    null => $this
-                        ->append('WHERE')
-                        ->append((new ConditionCollection(...$arguments))->setName('where')),
+                    null => match(empty($arguments)) {
+                        true => null,
+                        default => $this
+                            ->append('WHERE')
+                            ->append((new ConditionCollection(...$arguments))->setName('where'))
+                    },
                     default => $existingNamedFragmentCollection
                         ->append(new ConditionCollection(...$arguments))
                 }),

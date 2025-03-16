@@ -11,7 +11,7 @@ final class MockAdapter implements AdapterInterface
 {
     public function __construct() {}
 
-    public function execute(PreparedStatement $statement): mixed
+    public function execute(PreparedStatement $statement, ?int $stopAfter = null): mixed
     {
         return [];
     }

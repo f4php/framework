@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use F4\DB\FragmentInterface;
 use F4\DB\PreparedStatement;
 
+use function array_key_exists;
 use function array_map;
 use function array_shift;
 use function count;
@@ -51,13 +52,13 @@ class Fragment implements FragmentInterface
             throw new InvalidArgumentException('Parameter mismatch, expected: '.count($patterns).', received: '.count($parameters));
         }
         foreach ($patterns as $index => $pattern) {
-            if (($pattern === self::SINGLE_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || (!is_scalar($parameters[$index]) && $parameters[$index] !== null))) {
+            if (($pattern === self::SINGLE_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || (!is_scalar($parameters[$index]) && $parameters[$index] !== null))) {
                 throw new InvalidArgumentException('Only scalars are supported for '.self::SINGLE_PARAMETER_PLACEHOLDER);
             }
-            if (($pattern === self::COMMA_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || !is_array($parameters[$index]))) {
+            else if (($pattern === self::COMMA_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !is_array($parameters[$index]))) {
                 throw new InvalidArgumentException('Only arrays are supported for '.self::COMMA_PARAMETER_PLACEHOLDER);
             }
-            if (($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || !($parameters[$index] instanceof FragmentInterface))) {
+            else if (($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !($parameters[$index] instanceof FragmentInterface))) {
                 throw new InvalidArgumentException('Only DB objects are supported for '.self::SUBQUERY_PARAMETER_PLACEHOLDER);
             }
         }

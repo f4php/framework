@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use F4\DB\FragmentInterface;
 use F4\DB\PreparedStatement;
 
+use function array_filter;
 use function array_find;
 use function array_map;
 use function array_reduce;
@@ -28,6 +29,8 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     protected const string GLUE = ' ';
     protected array $fragments = [];
     protected ?string $name = null;
+    protected ?string $prefix = null;
+
     public function __construct(...$arguments)
     {
         $this->addExpression($arguments);
@@ -46,9 +49,15 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     }
     public function getQuery(): string
     {
-        return implode(static::GLUE, array_map(function (FragmentInterface $fragment): string {
+        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
-        }, $this->fragments));
+        }, $this->fragments))))) {
+            true => '',
+            default => match($this->prefix) {
+                null => $query,
+                default => sprintf('%s %s', $this->prefix, $query)
+            }
+        };
     }
     public function getParameters(): array
     {
@@ -60,7 +69,7 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     {
         throw new InvalidArgumentException('Setting collection query and parameters directly is not supported, use append() instead');
     }
-    public function setName(string $name): static
+    public function withName(string $name): static
     {
         $this->name = $name;
         return $this;
@@ -68,6 +77,11 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     public function getName(): ?string
     {
         return $this->name;
+    }
+    public function withPrefix(string $prefix): static
+    {
+        $this->prefix = $prefix;
+        return $this;
     }
     public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement
     {
@@ -96,7 +110,7 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
             }
         } elseif ($expression instanceof FragmentInterface) {
             $this->append($expression);
-        } else {
+        } elseif (!empty($expression)) {
             $this->append(new Fragment($expression, []));
         }
     }

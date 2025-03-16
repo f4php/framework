@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace F4\DB;
 
+use function array_filter;
 use function array_map;
 use function implode;
 use function sprintf;
@@ -24,9 +25,15 @@ class Parenthesize extends FragmentCollection
         }, $arguments);
     }
     public function getQuery(): string {
-        return sprintf("(%s)", implode(static::GLUE, array_map(function(FragmentInterface $fragment): string {
+        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
-        }, $this->fragments)));
+        }, $this->fragments))))) {
+            true => '',
+            default => match($this->prefix) {
+                null => sprintf("(%s)", $query),
+                default => sprintf('%s (%s)', $this->prefix, $query)
+            }
+        };
     }
 
 }

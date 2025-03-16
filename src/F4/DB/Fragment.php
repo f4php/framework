@@ -33,6 +33,7 @@ use function preg_quote;
 class Fragment implements FragmentInterface
 {
     protected string $query;
+    protected ?string $prefix = null;
     protected array $parameters = [];
     public const string SINGLE_PARAMETER_PLACEHOLDER = '{#}';
     public const string COMMA_PARAMETER_PLACEHOLDER = '{#,...#}';
@@ -66,11 +67,22 @@ class Fragment implements FragmentInterface
     }
     public function getQuery(): string
     {
-        return $this->query;
+        return match(empty($this->query)) {
+            true => '',
+            default => match($this->prefix) {
+                null => $this->query,
+                default => sprintf('%s %s', $this->prefix, $this->query)
+            }
+        };
     }
     public function getParameters(): array
     {
         return $this->parameters;
+    }
+    public function withPrefix(string $prefix): static
+    {
+        $this->prefix = $prefix;
+        return $this;
     }
     public function getPreparedStatement(?callable $enumeratorCallback = null): PreparedStatement {
         /**

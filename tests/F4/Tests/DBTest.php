@@ -84,6 +84,9 @@ final class DBTest extends TestCase
         $this->assertSame(4, $db2->getPreparedStatement()->parameters[2]);
         $this->assertSame('def', $db2->getPreparedStatement()->parameters[3]);
         $this->assertSame(6, $db2->getPreparedStatement()->parameters[4]);
+        $db3 = DB::select()->from('table')->where([]);
+        $this->assertSame('SELECT * FROM "table"', $db3->getPreparedStatement()->query);
+
     }
     public function testSimpleWith(): void
     {

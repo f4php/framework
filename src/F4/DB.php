@@ -53,8 +53,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('DO NOTHING'),
             'doUpdateSet' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('do_update_set')) {
                     null => $this
-                        ->append('DO UPDATE SET')
-                        ->append((new AssignmentCollection(...$arguments))->setName('do_update_set')),
+                        ->append((new AssignmentCollection(...$arguments))->withPrefix('DO UPDATE SET')->withName('do_update_set')),
                     default => $existingNamedFragmentCollection
                         ->append(new AssignmentCollection(...$arguments))
                 }),
@@ -84,35 +83,28 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('FULL OUTER JOIN'),
             'group', 'groupBy' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
-                        ->append('GROUP BY')
-                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
+                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->withName('group_by_collection')))->withPrefix('GROUP BY')->withName('group_by')),
                     default => $existingNamedFragmentCollection
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
             'groupByAll' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
-                        ->append('GROUP BY ALL')
-                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
+                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->withName('group_by_collection')))->withPrefix('GROUP BY ALL')->withName('group_by')),
                     default => $existingNamedFragmentCollection
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
             'groupByDistinct' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('group_by')) {
                     null => $this
-                        ->append('GROUP BY DISTINCT')
-                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->setName('group_by_collection')))->setName('group_by')),
+                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...$arguments))->withName('group_by_collection')))->withPrefix('GROUP BY DISTINCT')->withName('group_by')),
                     default => $existingNamedFragmentCollection
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 }),
             'having' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
-                    null => match(empty($arguments)) {
-                        true => null,
-                        default => $this
-                            ->append('HAVING')
-                            ->append((new ConditionCollection(...$arguments))->setName('having'))
-                    },
+                    null => $this
+                        ->append((new ConditionCollection(...$arguments))->withPrefix(prefix: 'HAVING')->withName('having')),
                     default => $existingNamedFragmentCollection
                         ->append(new ConditionCollection(...$arguments))
                 }),
@@ -124,17 +116,13 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'intersectAll' => $this
                 ->append('INTERSECT ALL'),
             'into' => $this
-                ->append('INTO')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('INTO')),
             'join' => $this
-                ->append('JOIN')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('JOIN')),
             'leftJoin' => $this
-                ->append('LEFT JOIN')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('LEFT JOIN')),
             'leftOuterJoin' => $this
-                ->append('LEFT OUTER JOIN')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('LEFT OUTER JOIN')),
             'limit' => $this
                 ->append(match (!isset($arguments[0]) || !is_int($arguments[0])) {
                         true => throw new InvalidArgumentException('Limit must have at least one integer argument'),
@@ -149,8 +137,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         default => sprintf('OFFSET %d', $arguments[0]),
                     }),
             'on' => $this
-                ->append('ON')
-                ->append(new ConditionCollection(...$arguments)),
+                ->append((new ConditionCollection(...$arguments))->withPrefix('ON')),
             'onConflict' => $this
                 ->append('ON CONFLICT')
                 ->append(match (count($arguments) > 0) {
@@ -159,69 +146,53 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                     }),
             'order', 'orderBy' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('order_by')) {
                     null => $this
-                        ->append('ORDER BY')
-                        ->append((new OrderCollection(...$arguments))->setName('order_by')),
+                        ->append((new OrderCollection(...$arguments))->withPrefix('ORDER BY')->withName('order_by')),
                     default => $existingNamedFragmentCollection
                         ->append(new OrderCollection(...$arguments))
                 }),
             'raw' => $this
                 ->append(new FragmentCollection(...$arguments)),
             'returning' => $this
-                ->append('RETURNING')
-                ->append(new SimpleColumnReferenceCollection($arguments ?: '*')),
+                ->append((new SimpleColumnReferenceCollection($arguments ?: '*'))->withPrefix('RETURNING')),
             'rightJoin' => $this
-                ->append('RIGHT JOIN')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('RIGHT JOIN')),
             'rightOuterJoin' => $this
-                ->append('RIGHT OUTER JOIN')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('RIGHT OUTER JOIN')),
             'select' => $this
-                ->append('SELECT')
-                ->append(new SelectExpressionCollection($arguments ?: '*')),
+                ->append((new SelectExpressionCollection($arguments ?: '*'))->withPrefix('SELECT')),
             'selectDistinct' => $this
-                ->append('SELECT DISTINCT')
-                ->append(new SelectExpressionCollection($arguments ?: '*')),
+                ->append((new SelectExpressionCollection($arguments ?: '*'))->withPrefix('SELECT DISTINCT')),
             'set' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('set')) {
                     null => $this
-                        ->append('SET')
-                        ->append((new AssignmentCollection(...$arguments))->setName('set')),
+                        ->append((new AssignmentCollection(...$arguments))->withPrefix('SET')->withName('set')),
                     default => $existingNamedFragmentCollection
                         ->append(new AssignmentCollection(...$arguments))
                 }),
             'update' => $this
-                ->append('UPDATE')
-                ->append(new TableReferenceCollection(...$arguments)),
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('UPDATE')),
             'union' => $this
                 ->append('UNION'),
             // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
             'unionAll' => $this
                 ->append('UNION ALL'),
             'using' => $this
-                ->append('USING')
-                ->append(new Parenthesize(new SimpleColumnReferenceCollection(...$arguments))),
+                ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
             'values' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('values')) {
                     null => $this
-                        ->append('VALUES')
-                        ->append((new AssignmentCollection(...$arguments))->setName('values')),
+                        ->append((new AssignmentCollection(...$arguments))->withPrefix('VALUES')->withName('values')),
                     default => $existingNamedFragmentCollection
                         ->append(new AssignmentCollection(...$arguments))
                 }),
             'where' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
-                    null => match(empty($arguments)) {
-                        true => null,
-                        default => $this
-                            ->append('WHERE')
-                            ->append((new ConditionCollection(...$arguments))->setName('where'))
-                    },
+                    null => $this
+                        ->append((new ConditionCollection(...$arguments))->withPrefix('WHERE')->withName('where')),
                     default => $existingNamedFragmentCollection
                         ->append(new ConditionCollection(...$arguments))
                 }),
             'with' => $this
-                ->append('WITH')
-                ->append(new WithTableReferenceCollection(...$arguments)),
+                ->append((new WithTableReferenceCollection(...$arguments))->withPrefix('WITH')),
             'withRecursive' => $this
-                ->append('WITH RECURSIVE')
-                ->append(new WithTableReferenceCollection(...$arguments)),
+                ->append((new WithTableReferenceCollection(...$arguments))->withPrefix('WITH RECURSIVE')),
             default => throw new BadMethodCallException(message: "Unsupported method {$method}()")
         };
         return $this;

@@ -12,7 +12,8 @@ interface FragmentCollectionInterface
     public function append(FragmentInterface|string $fragment): static;
     public function getFragments(): array;
     public function getName(): ?string;
-    public function setName(string $name): static;
+    public function withName(string $name): static;
+    public function withPrefix(string $prefix): static;
     public function findFragmentCollectionByName(string $name): ?FragmentCollectionInterface;
     public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement;
 }

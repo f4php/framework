@@ -13,8 +13,7 @@ final class FragmentCollectionTest extends TestCase
 {
     public function testNames(): void
     {
-        $fragment = new FragmentCollection();
-        $fragment->setName('test_name');
+        $fragment = (new FragmentCollection())->withName('test_name');
         $this->assertSame('test_name', $fragment->getName());
     }
     public function testSimpleFragments(): void {

@@ -124,7 +124,7 @@ final class DBTest extends TestCase
     public function testInsert(): void
     {
         $db1 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc', 'fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->returning('fieldH');
-        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES "fieldA" = $1, "fieldB" = $2, "fieldC" = $3 WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6 RETURNING "fieldH"', $db1->getPreparedStatement()->query);
+        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES ("fieldA" = $1, "fieldB" = $2, "fieldC" = $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6 RETURNING "fieldH"', $db1->getPreparedStatement()->query);
         $this->assertSame(1, $db1->getPreparedStatement()->parameters[0]);
         $this->assertSame('abc', $db1->getPreparedStatement()->parameters[1]);
         $this->assertSame('defg', $db1->getPreparedStatement()->parameters[2]);
@@ -132,7 +132,7 @@ final class DBTest extends TestCase
         $this->assertSame(7, $db1->getPreparedStatement()->parameters[4]);
         $this->assertSame(2, $db1->getPreparedStatement()->parameters[5]);
         $db1 = DB::insert()->into('table1 t1')->values(['fieldA'=>1])->onConflict('fieldF')->doNothing();
-        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES "fieldA" = $1 ON CONFLICT ("fieldF") DO NOTHING', $db1->getPreparedStatement()->query);
+        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES ("fieldA" = $1) ON CONFLICT ("fieldF") DO NOTHING', $db1->getPreparedStatement()->query);
     }
     public function testUpdate(): void
     {
@@ -196,13 +196,13 @@ final class DBTest extends TestCase
         $db1 = DB::select()->from('table t1')->where(["a"=>1])->where(['b'=>[1,2,3]]);
         $this->assertSame('SELECT * FROM "table" AS "t1" WHERE "a" = $1 AND "b" IN ($2,$3,$4)', $db1->getPreparedStatement()->query);
         $db2 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc'])->values(['fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->returning('fieldH');
-        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES "fieldA" = $1, "fieldB" = $2, "fieldC" = $3 WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6 RETURNING "fieldH"', $db2->getPreparedStatement()->query);
+        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES ("fieldA" = $1, "fieldB" = $2, "fieldC" = $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6 RETURNING "fieldH"', $db2->getPreparedStatement()->query);
         $db3 = DB::update('table1 t1')->set(['fieldA' => 2])->set(['fieldB' => 3]);
         $this->assertSame('UPDATE "table1" AS "t1" SET "fieldA" = $1, "fieldB" = $2', $db3->getPreparedStatement()->query);
         $db4 = DB::select()->from('t1')->order(['a'=>'asc'])->orderBy(['b'=>'desc ']);
         $this->assertSame('SELECT * FROM "t1" ORDER BY "a" ASC, "b" DESC', $db4->getPreparedStatement()->query);
         $db5 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc', 'fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->doUpdateSet(['fieldH' => 3])->returning('fieldH');
-        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES "fieldA" = $1, "fieldB" = $2, "fieldC" = $3 WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6, "fieldH" = $7 RETURNING "fieldH"', $db5->getPreparedStatement()->query);
+        $this->assertSame('INSERT INTO "table1" AS "t1" VALUES ("fieldA" = $1, "fieldB" = $2, "fieldC" = $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6, "fieldH" = $7 RETURNING "fieldH"', $db5->getPreparedStatement()->query);
         $db6 = DB::select()->from('t1')->group('a', 'b', 'c')->having(['"d" > {#}' => 7])->having(['"e" < {#}' => 2]);
         $this->assertSame('SELECT * FROM "t1" GROUP BY ("a", "b", "c") HAVING "d" > $1 AND "e" < $2', $db6->getPreparedStatement()->query);
         $db7 = DB::select()->from('t1')->groupBy(['a'])->groupBy(['b', 'c'])->having(['d > {#}' => 7]);

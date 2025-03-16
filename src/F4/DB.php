@@ -179,8 +179,9 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
             'values' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('values')) {
                     null => $this
-                        ->append((new AssignmentCollection(...$arguments))->withPrefix('VALUES')->withName('values')),
+                        ->append((new Parenthesize((new AssignmentCollection(...$arguments))->withName('values_collection')))->withPrefix('VALUES')->withName('values')),
                     default => $existingNamedFragmentCollection
+                        ->findFragmentCollectionByName('values_collection')
                         ->append(new AssignmentCollection(...$arguments))
                 }),
             'where' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
@@ -213,9 +214,9 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'update',
             'with',
             'withRecursive'
-                => call_user_func_array(callback: [new self(), $method], args: $arguments),
+            => call_user_func_array(callback: [new self(), $method], args: $arguments),
             default
-                => throw new BadMethodCallException(message: "Unsupported method {$method}()")
+            => throw new BadMethodCallException(message: "Unsupported method {$method}()")
         };
     }
 
@@ -237,7 +238,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
     }
     public function asValue(mixed $index = 0): mixed
     {
-        return match(is_int($index)) {
+        return match (is_int($index)) {
             true => array_values($this->commit(stopAfter: 1)[0] ?? [])[$index] ?? null,
             default => ($this->commit(stopAfter: 1)[0][$index] ?? null)
         };

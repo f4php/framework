@@ -51,7 +51,7 @@ class Fragment implements FragmentInterface
             throw new InvalidArgumentException('Parameter mismatch, expected: '.count($patterns).', received: '.count($parameters));
         }
         foreach ($patterns as $index => $pattern) {
-            if (($pattern === self::SINGLE_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || !is_scalar($parameters[$index]))) {
+            if (($pattern === self::SINGLE_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || (!is_scalar($parameters[$index]) && $parameters[$index] !== null))) {
                 throw new InvalidArgumentException('Only scalars are supported for '.self::SINGLE_PARAMETER_PLACEHOLDER);
             }
             if (($pattern === self::COMMA_PARAMETER_PLACEHOLDER) && (!isset($parameters[$index]) || !is_array($parameters[$index]))) {

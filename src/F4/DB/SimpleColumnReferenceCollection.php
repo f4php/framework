@@ -33,7 +33,7 @@ class SimpleColumnReferenceCollection extends FragmentCollection
                     $this->addExpression($value);
                 }
                 else {
-                    throw new InvalidArgumentException("Complex arguments to groupBy are not supported");
+                    throw new InvalidArgumentException("Complex references are not supported");
                 }
             }
         }

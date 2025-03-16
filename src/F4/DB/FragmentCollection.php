@@ -24,7 +24,7 @@ use function is_numeric;
  * @author Dennis Kreminsky <dennis@kreminsky.com>
  * 
  */
-class FragmentCollection implements FragmentCollectionInterface, FragmentInterface
+class FragmentCollection implements FragmentInterface, FragmentCollectionInterface
 {
     protected const string GLUE = ' ';
     protected array $fragments = [];

@@ -190,7 +190,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
             'values' => array_map(function($argument) {
                 is_array($argument) &&
-                match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) & ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
+                match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) && ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
                     false => $this
                         ->append((new Parenthesize((new SimpleColumnReferenceCollection(...array_keys($argument)))->withName('insert_fields_collection')))->withName('insert_fields'))
                         ->append((new Parenthesize((new ValueExpressionCollection(...array_values($argument)))->withName('insert_values_collection')))->withPrefix('VALUES')->withName('insert_values')),

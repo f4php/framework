@@ -95,6 +95,9 @@ final class DBTest extends TestCase
         $this->assertSame('SELECT * FROM "table"', $db3->getPreparedStatement()->query);
         $db4 = DB::select()->from('table')->where(['a' => 1])->where(any::of(['b' => 2, 'c'=>['3', 4, 'def'], all::of(['"g" > {#}' => 5, 'h'=>6])]));
         $this->assertSame('SELECT * FROM "table" WHERE "a" = $1 AND ("b" = $2 OR "c" IN ($3,$4,$5) OR ("g" > $6 AND "h" = $7))', $db4->getPreparedStatement()->query);
+        $db5 = DB::select()->from('table')->where(['a' => null]);
+        $this->assertSame('SELECT * FROM "table" WHERE "a" = $1', $db5->getPreparedStatement()->query);
+        $this->assertSame(null, $db5->getPreparedStatement()->parameters[0]);
     }
     public function testSimpleWith(): void
     {

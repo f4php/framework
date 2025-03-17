@@ -30,11 +30,11 @@ class ConditionCollection extends FragmentCollection
     }
     public function getQuery(): string
     {
-        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
+        return match (empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
         }, $this->fragments))))) {
             true => '',
-            default => match($this->prefix) {
+            default => match ($this->prefix) {
                 null => sprintf('(%s)', Preg::replace('/^\((.*)\)$/', '$1', $query)),
                 default => sprintf('%s %s', $this->prefix, $query)
             }
@@ -71,10 +71,7 @@ class ConditionCollection extends FragmentCollection
                     } else if ($value === null || is_scalar($value)) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,
-                            default => match ($value === null) {
-                                    true => sprintf('%s IS NULL', $quoted),
-                                    default => sprintf('%s = {#}', $quoted)
-                                }
+                            default => sprintf('%s = {#}', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
                     } else {

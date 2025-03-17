@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace F4\DB;
 
-use Composer\Pcre\Preg;
-
 use F4\DB\Reference\ColumnReference;
+use InvalidArgumentException;
 
 use function is_array;
 use function is_numeric;
@@ -34,24 +33,26 @@ class AssignmentCollection extends FragmentCollection
                 if (is_numeric($key)) {
                     $this->addExpression($value);
                 } else {
-                    if (is_scalar($value)) {
-                        $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
-                            null => $key,
-                            default => sprintf('%s = {#}', $quoted)
-                        };
-                        $this->append(new Fragment($query, [$value]));
-                    } elseif (is_array($value)) {
+                    if (is_array($value)) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('%s = ARRAY [{#,...#}]', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
-                    } elseif ($value instanceof FragmentInterface) {
+                    } else if ($value instanceof FragmentInterface) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('%s = ({#::#})', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
+                    } else if ($value === null || is_scalar($value)) {
+                        $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
+                            null => $key,
+                            default => sprintf('%s = {#}', $quoted)
+                        };
+                        $this->append(new Fragment($query, [$value]));
+                    } else {
+                        throw new InvalidArgumentException('Unsupported condition type');
                     }
                 }
             }

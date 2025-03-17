@@ -32,14 +32,17 @@ class ValueExpressionCollection extends FragmentCollection
                     $this->addExpression($value);
                 }
                 else {
-                    if(is_scalar($value)) {
+                    if($value === null || is_scalar($value)) {
                         $this->append(new Fragment($key, [$value]));
                     }
-                    elseif(is_array($value)) {
+                    else if(is_array($value)) {
                         throw new InvalidArgumentException("Complex references are not supported");
                     }
-                    elseif($value instanceof FragmentInterface) {
+                    else if($value instanceof FragmentInterface) {
                         throw new InvalidArgumentException("Complex references are not supported");
+                    }
+                    else {
+                        throw new InvalidArgumentException("Unsupported expression");
                     }
                 }
             }

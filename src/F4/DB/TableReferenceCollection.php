@@ -24,39 +24,38 @@ use function sprintf;
 class TableReferenceCollection extends FragmentCollection
 {
     protected const string GLUE = ', ';
-    public function __construct(...$arguments) {
+    public function __construct(...$arguments)
+    {
         $this->addExpression($arguments);
     }
 
-    protected function addExpression(mixed $expression): void {
-        if(is_array($expression)) {
-            foreach($expression as $key=>$value) {
-                if(is_numeric($key)) {
+    protected function addExpression(mixed $expression): void
+    {
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                if (is_numeric($key)) {
                     $this->addExpression($value);
-                }
-                else {
-                    if($value instanceof FragmentInterface) {
-                        $query = match($quoted = (new SimpleReference($key))->delimitedIdentifier) {
+                } else {
+                    if ($value instanceof FragmentInterface) {
+                        $query = match ($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('({#::#}) AS %s', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
-                    }
-                    elseif(is_scalar($value)) {
+                    } else if (is_scalar($value)) {
                         throw new InvalidArgumentException('Scalar values as table references are not supported');
-                    }
-                    elseif(is_array($value)) {
+                    } else if (is_array($value)) {
                         throw new InvalidArgumentException('Array values as table references are not supported');
+                    } else {
+                        throw new InvalidArgumentException('Unsupported reference');
                     }
                 }
             }
-        }
-        elseif($expression instanceof FragmentInterface) {
+        } elseif ($expression instanceof FragmentInterface) {
             throw new InvalidArgumentException('Subqueries must have an alias');
-        }
-        else {
-            $query = match($quoted = (new TableReferenceWithAlias((string)$expression))->delimitedIdentifier) {
-                null => (string)$expression,
+        } else {
+            $query = match ($quoted = (new TableReferenceWithAlias((string) $expression))->delimitedIdentifier) {
+                null => (string) $expression,
                 default => $quoted
             };
             $this->append(new Fragment($query, []));

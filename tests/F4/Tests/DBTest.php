@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 use InvalidArgumentException;
 use F4\DB;
+use F4\DB\Fragment;
 use F4\DB\AnyConditionCollection as any;
 
 final class DBTest extends TestCase
@@ -28,11 +29,15 @@ final class DBTest extends TestCase
         $db1 = DB::select(['{#} AS "fieldA"' => 5]);
         $this->assertSame('SELECT $1 AS "fieldA"', $db1->getPreparedStatement()->query);
         $this->assertSame(5, $db1->getPreparedStatement()->parameters[0]);
-        $db2 = DB::select(['({#,...#}) AS "fieldB"' => [1,2,'abc']]);
+        $db2 = DB::select(['({#,...#}) AS "fieldB"' => [1, 2, 'abc']]);
         $this->assertSame('SELECT ($1,$2,$3) AS "fieldB"', $db2->getPreparedStatement()->query);
         $this->assertSame(1, $db2->getPreparedStatement()->parameters[0]);
         $this->assertSame(2, $db2->getPreparedStatement()->parameters[1]);
         $this->assertSame('abc', $db2->getPreparedStatement()->parameters[2]);
+        $db3 = DB::select(new Fragment('{#} + {#} AS "fieldA"', [6, 7]));
+        $this->assertSame('SELECT $1 + $2 AS "fieldA"', $db3->getPreparedStatement()->query);
+        $this->assertSame(6, $db3->getPreparedStatement()->parameters[0]);
+        $this->assertSame(7, $db3->getPreparedStatement()->parameters[1]);
     }
     public function testFrom(): void
     {

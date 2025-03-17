@@ -41,11 +41,14 @@ class WithTableReferenceCollection extends FragmentCollection
                         };
                         $this->append(new Fragment($query, [$value]));
                     }
-                    elseif(is_scalar($value)) {
+                    else if(is_scalar($value)) {
                         throw new InvalidArgumentException('Scalar values as table references are not supported');
                     }
-                    elseif(is_array($value)) {
+                    else if(is_array($value)) {
                         throw new InvalidArgumentException('Array values as table references are not supported');
+                    }
+                    else {
+                        throw new InvalidArgumentException('Unsupported reference');
                     }
                 }
             }

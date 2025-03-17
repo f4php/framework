@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace F4\Core\Debugger;
 
+use Composer\Pcre\Preg;
 use F4\Core\Debugger\ExportResultClosure;
 use F4\Core\Debugger\ExportResultInterface;
-
-use ReflectionFunction;
-use ReflectionParameter;
 
 class ExportResultMethod extends ExportResultClosure implements ExportResultInterface
 {
@@ -18,7 +16,7 @@ class ExportResultMethod extends ExportResultClosure implements ExportResultInte
         $type = 'method';
         $preview = static::generatePreview($variable, $name);
         $value = static::generateValue($variable, $name);
-        $name = preg_replace('/(^.+function\s+)|(\(\)$)/', '', $name).'()';
+        $name = Preg::replace(pattern: '/(^.+function\s+)|(\(\)$)/', replacement: '', subject: $name).'()';
         return new self($name, $type, $preview, $value, $meta);
     }
 

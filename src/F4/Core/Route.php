@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Closure;
-use ReflectionObject;
 use InvalidArgumentException;
 use Throwable;
 use ValueError;
@@ -18,7 +17,6 @@ use F4\HookManager;
 use F4\Core\CanExtractFormatFromExtensionTrait;
 use F4\Core\ExceptionHandlerTrait;
 use F4\Core\MiddlewareAwareTrait;
-use F4\Core\PriorityAwareTrait;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\RouteInterface;
@@ -210,7 +208,7 @@ class Route implements RouteInterface
         $responseFormat = $response->getResponseFormat();
         $requestPath = match($pathPrefix) {
             null => $requestPath,
-            default => preg_replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath)
+            default => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath)
         };
         return 
             Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")

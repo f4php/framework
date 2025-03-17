@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use F4\DB;
 use F4\DB\Fragment;
 use F4\DB\AnyConditionCollection as any;
+use F4\DB\ConditionCollection as all;
 
 final class DBTest extends TestCase
 {
@@ -82,16 +83,18 @@ final class DBTest extends TestCase
         $this->assertSame(4, $db1->getPreparedStatement()->parameters[2]);
         $this->assertSame('def', $db1->getPreparedStatement()->parameters[3]);
         $this->assertSame(6, $db1->getPreparedStatement()->parameters[4]);
-        $db2 = DB::select()->from('table')->where(any::of(['a' => 5, 'b'=>['a', 4, 'def'], '"g" > {#}' => 6]));
-        $this->assertSame('SELECT * FROM "table" WHERE ("a" = $1 OR "b" IN ($2,$3,$4) OR "g" > $5)', $db2->getPreparedStatement()->query);
-        $this->assertSame(5, $db2->getPreparedStatement()->parameters[0]);
-        $this->assertSame('a', $db2->getPreparedStatement()->parameters[1]);
-        $this->assertSame(4, $db2->getPreparedStatement()->parameters[2]);
-        $this->assertSame('def', $db2->getPreparedStatement()->parameters[3]);
-        $this->assertSame(6, $db2->getPreparedStatement()->parameters[4]);
+        $db2 = DB::select()->from('table')->where(['z' => true])->where(any::of(['a' => 5, 'b'=>['a', 4, 'def'], '"g" > {#}' => 6]));
+        $this->assertSame('SELECT * FROM "table" WHERE "z" = $1 AND ("a" = $2 OR "b" IN ($3,$4,$5) OR "g" > $6)', $db2->getPreparedStatement()->query);
+        $this->assertSame(true, $db2->getPreparedStatement()->parameters[0]);
+        $this->assertSame(5, $db2->getPreparedStatement()->parameters[1]);
+        $this->assertSame('a', $db2->getPreparedStatement()->parameters[2]);
+        $this->assertSame(4, $db2->getPreparedStatement()->parameters[3]);
+        $this->assertSame('def', $db2->getPreparedStatement()->parameters[4]);
+        $this->assertSame(6, $db2->getPreparedStatement()->parameters[5]);
         $db3 = DB::select()->from('table')->where([]);
         $this->assertSame('SELECT * FROM "table"', $db3->getPreparedStatement()->query);
-
+        $db4 = DB::select()->from('table')->where(['a' => 1])->where(any::of(['b' => 2, 'c'=>['3', 4, 'def'], all::of(['"g" > {#}' => 5, 'h'=>6])]));
+        $this->assertSame('SELECT * FROM "table" WHERE "a" = $1 AND ("b" = $2 OR "c" IN ($3,$4,$5) OR ("g" > $6 AND "h" = $7))', $db4->getPreparedStatement()->query);
     }
     public function testSimpleWith(): void
     {

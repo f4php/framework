@@ -16,5 +16,6 @@ interface FragmentCollectionInterface
     public function withPrefix(string $prefix): static;
     public function findFragmentCollectionByName(string $name): ?FragmentCollectionInterface;
     public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement;
+    public function addExpression(mixed $expression): void;
 }
 

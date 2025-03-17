@@ -26,7 +26,7 @@ class SimpleColumnReferenceCollection extends FragmentCollection
         $this->addExpression($arguments);
     }
 
-    protected function addExpression($expression): void {
+    public function addExpression($expression): void {
         if(is_array($expression)) {
             foreach($expression as $key=>$value) {
                 if(is_numeric($key)) {

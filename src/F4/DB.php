@@ -108,11 +108,12 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 },
             'having' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
-                    null => $this
-                        ->append((new ConditionCollection(...$arguments))->withPrefix(prefix: 'HAVING')->withName('having')),
-                    default => $existingNamedFragmentCollection
-                        ->append(new ConditionCollection(...$arguments))
-                },
+                null => $this
+                    ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')->withName('having')),
+                default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
+                    $existingNamedFragmentCollection->addExpression($argument);
+                }, $arguments)
+            },
             'insert' => $this
                 ->append('INSERT'),
             'intersect' => $this
@@ -141,8 +142,13 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         true => throw new InvalidArgumentException('Offset must have exactly one integer argument'),
                         default => sprintf('OFFSET %d', $arguments[0]),
                     }),
-            'on' => $this
-                ->append((new ConditionCollection(...$arguments))->withPrefix('ON')),
+            'on' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('on')) {
+                null => $this
+                    ->append((new ConditionCollection(...$arguments))->withPrefix('ON')->withName('on')),
+                default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
+                    $existingNamedFragmentCollection->addExpression($argument);
+                }, $arguments)
+            },
             'onConflict' => $this
                 ->append('ON CONFLICT')
                 ->append(match (count($arguments) > 0) {
@@ -184,7 +190,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
             'values' => array_map(function($argument) {
                 is_array($argument) &&
-                match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) && ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
+                match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) & ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
                     false => $this
                         ->append((new Parenthesize((new SimpleColumnReferenceCollection(...array_keys($argument)))->withName('insert_fields_collection')))->withName('insert_fields'))
                         ->append((new Parenthesize((new ValueExpressionCollection(...array_values($argument)))->withName('insert_values_collection')))->withPrefix('VALUES')->withName('insert_values')),
@@ -200,8 +206,9 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'where' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
                     null => $this
                         ->append((new ConditionCollection(...$arguments))->withPrefix('WHERE')->withName('where')),
-                    default => $existingNamedFragmentCollection
-                        ->append(new ConditionCollection(...$arguments))
+                    default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
+                        $existingNamedFragmentCollection->addExpression($argument);
+                    }, $arguments)
                 },
             'with' => $this
                 ->append((new WithTableReferenceCollection(...$arguments))->withPrefix('WITH')),

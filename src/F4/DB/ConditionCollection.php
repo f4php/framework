@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace F4\DB;
 
+use Composer\Pcre\Preg;
 use F4\DB\Reference\ColumnReference;
 use InvalidArgumentException;
 
 use function is_array;
 use function is_numeric;
 use function is_scalar;
+use function sprintf;
 
 /**
  * 
@@ -26,12 +28,24 @@ class ConditionCollection extends FragmentCollection
     {
         $this->addExpression($arguments);
     }
+    public function getQuery(): string
+    {
+        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
+            return $fragment->getQuery();
+        }, $this->fragments))))) {
+            true => '',
+            default => match($this->prefix) {
+                null => sprintf('(%s)', Preg::replace('/^\((.*)\)$/', '$1', $query)),
+                default => sprintf('%s %s', $this->prefix, $query)
+            }
+        };
+    }
     static public function of(...$arguments): ConditionCollection
     {
         $instance = new self(...$arguments);
         return $instance;
     }
-    protected function addExpression(mixed $expression): void
+    public function addExpression(mixed $expression): void
     {
         if (is_array($expression)) {
             foreach ($expression as $key => $value) {

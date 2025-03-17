@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\DB;
 
 use InvalidArgumentException;
+use F4\DB\FragmentCollectionInterface;
 use F4\DB\FragmentInterface;
 use F4\DB\PreparedStatement;
 
@@ -24,7 +25,7 @@ use function is_numeric;
  * @author Dennis Kreminsky <dennis@kreminsky.com>
  * 
  */
-class FragmentCollection implements FragmentInterface, FragmentCollectionInterface
+class FragmentCollection implements FragmentCollectionInterface, FragmentInterface
 {
     protected const string GLUE = ' ';
     protected array $fragments = [];
@@ -98,7 +99,7 @@ class FragmentCollection implements FragmentInterface, FragmentCollectionInterfa
         });
         return $fragment;
     }
-    protected function addExpression(mixed $expression): void
+    public function addExpression(mixed $expression): void
     {
         if (is_array($expression)) {
             foreach ($expression as $key => $value) {

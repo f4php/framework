@@ -26,7 +26,7 @@ class AssignmentCollection extends FragmentCollection
     {
         $this->addExpression($arguments);
     }
-    protected function addExpression(mixed $expression): void
+    public function addExpression(mixed $expression): void
     {
         if (is_array($expression)) {
             foreach ($expression as $key => $value) {

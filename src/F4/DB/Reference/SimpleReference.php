@@ -38,10 +38,6 @@ class SimpleReference implements ReferenceInterface
             default => null
         };
     }
-    static public function fromString(string $reference): ReferenceInterface
-    {
-        return new self($reference);
-    }
     protected function extractDelimitedIdentifier($matches): string
     {
         if (empty($matches['identifier'])) {

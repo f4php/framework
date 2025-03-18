@@ -216,7 +216,7 @@ final class DBTest extends TestCase
         $this->assertSame('SELECT * FROM "t1" ORDER BY "a" ASC, "b" DESC', $db4->getPreparedStatement()->query);
         $db5 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc', 'fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->doUpdateSet(['fieldH' => 3])->returning('fieldH');
         $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA", "fieldB", "fieldC") VALUES ($1, $2, $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6, "fieldH" = $7 RETURNING "fieldH"', $db5->getPreparedStatement()->query);
-        $db6 = DB::select()->from('t1')->group('a', 'b', 'c')->having(['"d" > {#}' => 7])->having(['"e" < {#}' => 2]);
+        $db6 = DB::select()->from('t1')->group('a', 'b', 'c')->having(['"d" > {#}' => 7, '"e" < {#}' => 2]);
         $this->assertSame('SELECT * FROM "t1" GROUP BY ("a", "b", "c") HAVING "d" > $1 AND "e" < $2', $db6->getPreparedStatement()->query);
         $db7 = DB::select()->from('t1')->groupBy(['a'])->groupBy(['b', 'c'])->having(['d > {#}' => 7]);
         $this->assertSame('SELECT * FROM "t1" GROUP BY ("a", "b", "c") HAVING d > $1', $db7->getPreparedStatement()->query);

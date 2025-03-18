@@ -107,13 +107,8 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->findFragmentCollectionByName('group_by_collection')
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 },
-            'having' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('having')) {
-                null => $this
-                    ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')->withName('having')),
-                default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
-                    $existingNamedFragmentCollection->addExpression($argument);
-                }, $arguments)
-            },
+            'having' => $this
+                    ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')),
             'insert' => $this
                 ->append('INSERT'),
             'intersect' => $this
@@ -142,13 +137,8 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         true => throw new InvalidArgumentException('Offset must have exactly one integer argument'),
                         default => sprintf('OFFSET %d', $arguments[0]),
                     }),
-            'on' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('on')) {
-                null => $this
-                    ->append((new ConditionCollection(...$arguments))->withPrefix('ON')->withName('on')),
-                default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
-                    $existingNamedFragmentCollection->addExpression($argument);
-                }, $arguments)
-            },
+            'on' => $this
+                    ->append((new ConditionCollection(...$arguments))->withPrefix('ON')),
             'onConflict' => $this
                 ->append('ON CONFLICT')
                 ->append(match (count($arguments) > 0) {

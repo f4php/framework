@@ -63,7 +63,7 @@ class ConditionCollection extends FragmentCollection
                             null => $key,
                             /**
                              * By default, we assume that subquery returns a single value
-                             * If not, a "field" IN ({#::}) is still supported in custom query mode
+                             * If not, a "field" IN ({#::#}) is still supported in custom query mode
                              */
                             default => sprintf('%s = ({#::#})', $quoted)
                         };

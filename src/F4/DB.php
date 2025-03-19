@@ -25,6 +25,7 @@ use F4\HookManager;
 
 use F4\Config;
 
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_values;
@@ -108,7 +109,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         ->append(new SimpleColumnReferenceCollection(...$arguments))
                 },
             'having' => $this
-                    ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')),
+                ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')),
             'insert' => $this
                 ->append('INSERT'),
             'intersect' => $this
@@ -138,7 +139,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                         default => sprintf('OFFSET %d', $arguments[0]),
                     }),
             'on' => $this
-                    ->append((new ConditionCollection(...$arguments))->withPrefix('ON')),
+                ->append((new ConditionCollection(...$arguments))->withPrefix('ON')),
             'onConflict' => $this
                 ->append('ON CONFLICT')
                 ->append(match (count($arguments) > 0) {
@@ -178,27 +179,27 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append('UNION ALL'),
             'using' => $this
                 ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
-            'values' => array_map(function($argument) {
-                is_array($argument) &&
-                match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) && ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
-                    false => $this
-                        ->append((new Parenthesize((new SimpleColumnReferenceCollection(...array_keys($argument)))->withName('insert_fields_collection')))->withName('insert_fields'))
-                        ->append((new Parenthesize((new ValueExpressionCollection(...array_values($argument)))->withName('insert_values_collection')))->withPrefix('VALUES')->withName('insert_values')),
-                    default => $existingFieldsFragmentCollection
-                        ->findFragmentCollectionByName('insert_fields_collection')
-                        ->append(new SimpleColumnReferenceCollection(...array_keys($argument)))
-                    &&
-                    $existingValuesFragmentCollection
-                        ->findFragmentCollectionByName('insert_values_collection')
-                        ->append(new ValueExpressionCollection(...array_values($argument)))
-                };
-            }, $arguments),
+            'values' => array_map(function ($argument) {
+                    is_array($argument) &&
+                        match (($existingFieldsFragmentCollection = $this->findFragmentCollectionByName('insert_fields')) && ($existingValuesFragmentCollection = $this->findFragmentCollectionByName('insert_values'))) {
+                            false => $this
+                                ->append((new Parenthesize((new SimpleColumnReferenceCollection(...array_keys($argument)))->withName('insert_fields_collection')))->withName('insert_fields'))
+                                ->append((new Parenthesize((new ValueExpressionCollection(...array_values($argument)))->withName('insert_values_collection')))->withPrefix('VALUES')->withName('insert_values')),
+                            default => $existingFieldsFragmentCollection
+                                ->findFragmentCollectionByName('insert_fields_collection')
+                                ->append(new SimpleColumnReferenceCollection(...array_keys($argument)))
+                            &&
+                            $existingValuesFragmentCollection
+                                ->findFragmentCollectionByName('insert_values_collection')
+                                ->append(new ValueExpressionCollection(...array_values($argument)))
+                        };
+                }, $arguments),
             'where' => match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('where')) {
                     null => $this
                         ->append((new ConditionCollection(...$arguments))->withPrefix('WHERE')->withName('where')),
-                    default => array_map(function($argument) use ($existingNamedFragmentCollection): void {
-                        $existingNamedFragmentCollection->addExpression($argument);
-                    }, $arguments)
+                    default => array_map(function ($argument) use ($existingNamedFragmentCollection): void {
+                                $existingNamedFragmentCollection->addExpression($argument);
+                            }, $arguments)
                 },
             'with' => $this
                 ->append((new WithTableReferenceCollection(...$arguments))->withPrefix('WITH')),
@@ -252,5 +253,18 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             true => array_values($this->commit(stopAfter: 1)[0] ?? [])[$index] ?? null,
             default => ($this->commit(stopAfter: 1)[0][$index] ?? null)
         };
+    }
+    public function asSQL(): string
+    {
+        $parameters = $this->getPreparedStatement()->parameters;
+        $escapedParametersEnumerator = function (mixed $index) use (&$escapedParametersEnumerator, $parameters): mixed {
+            if (!array_key_exists($index - 1, $parameters)) {
+                throw new InvalidArgumentException('Unexpected parameter index');
+            }
+            $value = $parameters[$index - 1];
+            return $this->adapter->getEscapedValue($value);
+            ;
+        };
+        return $this->getPreparedStatement($escapedParametersEnumerator)->query;
     }
 }

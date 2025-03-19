@@ -10,6 +10,7 @@ use F4\DB\PreparedStatement;
 
 use ErrorException;
 use Exception;
+use InvalidArgumentException;
 use Throwable;
 use F4\DB\Exception\DuplicateColumnException;
 use F4\DB\Exception\DuplicateFunctionException;
@@ -30,13 +31,16 @@ use function array_map;
 use function count;
 use function is_array;
 use function is_bool;
+use function is_float;
+use function is_int;
 use function is_resource;
+use function is_scalar;
 use function mb_substr;
 use function mb_trim;
 use function pg_get_result;
 use function pg_fetch_row;
 use function pg_free_result;
-use function pg_escape_string;
+use function pg_escape_literal;
 use function pg_field_name;
 use function pg_field_type;
 use function pg_last_error;
@@ -219,13 +223,13 @@ class PostgresqlAdapter implements AdapterInterface
             if (pg_set_client_encoding(connection: $connection, encoding: Config::DB_CHARSET) !== 0) {
                 throw new ErrorException(message: "failed-to-set-database-encoding", code: 500);
             }
-            if (Config::TIMEZONE && !@pg_query(connection: $connection, query: sprintf('SET TIME ZONE \'%s\'', pg_escape_string($connection, Config::TIMEZONE)))) {
+            if (Config::TIMEZONE && !@pg_query(connection: $connection, query: sprintf('SET TIME ZONE %s', pg_escape_literal($connection, Config::TIMEZONE)))) {
                 throw new ErrorException('Failed to set database timezone', 500);
             }
-            if (Config::DB_SCHEMA && !@pg_query(connection: $connection, query: sprintf('SET "search_path" TO \'%s\'', pg_escape_string($connection, Config::DB_SCHEMA)))) {
+            if (Config::DB_SCHEMA && !@pg_query(connection: $connection, query: sprintf('SET "search_path" TO %s', pg_escape_literal($connection, Config::DB_SCHEMA)))) {
                 throw new ErrorException('Failed to set database schema', 500);
             }
-            if (Config::DB_APP_NAME && !@pg_query(connection: $connection, query: sprintf('SET "application_name" = \'%s\'', pg_escape_string($connection, Config::DB_APP_NAME)))) {
+            if (Config::DB_APP_NAME && !@pg_query(connection: $connection, query: sprintf('SET "application_name" = %s', pg_escape_literal($connection, Config::DB_APP_NAME)))) {
                 throw new ErrorException('Failed to set database application name', 500);
             }
         } catch (ErrorException $e) {
@@ -235,6 +239,25 @@ class PostgresqlAdapter implements AdapterInterface
             };
         }
         return $connection;
+    }
+    public function getEscapedValue(mixed $value): string
+    {
+        return match ($value === null) {
+            true => 'NULL',
+            default => match (is_bool($value)) {
+                    true => $value ? 'TRUE' : 'FALSE',
+                    default => match (is_int($value) || is_float($value)) {
+                            true => (string) $value,
+                            default => match ($value instanceof DateTime) {
+                                    true => $value->format('Y-m-d H:i:s'),
+                                    default => match (is_scalar($value)) {
+                                            true => pg_escape_literal($this->connection, (string) $value),
+                                            default => throw new InvalidArgumentException('Unsupported parameter type')
+                                        }
+                                }
+                        }
+                }
+        };
     }
 
 }

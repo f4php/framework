@@ -35,9 +35,9 @@ class ConditionCollection extends FragmentCollection
         }, $this->fragments))))) {
             true => '',
             default => match ($this->prefix) {
-                null => sprintf('(%s)', Preg::replace('/^\((.*)\)$/', '$1', $query)),
-                default => sprintf('%s %s', $this->prefix, $query)
-            }
+                    null => sprintf('(%s)', Preg::replace('/^\((.*)\)$/', '$1', $query)),
+                    default => sprintf('%s %s', $this->prefix, $query)
+                }
         };
     }
     static public function of(...$arguments): ConditionCollection
@@ -68,7 +68,20 @@ class ConditionCollection extends FragmentCollection
                             default => sprintf('%s = ({#::#})', $quoted)
                         };
                         $this->append(new Fragment($query, [$value]));
-                    } else if ($value === null || is_scalar($value)) {
+                    } else if ($value === null) {
+                        $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
+                            null => $key,
+                            default => sprintf('%s IS NULL', $quoted)
+                        };
+                        match ($quoted) {
+                            /**
+                             * This is questionable, since bound value of null will always require extra tricks 
+                             * like type cast in order for the expression to work
+                             */
+                            null => $this->append(new Fragment($query, [$value])),
+                            default => $this->append(new Fragment($query))
+                        };
+                    } else if (is_scalar($value)) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,
                             default => sprintf('%s = {#}', $quoted)

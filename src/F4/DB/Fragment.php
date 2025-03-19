@@ -40,8 +40,9 @@ class Fragment implements FragmentInterface
     public const string COMMA_PARAMETER_PLACEHOLDER = '{#,...#}';
     public const string SUBQUERY_PARAMETER_PLACEHOLDER = '{#::#}';
 
-    public function __construct(?string $query=null, array $parameters = []) {
-        if($query !== null) {
+    public function __construct(?string $query = null, array $parameters = [])
+    {
+        if ($query !== null) {
             $this->setQuery(query: $query, parameters: $parameters);
         }
     }
@@ -49,17 +50,15 @@ class Fragment implements FragmentInterface
     {
         $patterns = $this->extractPlaceholders($query);
         if (count($patterns) !== count($parameters)) {
-            throw new InvalidArgumentException('Parameter mismatch, expected: '.count($patterns).', received: '.count($parameters));
+            throw new InvalidArgumentException('Parameter mismatch, expected: ' . count($patterns) . ', received: ' . count($parameters));
         }
         foreach ($patterns as $index => $pattern) {
             if (($pattern === self::SINGLE_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || (!is_scalar($parameters[$index]) && $parameters[$index] !== null))) {
-                throw new InvalidArgumentException('Only scalars are supported for '.self::SINGLE_PARAMETER_PLACEHOLDER);
-            }
-            else if (($pattern === self::COMMA_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !is_array($parameters[$index]))) {
-                throw new InvalidArgumentException('Only arrays are supported for '.self::COMMA_PARAMETER_PLACEHOLDER);
-            }
-            else if (($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !($parameters[$index] instanceof FragmentInterface))) {
-                throw new InvalidArgumentException('Only DB objects are supported for '.self::SUBQUERY_PARAMETER_PLACEHOLDER);
+                throw new InvalidArgumentException('Only scalars are supported for ' . self::SINGLE_PARAMETER_PLACEHOLDER);
+            } else if (($pattern === self::COMMA_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !is_array($parameters[$index]))) {
+                throw new InvalidArgumentException('Only arrays are supported for ' . self::COMMA_PARAMETER_PLACEHOLDER);
+            } else if (($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) && (!array_key_exists($index, $parameters) || !($parameters[$index] instanceof FragmentInterface))) {
+                throw new InvalidArgumentException('Only DB objects are supported for ' . self::SUBQUERY_PARAMETER_PLACEHOLDER);
             }
         }
         $this->query = $query;
@@ -68,12 +67,12 @@ class Fragment implements FragmentInterface
     }
     public function getQuery(): string
     {
-        return match(empty($this->query)) {
+        return match (empty($this->query)) {
             true => '',
-            default => match($this->prefix) {
-                null => $this->query,
-                default => sprintf('%s %s', $this->prefix, $this->query)
-            }
+            default => match ($this->prefix) {
+                    null => $this->query,
+                    default => sprintf('%s %s', $this->prefix, $this->query)
+                }
         };
     }
     public function getParameters(): array
@@ -85,27 +84,29 @@ class Fragment implements FragmentInterface
         $this->prefix = $prefix;
         return $this;
     }
-    public function getPreparedStatement(?callable $enumeratorCallback = null): PreparedStatement {
+    public function getPreparedStatement(?callable $enumeratorCallback = null): PreparedStatement
+    {
         /**
          * This is the default parameter enumerator for pg_sql, which converts every single parameter placeholder, 
          * or {#}, into $1, $2, $3 etc.
          * 
          * Other databases or drivers may use a different convention for prepared statement parameters,
          * in those situations $enumeratorCallback could be supplied to provide an alternative
-         */ 
-        $enumeratorCallback ??= function($index): string {
+         */
+        $enumeratorCallback ??= function (int $index): string {
             return sprintf('$%d', $index);
         };
         [$query, $parameters] = $this->unpackComplexPlaceholders(query: $this->query, parameters: $this->parameters);
         $index = 1;
-        $query = Preg::replaceCallback("/(".preg_quote(self::SINGLE_PARAMETER_PLACEHOLDER, '/').")/u", function () use (&$index, $enumeratorCallback) {
+        $query = Preg::replaceCallback("/(" . preg_quote(self::SINGLE_PARAMETER_PLACEHOLDER, '/') . ")/u", function () use (&$index, $enumeratorCallback) {
             return $enumeratorCallback($index++);
         }, $query);
         return new PreparedStatement(query: $query, parameters: $parameters);
     }
 
-    protected function getPlaceholderRegExp(): string {
-        return implode('|', array_map(function($pattern) {
+    protected function getPlaceholderRegExp(): string
+    {
+        return implode('|', array_map(function ($pattern) {
             return preg_quote($pattern, '/');
         }, [
             self::SINGLE_PARAMETER_PLACEHOLDER,
@@ -113,31 +114,31 @@ class Fragment implements FragmentInterface
             self::SUBQUERY_PARAMETER_PLACEHOLDER
         ]));
     }
-    protected function extractPlaceholders(string $query): array {
+    protected function extractPlaceholders(string $query): array
+    {
         $regExpPattern = $this->getPlaceholderRegExp();
-        return match(Preg::matchAll(pattern: "/({$regExpPattern})/u", subject: $query, matches: $matches)) {
+        return match (Preg::matchAll(pattern: "/({$regExpPattern})/u", subject: $query, matches: $matches)) {
             false => [],
             default => $matches[1] ?? []
         };
     }
-    protected function unpackComplexPlaceholders(string $query, array $parameters): array {
+    protected function unpackComplexPlaceholders(string $query, array $parameters): array
+    {
         $regExpPattern = $this->getPlaceholderRegExp();
         $unpackedParameters = [];
         $unpackedQuery = Preg::replaceCallback("/({$regExpPattern})/u", function ($matches) use (&$parameters, &$unpackedParameters) {
             $pattern = $matches[1];
             if ($pattern === self::COMMA_PARAMETER_PLACEHOLDER) {
-                return implode(',', array_map(function($value) use (&$unpackedParameters) {
+                return implode(',', array_map(function ($value) use (&$unpackedParameters) {
                     $unpackedParameters[] = $value;
                     return self::SINGLE_PARAMETER_PLACEHOLDER;
                 }, array_shift($parameters)));
-            }
-            elseif($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) {
+            } elseif ($pattern === self::SUBQUERY_PARAMETER_PLACEHOLDER) {
                 $fragment = array_shift($parameters);
                 [$subQuery, $subParameters] = $this->unpackComplexPlaceholders($fragment->getQuery(), $fragment->getParameters());
                 $unpackedParameters = [...$unpackedParameters, ...$subParameters];
                 return $subQuery;
-            }
-            else {
+            } else {
                 $unpackedParameters[] = array_shift($parameters);
                 return self::SINGLE_PARAMETER_PLACEHOLDER;
             };

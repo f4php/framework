@@ -118,6 +118,7 @@ final class DBTest extends TestCase
         $db5 = DB::select()->from('t1')->except()->select()->from('t2');
         $db6 = DB::select()->from('t1')->exceptAll()->select()->from('t2');
         $db7 = DB::select()->from('t1')->union()->select()->from('t2')->intersect()->select()->from('t3')->except()->select()->from('t4');
+        $db8 = DB::select()->from('t1')->where(['a'=>1])->union()->select()->from('t2')->where(['b'=>2]);
         $this->assertSame('SELECT * FROM "t1" UNION SELECT * FROM "t2"', $db1->getPreparedStatement()->query);
         $this->assertSame('SELECT * FROM "t1" UNION ALL SELECT * FROM "t2"', $db2->getPreparedStatement()->query);
         $this->assertSame('SELECT * FROM "t1" INTERSECT SELECT * FROM "t2"', $db3->getPreparedStatement()->query);
@@ -125,6 +126,7 @@ final class DBTest extends TestCase
         $this->assertSame('SELECT * FROM "t1" EXCEPT SELECT * FROM "t2"', $db5->getPreparedStatement()->query);
         $this->assertSame('SELECT * FROM "t1" EXCEPT ALL SELECT * FROM "t2"', $db6->getPreparedStatement()->query);
         $this->assertSame('SELECT * FROM "t1" UNION SELECT * FROM "t2" INTERSECT SELECT * FROM "t3" EXCEPT SELECT * FROM "t4"', $db7->getPreparedStatement()->query);
+        $this->assertSame('SELECT * FROM "t1" WHERE "a" = $1 UNION SELECT * FROM "t2" WHERE "b" = $2', $db8->getPreparedStatement()->query);
     }
 
     public function testGroupByHaving(): void
@@ -237,22 +239,6 @@ final class DBTest extends TestCase
         $this->assertSame('SELECT * FROM "table" AS "t1" WHERE "a" = \'b\' AND "c" IN (\'d\',\'e\',\'f\')', $db2->asSQL());
         $db3 = DB::select()->from('table t1')->where(["a" => "O'Reilly"]);
         $this->assertSame('SELECT * FROM "table" AS "t1" WHERE "a" = \'O\'\'Reilly\'', $db3->asSQL());
-        // $db2 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc'])->values(['fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->returning('fieldH');
-        // $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA", "fieldB", "fieldC") VALUES ($1, $2, $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6 RETURNING "fieldH"', $db2->getPreparedStatement()->query);
-        // $db3 = DB::update('table1 t1')->set(['fieldA' => 2])->set(['fieldB' => 3]);
-        // $this->assertSame('UPDATE "table1" AS "t1" SET "fieldA" = $1, "fieldB" = $2', $db3->getPreparedStatement()->query);
-        // $db4 = DB::select()->from('t1')->order(['a'=>'asc'])->orderBy(['b'=>'desc ']);
-        // $this->assertSame('SELECT * FROM "t1" ORDER BY "a" ASC, "b" DESC', $db4->getPreparedStatement()->query);
-        // $db5 = DB::insert()->into('table1 t1')->values(['fieldA'=>1, 'fieldB'=>'abc', 'fieldC'=>'defg'])->where(['fieldD'=>5, '"fieldE" > {#}' => 7])->onConflict('fieldF')->doUpdateSet(['fieldG' => 2])->doUpdateSet(['fieldH' => 3])->returning('fieldH');
-        // $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA", "fieldB", "fieldC") VALUES ($1, $2, $3) WHERE "fieldD" = $4 AND "fieldE" > $5 ON CONFLICT ("fieldF") DO UPDATE SET "fieldG" = $6, "fieldH" = $7 RETURNING "fieldH"', $db5->getPreparedStatement()->query);
-        // $db6 = DB::select()->from('t1')->group('a', 'b', 'c')->having(['"d" > {#}' => 7, '"e" < {#}' => 2]);
-        // $this->assertSame('SELECT * FROM "t1" GROUP BY ("a", "b", "c") HAVING "d" > $1 AND "e" < $2', $db6->getPreparedStatement()->query);
-        // $db7 = DB::select()->from('t1')->groupBy(['a'])->groupBy(['b', 'c'])->having(['d > {#}' => 7]);
-        // $this->assertSame('SELECT * FROM "t1" GROUP BY ("a", "b", "c") HAVING d > $1', $db7->getPreparedStatement()->query);
-        // $db8 = DB::select()->from('t1')->groupByAll(['a'])->groupBy(['b', 'c'])->having(['d > {#}' => 7]);
-        // $this->assertSame('SELECT * FROM "t1" GROUP BY ALL ("a", "b", "c") HAVING d > $1', $db8->getPreparedStatement()->query);
-        // $db9 = DB::select()->from('t1')->groupByDistinct(['a'])->groupBy(['b', 'c'])->having(['d > {#}' => 7]);
-        // $this->assertSame('SELECT * FROM "t1" GROUP BY DISTINCT ("a", "b", "c") HAVING d > $1', $db9->getPreparedStatement()->query);
     }
 
 }

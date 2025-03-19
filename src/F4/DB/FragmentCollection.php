@@ -79,6 +79,10 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     {
         return $this->name;
     }
+    public function resetName(): void
+    {
+        $this->name = null;
+    }
     public function withPrefix(string $prefix): static
     {
         $this->prefix = $prefix;

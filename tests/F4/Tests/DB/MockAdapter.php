@@ -32,22 +32,17 @@ final class MockAdapter implements AdapterInterface
     }
     public function getEscapedValue(mixed $value): string
     {
-        return match (is_array($value)) {
-            true => implode(',', array_map(function ($item): string {
-                    return $this->getEscapedValue($item);
-                }, $value)),
-            default => match ($value === null) {
-                    true => 'NULL',
-                    default => match (is_bool($value)) {
-                            true => $value ? 'TRUE' : 'FALSE',
-                            default => match (is_int($value) || is_float($value)) {
-                                    true => (string) $value,
-                                    default => match ($value instanceof DateTime) {
-                                            true => $value->format('Y-m-d H:i:s'),
-                                            default => match (is_scalar($value)) {
-                                                    true => sprintf("'%s'", Preg::replace(pattern: "/'/u", replacement: "''", subject: $value)),
-                                                    default => throw new InvalidArgumentException('Unsupported parameter type')
-                                                }
+        return match ($value === null) {
+            true => 'NULL',
+            default => match (is_bool($value)) {
+                    true => $value ? 'TRUE' : 'FALSE',
+                    default => match (is_int($value) || is_float($value)) {
+                            true => (string) $value,
+                            default => match ($value instanceof DateTime) {
+                                    true => $value->format('Y-m-d H:i:s'),
+                                    default => match (is_scalar($value)) {
+                                            true => sprintf("'%s'", Preg::replace(pattern: "/'/u", replacement: "''", subject: $value)),
+                                            default => throw new InvalidArgumentException('Unsupported parameter type')
                                         }
                                 }
                         }

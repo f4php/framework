@@ -13,6 +13,7 @@ interface FragmentCollectionInterface
     public function getFragments(): array;
     public function getName(): ?string;
     public function withName(string $name): static;
+    public function resetName(): void;
     public function withPrefix(string $prefix): static;
     public function findFragmentCollectionByName(string $name): ?FragmentCollectionInterface;
     public function getPreparedStatement(?callable $enumeratorFunction = null): PreparedStatement;

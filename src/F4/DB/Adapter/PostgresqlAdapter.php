@@ -40,6 +40,7 @@ use function mb_trim;
 use function pg_get_result;
 use function pg_fetch_row;
 use function pg_free_result;
+use function pg_escape_identifier;
 use function pg_escape_literal;
 use function pg_field_name;
 use function pg_field_type;
@@ -258,6 +259,11 @@ class PostgresqlAdapter implements AdapterInterface
                         }
                 }
         };
+    }
+
+    public function getEscapedIdentifier(mixed $value): string
+    {
+        return pg_escape_identifier($this->connection, (string)$value);
     }
 
 }

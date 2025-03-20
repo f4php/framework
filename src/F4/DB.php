@@ -276,9 +276,10 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
         };
         return $this->getPreparedStatement($escapedParametersEnumerator)->query;
     }
-    public function escapeIdentifier(string $identifier): string
+    public static function escapeIdentifier(string $identifier): string
     {
-        return $this->adapter->getEscapedIdentifier($identifier);
+        $instance = new self();
+        return $instance->adapter->getEscapedIdentifier($identifier);
     }
     protected function resetAllFragmentCollectionsNames() {
         array_map( function(FragmentInterface $fragment) {

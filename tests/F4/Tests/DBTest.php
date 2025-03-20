@@ -240,5 +240,10 @@ final class DBTest extends TestCase
         $db3 = DB::select()->from('table t1')->where(["a" => "O'Reilly"]);
         $this->assertSame('SELECT * FROM "table" AS "t1" WHERE "a" = \'O\'\'Reilly\'', $db3->asSQL());
     }
+    public function testEscapeIdentifier(): void
+    {
+        $identifier1 = DB::escapeIdentifier('table"name');
+        $this->assertSame('"table""name"', $identifier1);
+    }
 
 }

@@ -49,5 +49,9 @@ final class MockAdapter implements AdapterInterface
                 }
         };
     }
+    public function getEscapedIdentifier(string $value): string
+    {
+        return sprintf('"%s"', Preg::replace(pattern: '/"/u', replacement: '""', subject: $value));
+    }
 
 }

@@ -26,7 +26,7 @@ use F4\Core\CoreApiInterface;
 use F4\Core\DebuggerInterface;
 use F4\Core\ExceptionRenderer;
 
-use F4\Core\LocalizerInterface;
+// use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 

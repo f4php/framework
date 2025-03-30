@@ -154,6 +154,10 @@ class Request implements RequestInterface
     {
         return $this->parameters;
     }
+    public function getParameter(string $name): mixed
+    {
+        return $this->parameters[$name] ?? null;
+    }
     public function setValidatedParameters(array $parameters): static
     {
         $this->validatedParameters = $parameters;
@@ -162,6 +166,10 @@ class Request implements RequestInterface
     public function getValidatedParameters(): array
     {
         return $this->validatedParameters;
+    }
+    public function getValidatedParameter(string $name): mixed
+    {
+        return $this->validatedParameters[$name] ?? null;
     }
     // Wrappers around PSR
 

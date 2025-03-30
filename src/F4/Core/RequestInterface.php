@@ -17,6 +17,8 @@ interface RequestInterface extends PsrServerRequestInterface
     static public function fromPsr(psrServerRequestInterface $psrRequest): self;
     public function setParameters(array $parameters): static;
     public function getParameters(): mixed;
+    public function getParameter(string $name): mixed;
     public function setValidatedParameters(array $parameters): static;
     public function getValidatedParameters(): mixed;
+    public function getValidatedParameter(string $name): mixed;
 }

@@ -9,7 +9,6 @@ use F4\DB\Adapter\AdapterInterface;
 use F4\DB\PreparedStatement;
 
 use ErrorException;
-use Exception;
 use InvalidArgumentException;
 use Throwable;
 use F4\DB\Exception\DuplicateColumnException;
@@ -17,6 +16,7 @@ use F4\DB\Exception\DuplicateFunctionException;
 use F4\DB\Exception\DuplicateRecordException;
 use F4\DB\Exception\DuplicateSchemaException;
 use F4\DB\Exception\DuplicateTableException;
+use F4\DB\Exception\Exception;
 use F4\DB\Exception\InvalidTableDefinitionException;
 use F4\DB\Exception\ParameterMismatchException;
 use F4\DB\Exception\SyntaxErrorException;
@@ -94,23 +94,14 @@ class PostgresqlAdapter implements AdapterInterface
             ||
             (!count($parameters) && !pg_send_query($this->connection, $query))
         ) {
-            match (Config::DEBUG_MODE) {
-                true => throw new ErrorException(message: pg_last_error($this->connection), code: 500),
-                default => throw new ErrorException('Failed to retrieve query result from the database', 500)
-            };
+            throw new Exception(message: pg_last_error($this->connection), code: 500);
         }
         $result = pg_get_result($this->connection);
         if (!is_resource($result) && (!$result instanceof Result)) {
-            match (Config::DEBUG_MODE) {
-                true => throw new ErrorException(message: pg_last_error($this->connection), code: 500),
-                default => throw new ErrorException('Failed to retrieve query result from the database', 500)
-            };
+            throw new Exception(message: pg_last_error($this->connection), code: 500);
         }
         if (($code = pg_result_error_field($result, PGSQL_DIAG_SQLSTATE)) !== null) {
-            match (Config::DEBUG_MODE) {
-                true => throw $this->convertErrorToException($code, pg_last_error($this->connection)),
-                default => throw new ErrorException('Error running database query', 500)
-            };
+            throw $this->convertErrorToException($code, pg_last_error($this->connection));
         }
         $data = [];
         while ((($stopAfter === null) || ($stopAfter > 0)) && ($row = pg_fetch_row($result)) !== FALSE) {

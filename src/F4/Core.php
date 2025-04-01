@@ -66,11 +66,11 @@ class Core implements CoreApiInterface
     protected DebuggerInterface $debugger;
     protected ResponseEmitterInterface $emitter;
     protected RouterInterface $router;
-    protected LocalizerInterface $localizer;
+    // TODO: add localizer
+    // protected LocalizerInterface $localizer;
     protected RequestInterface $request;
     protected ResponseInterface $response;
 
-    // TODO: add localizer
     public function __construct(string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS, string $routerClassName = Config::CORE_ROUTER_CLASS, string $debuggerClassName = Config::CORE_DEBUGGER_CLASS)
     {
         if (Config::DEBUG_MODE) {

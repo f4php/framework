@@ -31,11 +31,9 @@ trait ExceptionHandlerTrait
 
     public function processException(Throwable $exception, ...$arguments): mixed
     {
-        foreach ($this->exceptionHandlers as $className => $handlers) {
+        foreach ($this->exceptionHandlers as $className => $handler) {
             if ($exception instanceof $className) {
-                foreach ($handlers as $handler) {
-                    return $handler->call($this, $exception, ...$arguments);
-                }
+                return $handler->call($this, $exception, ...$arguments);
             }
         }
         throw $exception;

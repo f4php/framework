@@ -80,7 +80,7 @@ class RouteGroup implements RouteGroupInterface
         });
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed {
-        $result = [];
+        $result = null;
         if($route = $this->getMatchingRoute(request: $request, response: $response)) {
             try {
                 if(isset($this->requestMiddleware)) {

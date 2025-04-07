@@ -96,17 +96,18 @@ class Route implements RouteInterface
     protected function unpackPath(string $path): array {
         $regexpPieces = ['^'];
         $methods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE'];
-        $methodDefinitionPattern = implode(separator: '|', array: $methods).')(\|('.implode(separator: '|', array: $methods).')){,'.(count(value: $methods)-1).'}';
+        $methodDefinitionPattern = implode(separator: '|', array: $methods).')(\|('.implode(separator: '|', array: $methods).')){0,'.(count(value: $methods)-1).'}';
         $parameterNameDefinitionPattern = '(?<parameterNameDefinition>[a-zA-Z_][a-zA-Z0-9_]*?)';
         $parameterTypeDefinitionPattern = "(?<parameterTypeDefinition>(any|bool|float|int|regexp|string|uuid|uuid4))";
         $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>[^\)]*?)\)';
         $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
+        $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinitionPattern>[^\{\}\/\.]*?)';
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
         $extensions = $this->getAvailableExtensions();
         $extensionDefinitionPattern = implode(separator: '|', array: array_map(callback: function($extension):string {
             return preg_quote(str: $extension, delimiter: '/');
         }, array: $extensions));
-        $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern})+";
+        $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern}|{$prefixedLiteralPathDefinitionPattern})+";
         $definitionPattern = "^\s*((?i)(?<methodDefinition>({$methodDefinitionPattern})\s+)?(?<pathDefinition>({$pathDefinitionPattern}))(?<extensionDefinition>{$extensionDefinitionPattern})?\s*$";
         if(!Preg::isMatch(pattern: "/{$definitionPattern}/Anu", subject: $path, matches: $matches)) {
             throw new InvalidArgumentException(message: 'path parsing failed');

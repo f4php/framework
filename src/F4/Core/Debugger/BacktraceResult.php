@@ -40,7 +40,8 @@ class BacktraceResult
                 },
                 'line' => $frame->lineNumber,
                 'offset' => $lineOffset,
-                'arguments' => ExportResult::fromVariable($frame->arguments)->toArray(),
+                // TODO: This causes recursion loop
+                // 'arguments' => ExportResult::fromVariable($frame->arguments)->toArray(),
                 'class' => $frame->class,
                 'method' => $frame->method,
                 'vendor' => !$frame->applicationFrame,

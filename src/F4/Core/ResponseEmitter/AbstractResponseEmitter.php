@@ -11,8 +11,12 @@ use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
+use function array_find;
+use function array_keys;
 use function header;
 use function headers_sent;
+use function in_array;
+use function mb_strtolower;
 use function ob_get_level;
 use function ob_get_length;
 use function sprintf;
@@ -48,7 +52,7 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
     {
         $statusCode = $response->getStatusCode();
         foreach ($response->getHeaders() as $header => $values) {
-            $name = $this->filterHeader($header);
+            $name = $this->filterHeaderName($header);
             $first = $name !== 'Set-Cookie';
             foreach ($values as $value) {
                 $this->header(sprintf(
@@ -60,7 +64,14 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
             }
         }
     }
-    protected function filterHeader(string $header): string
+    public function shouldEmitBody(ResponseInterface $response): bool
+    {
+        return !in_array($response->getStatusCode(), [100, 101, 102, 103, 204, 205, 304])
+            && (null === array_find(array_keys($response->getHeaders()), function ($name): bool{
+                return mb_strtolower($name) === 'location';
+            }));
+    }
+    protected function filterHeaderName(string $header): string
     {
         return ucwords($header, '-');
     }
@@ -81,7 +92,9 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
         $this->checkForNoPreviousOutput();
         $this->emitHeaders($response);
         $this->emitStatusLine($response);
-        $this->emitBody($response);
+        if ($this->shouldEmitBody($response)) {
+            $this->emitBody($response);
+        }
         return true;
     }
 }

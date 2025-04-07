@@ -20,13 +20,12 @@ use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
 use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
 
+use function in_array;
+
 class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
     public function emit(ResponseInterface $response, ?RequestInterface $request = null): bool
     {
-        if (empty($template = $response->getTemplate())) {
-            throw new ErrorException(message: 'renderer template missing');
-        }
         if ($exception = $response->getException()) {
             $code = match (($code = $exception->getCode()) >= 400) {
                 true => $code,
@@ -61,7 +60,12 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         ]);
         $pugRenderer = new PhugTemplateRenderer();
         parent::emitHeaders($response);
-        $pugRenderer->displayFile(file: $template, args: $data);
+        if (parent::shouldEmitBody($response)) {
+            if (empty($template = $response->getTemplate())) {
+                throw new ErrorException(message: 'renderer template missing');
+            }
+            $pugRenderer->displayFile(file: $template, args: $data);
+        }
         return true;
     }
 

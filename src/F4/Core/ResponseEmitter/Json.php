@@ -11,7 +11,7 @@ use F4\Core\ResponseInterface;
 use F4\Core\ResponseEmitter\AbstractResponseEmitter;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-use function get_class;
+use function json_encode;
 
 class Json extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
@@ -25,14 +25,13 @@ class Json extends AbstractResponseEmitter implements ResponseEmitterInterface
             };
             $data = [
                 'error' => $exception->getMessage(),
-                // 'type' => get_class($exception), // this may be revealing too much internal information, so commented out for now
                 'code' => $code,
             ];
             $response = $response->withStatus($code, HttpException::PHRASES[$code] ?? 'Internal Server Error');
-            $response->getBody()->write(json_encode($data, JSON_THROW_ON_ERROR));
+            $response->getBody()->write(json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
             return parent::emit($response);
         }
-        $response->getBody()->write(json_encode($response->getData()));
+        $response->getBody()->write(json_encode($response->getData(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
         return parent::emit($response);
     }
 

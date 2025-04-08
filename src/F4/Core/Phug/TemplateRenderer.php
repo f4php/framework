@@ -30,6 +30,8 @@ class TemplateRenderer
                 'cache_dir' => (Config::DEBUG_MODE && !Config::TEMPLATE_CACHE_ENABLED) ? null : (Config::TEMPLATE_CACHE_PATH ?: sys_get_temp_dir()),
                 'paths' => self::getPaths(),
                 'enable_profiler' => false,
+                'memory_limit' => -1,
+                'execution_max_time' => -1,
                 'modules' => [
                     ViteBundleModule::class,
                     StripViteResourceModule::class,

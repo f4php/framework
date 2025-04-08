@@ -23,7 +23,7 @@ class ViteBundleModule extends AbstractCompilerModule
     protected const string ENTRY_POINT_NAME_PREFIX = 'virtual:f4/';
     protected const string DEFAULT_BUNDLE_NAME = 'default';
     protected const string VITE_DEVSERVER_HEADER = 'HTTP_X_VITE_DEVSERVER';
-
+    protected bool $viteClientCodeAdded = false;
     public function getEventListeners(): array
     {
         return [
@@ -31,17 +31,19 @@ class ViteBundleModule extends AbstractCompilerModule
                 $node = $event->getNode();
                 if ($node instanceof \Phug\Parser\Node\ElementNode) {
                     if (mb_substr($node->getName() ?? '', 0, mb_strlen(self::ELEMENT_NAME)) === self::ELEMENT_NAME) {
-                        $containerNode = new \Phug\Parser\Node\BlockNode;
-                        $containerNode->setName(sprintf('"%s"', 'f4_virtual_block_'.bin2hex(random_bytes(8))));
+                        // ConditionalNode is a convenient insertion point type that may contain arbitrary number of elements as children                        
+                        $containerNode = new \Phug\Parser\Node\ConditionalNode; 
                         $bundleName = mb_trim($node->getAttribute('name'), '\'\"') ?: self::DEFAULT_BUNDLE_NAME;
                         if(Config::DEBUG_MODE && isset($_SERVER[self::VITE_DEVSERVER_HEADER])) {
                             $scriptNode = new \Phug\Parser\Node\ElementNode();
                             $scriptNode->setName('script');
-                            $viteClientScriptNode = clone $scriptNode;
-                            $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', '/@vite/client')));
-                            $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
-
-                            $containerNode->appendChild($viteClientScriptNode);
+                            if(!$this->viteClientCodeAdded) {
+                                $viteClientScriptNode = clone $scriptNode;
+                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', '/@vite/client')));
+                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
+                                $containerNode->appendChild($viteClientScriptNode);
+                                $this->viteClientCodeAdded = true;
+                            }
                             $bundleClientScriptNode = clone $scriptNode;
                             $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', '/@id/__x00__'.self::ENTRY_POINT_NAME_PREFIX.$bundleName)));
                             $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
@@ -85,7 +87,6 @@ class ViteBundleModule extends AbstractCompilerModule
                                 $containerNode->appendChild($linkNode);
                             }
                         }
-
                         $event->setNode($containerNode);
                     }
                 }

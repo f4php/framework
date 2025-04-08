@@ -21,36 +21,32 @@ use function is_scalar;
 class ValueExpressionCollection extends FragmentCollection
 {
     protected const string GLUE = ', ';
-    public function __construct(...$arguments) {
+    public function __construct(...$arguments)
+    {
         $this->addExpression($arguments);
     }
 
-    public function addExpression(mixed $expression): void {
-        if(is_array($expression)) {
-            foreach($expression as $key=>$value) {
-                if(is_numeric($key)) {
+    public function addExpression(mixed $expression): void
+    {
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                if (is_numeric($key)) {
                     $this->addExpression($value);
-                }
-                else {
-                    if($value === null || is_scalar($value)) {
+                } else {
+                    if ($value === null || is_scalar($value)) {
                         $this->append(new Fragment($key, [$value]));
-                    }
-                    else if(is_array($value)) {
+                    } else if (is_array($value)) {
                         throw new InvalidArgumentException("Complex references are not supported");
-                    }
-                    else if($value instanceof FragmentInterface) {
+                    } else if ($value instanceof FragmentInterface) {
                         throw new InvalidArgumentException("Complex references are not supported");
-                    }
-                    else {
+                    } else {
                         throw new InvalidArgumentException("Unsupported expression");
                     }
                 }
             }
-        }
-        elseif($expression instanceof FragmentInterface) {
+        } elseif ($expression instanceof FragmentInterface) {
             $this->append($expression);
-        }
-        else {
+        } else {
             $this->append(new Fragment('{#}', [$expression]));
         }
     }

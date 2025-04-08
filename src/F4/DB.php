@@ -66,21 +66,21 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'dropTable' => $this
                 ->append('DROP TABLE')
                 ->append(new TableReferenceCollection(...$arguments))
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'dropTableIfExists' => $this
                 ->append('DROP TABLE IF EXISTS')
                 ->append(new TableReferenceCollection(...$arguments))
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'dropTableWithCascade' => $this
                 ->append('DROP TABLE')
                 ->append(new TableReferenceCollection(...$arguments))
                 ->append('CASCADE')
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'dropTableIfExistsWithCascade' => $this
                 ->append('DROP TABLE IF EXISTS')
                 ->append(new TableReferenceCollection(...$arguments))
                 ->append('CASCADE')
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'except' => $this
                 ->append('EXCEPT'),
             // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
@@ -116,7 +116,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new ConditionCollection(...$arguments))->withPrefix('HAVING')),
             'insert' => $this
                 ->append('INSERT')
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'intersect' => $this
                 ->append('INTERSECT'),
             // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
@@ -167,10 +167,10 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('RIGHT OUTER JOIN')),
             'select' => $this
                 ->append((new SelectExpressionCollection($arguments ?: '*'))->withPrefix('SELECT'))
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'selectDistinct' => $this
                 ->append((new SelectExpressionCollection($arguments ?: '*'))->withPrefix('SELECT DISTINCT'))
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'set' => (match ($existingNamedFragmentCollection = $this->findFragmentCollectionByName('set')) {
                     null => $this
                         ->append((new AssignmentCollection(...$arguments))->withPrefix('SET')->withName('set')),
@@ -179,14 +179,14 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 }),
             'update' => $this
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('UPDATE'))
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'union' => $this
-                ->append('UNION') 
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+                ->append('UNION')
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             // TODO: add support for parenthesis via argumens to union() to control order of evaluation for multiple unions/intersects/excepts
             'unionAll' => $this
-                ->append('UNION ALL') 
-                && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
+                ->append('UNION ALL')
+            && $this->resetAllFragmentCollectionsNames(), // resets the possibility to expand any previously added collection
             'using' => $this
                 ->append((new Parenthesize(new SimpleColumnReferenceCollection(...$arguments)))->withPrefix('USING')),
             'values' => array_map(function ($argument) {
@@ -281,9 +281,10 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
         $instance = new self();
         return $instance->adapter->getEscapedIdentifier($identifier);
     }
-    protected function resetAllFragmentCollectionsNames() {
-        array_map( function(FragmentInterface $fragment) {
-            if($fragment instanceof FragmentCollection) {
+    protected function resetAllFragmentCollectionsNames()
+    {
+        array_map(function (FragmentInterface $fragment) {
+            if ($fragment instanceof FragmentCollection) {
                 $fragment->resetName();
             }
         }, $this->getFragments());

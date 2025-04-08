@@ -50,14 +50,14 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     }
     public function getQuery(): string
     {
-        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
+        return match (empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
         }, $this->fragments))))) {
             true => '',
-            default => match($this->prefix) {
-                null => $query,
-                default => sprintf('%s %s', $this->prefix, $query)
-            }
+            default => match ($this->prefix) {
+                    null => $query,
+                    default => sprintf('%s %s', $this->prefix, $query)
+                }
         };
     }
     public function getParameters(): array
@@ -98,7 +98,7 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
     }
     public function findFragmentCollectionByName(string $name): ?FragmentCollectionInterface
     {
-        $fragment = array_find($this->getFragments(), function(FragmentInterface $fragment) use ($name) {
+        $fragment = array_find($this->getFragments(), function (FragmentInterface $fragment) use ($name) {
             return ($fragment instanceof FragmentCollection) && ($fragment->getName() === $name);
         });
         return $fragment;

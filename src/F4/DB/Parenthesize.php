@@ -19,20 +19,22 @@ use function sprintf;
  */
 class Parenthesize extends FragmentCollection
 {
-    public function __construct(...$arguments) {
-        array_map(function($argument): void {
+    public function __construct(...$arguments)
+    {
+        array_map(function ($argument): void {
             $this->append($argument);
         }, $arguments);
     }
-    public function getQuery(): string {
-        return match(empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
+    public function getQuery(): string
+    {
+        return match (empty($query = implode(static::GLUE, array_filter(array_map(function (FragmentInterface $fragment): string {
             return $fragment->getQuery();
         }, $this->fragments))))) {
             true => '',
-            default => match($this->prefix) {
-                null => sprintf("(%s)", $query),
-                default => sprintf('%s (%s)', $this->prefix, $query)
-            }
+            default => match ($this->prefix) {
+                    null => sprintf("(%s)", $query),
+                    default => sprintf('%s (%s)', $this->prefix, $query)
+                }
         };
     }
 

@@ -62,7 +62,7 @@ class Loader
     }
     public static function getEnvironments(): array
     {
-        if(!$fileContents = file_get_contents(filename: self::$path . "/composer.json")) {
+        if (!$fileContents = file_get_contents(filename: self::$path . "/composer.json")) {
             throw new ErrorException('Faile to locate composer.json file');
         }
         $composerConfiguration = json_decode(json: $fileContents, associative: true, flags: JSON_THROW_ON_ERROR);
@@ -102,8 +102,8 @@ class Loader
                     $configConstant = new Constant($configConstantName);
                     $configConstant->setPublic();
                     if ($reflectionClassConstant->hasType()) {
-                        match(($cofigConstantType = $reflectionClassConstant->getType()) instanceof ReflectionNamedType) {
-                            true => $configConstant->setType(($cofigConstantType->allowsNull()?'?':'').$cofigConstantType->getName()),
+                        match (($cofigConstantType = $reflectionClassConstant->getType()) instanceof ReflectionNamedType) {
+                            true => $configConstant->setType(($cofigConstantType->allowsNull() ? '?' : '') . $cofigConstantType->getName()),
                             default => throw new ErrorException("Class constant {$configConstantName} uses an unsupported type")
                         };
                     }
@@ -113,7 +113,7 @@ class Loader
                     if ($reflectionClassConstant->getAttributes(name: SensitiveParameter::class, flags: ReflectionAttribute::IS_INSTANCEOF)) {
                         $constantAttributes[SensitiveParameter::class] = [];
                         if ($cofigConstantType && $stripSensitiveData) {
-                            $constantValue = $cofigConstantType->allowsNull()?null:'';
+                            $constantValue = $cofigConstantType->allowsNull() ? null : '';
                             $constantComments[] = "Default value for {$configConstantName} was stripped as sensitive";
                         }
                     }
@@ -156,10 +156,10 @@ class Loader
         return (new PsrPrinter)->printFile($file);
     }
 
-    public static function getAssetsManifest(?string $path=null): array
+    public static function getAssetsManifest(?string $path = null): array
     {
-        $filename = self::$path.'/public'.self::$assetPath.($path??'.vite/manifest.json');
-        if(!file_exists($filename)) {
+        $filename = self::$path . '/public' . self::$assetPath . ($path ?? '.vite/manifest.json');
+        if (!file_exists($filename)) {
             throw new ErrorException('Cannot locate manifest file, did you forget to run `npm run build` in project root?');
         }
         return json_decode(json: file_get_contents(filename: $filename), associative: true, flags: JSON_THROW_ON_ERROR);

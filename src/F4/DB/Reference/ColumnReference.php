@@ -7,6 +7,8 @@ namespace F4\DB\Reference;
 use InvalidArgumentException;
 use F4\DB\Reference\SimpleReference;
 
+use function sprintf;
+
 /**
  * 
  * ColumnReference is a class used to detect column references and convert them to delimeted identifiers
@@ -23,7 +25,7 @@ class ColumnReference extends SimpleReference
         if (empty($matches['column'])) {
             throw new InvalidArgumentException('Cannot locate column identifier');
         }
-        return match(empty($matches['table'])) {
+        return match (empty($matches['table'])) {
             true => sprintf('"%s"', $matches['column']),
             default => sprintf('"%s"."%s"', $matches['table'], $matches['column'])
         };

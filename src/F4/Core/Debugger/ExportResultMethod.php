@@ -16,7 +16,7 @@ class ExportResultMethod extends ExportResultClosure implements ExportResultInte
         $type = 'method';
         $preview = static::generatePreview($variable, $name);
         $value = static::generateValue($variable, $name);
-        $name = Preg::replace(pattern: '/(^.+function\s+)|(\(\)$)/', replacement: '', subject: $name).'()';
+        $name = Preg::replace(pattern: '/(^.+function\s+)|(\(\)$)/', replacement: '', subject: $name) . '()';
         return new self($name, $type, $preview, $value, $meta);
     }
 

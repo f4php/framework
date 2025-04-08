@@ -20,27 +20,27 @@ class ExportResultScalar implements ExportResultInterface
         $preview = static::generatePreview($variable, $name);
         $value = static::generateValue($variable, $name);
         /** 
-        * @phpstan-ignore new.static
-        */
+         * @phpstan-ignore new.static
+         */
         return new static($name, $type, $preview, $value, $meta);
     }
     protected static function generatePreview(mixed $variable, ?string $name = null): string
     {
         $type = gettype($variable);
         return match ($type === 'integer' || $type === 'double') {
-            true => (string)$variable,
+            true => (string) $variable,
             default => match ($variable === null) {
-                true => 'null',
-                default => match ($type === 'boolean') {
-                    true => $variable ? 'true' : 'false',
-                    default => sprintf('"%s"', $variable)
+                    true => 'null',
+                    default => match ($type === 'boolean') {
+                            true => $variable ? 'true' : 'false',
+                            default => sprintf('"%s"', $variable)
+                        }
                 }
-            }
         };
     }
     protected static function generateValue(mixed $variable, ?string $name = null): mixed
     {
-        return match($variable === null) {
+        return match ($variable === null) {
             true => null,
             default => self::generatePreview($variable)
         };

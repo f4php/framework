@@ -7,6 +7,8 @@ namespace F4\DB\Reference;
 use InvalidArgumentException;
 use F4\DB\Reference\SimpleReference;
 
+use function sprintf;
+
 /**
  * 
  * TableReferenceWithAlias is a class used to detect table references with optional alias and convert them to delimeted identifiers
@@ -23,7 +25,7 @@ class TableReferenceWithAlias extends SimpleReference
         if (empty($matches['table'])) {
             throw new InvalidArgumentException('Cannot locate table identifier');
         }
-        return match(empty($matches['alias'])) {
+        return match (empty($matches['alias'])) {
             true => sprintf('"%s"', $matches['table']),
             default => sprintf('"%s" AS "%s"', $matches['table'], $matches['alias']),
         };

@@ -8,6 +8,7 @@ use Attribute;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use function is_bool;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsBool implements ValidatorAttributeInterface
@@ -15,7 +16,7 @@ class IsBool implements ValidatorAttributeInterface
     public function __construct() {}
     public function getFilteredValue(mixed $value): mixed
     {
-        return match(\is_bool(value: $value)) {
+        return match (is_bool(value: $value)) {
             false => throw new ValidationFailedException(message: "'{$value}' is not a valid boolean"),
             default => $value
         };

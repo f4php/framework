@@ -46,7 +46,7 @@ class ExportResultObject extends ExportResultScalar implements ExportResultInter
             $name = $reflectionClassConstant->name;
             // Strip sensitive parameters
             $value = count($reflectionClassConstant->getAttributes(SensitiveParameter::class)) ? null : $constants[$constantName];
-            return ExportResult::fromVariable($value, $name, ['modifier'=>"{$final}{$modifier}", 'type'=>$type])->toArray();
+            return ExportResult::fromVariable($value, $name, ['modifier' => "{$final}{$modifier}", 'type' => $type])->toArray();
         }, array_keys($constants));
     }
     protected static function generateObjectPropertiesPreview(object $object, ?int $filter = null): array
@@ -68,8 +68,8 @@ class ExportResultObject extends ExportResultScalar implements ExportResultInter
             $static = $reflectionProperty->isStatic() ? 'static ' : '';
             $type = $reflectionProperty->hasType() ? $reflectionProperty->getType()->__toString() . ' ' : '';
             $name = '$' . $reflectionProperty->name;
-            $value = $reflectionProperty->isInitialized($object) ? $reflectionProperty->getValue($object) : ( $reflectionProperty->hasDefaultValue() ? $reflectionProperty->getDefaultValue() : null);
-            return ExportResult::fromVariable($value, $name, ['modifier'=>"{$modifier}{$static}", 'type'=>$type])->toArray();
+            $value = $reflectionProperty->isInitialized($object) ? $reflectionProperty->getValue($object) : ($reflectionProperty->hasDefaultValue() ? $reflectionProperty->getDefaultValue() : null);
+            return ExportResult::fromVariable($value, $name, ['modifier' => "{$modifier}{$static}", 'type' => $type])->toArray();
         }, $reflectionObject->getProperties($filter));
     }
     protected static function generateObjectMethodsPreview(object $object, ?int $filter = null): array
@@ -95,7 +95,7 @@ class ExportResultObject extends ExportResultScalar implements ExportResultInter
             $modifier = $reflectionMethod->isPublic() ? 'public ' : ($reflectionMethod->isProtected() ? 'protected ' : ($reflectionMethod->isPrivate() ? 'private ' : ''));
             $static = $reflectionMethod->isStatic() ? 'static ' : '';
             $name = $reflectionMethod->name;
-            return ExportResultMethod::fromVariable($reflectionMethod->getClosure($object), "{$name}", ['modifier' => "{$modifier}{$static}", 'type'=>'function'])->toArray();
+            return ExportResultMethod::fromVariable($reflectionMethod->getClosure($object), "{$name}", ['modifier' => "{$modifier}{$static}", 'type' => 'function'])->toArray();
         }, $reflectionObject->getMethods($filter));
     }
     protected static function generatePreview(mixed $variable, ?string $name = null): string

@@ -254,7 +254,7 @@ class PostgresqlAdapter implements AdapterInterface
 
     public function getEscapedIdentifier(mixed $value): string
     {
-        return pg_escape_identifier($this->connection, (string)$value);
+        return pg_escape_identifier($this->connection, (string) $value);
     }
 
 }

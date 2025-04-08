@@ -46,7 +46,7 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
                 'headers' => $response->getHeaders(),
                 'meta' => $response->getMetaData(),
                 'data' => $response->getData(),
-                'exception' => match($exception = $response->getException()) {
+                'exception' => match ($exception = $response->getException()) {
                     null => null,
                     default => [
                         'code' => $exception->getCode(),
@@ -56,7 +56,7 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
             ],
         ];
         HookManager::triggerHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, [
-            'context'=>$data
+            'context' => $data
         ]);
         $pugRenderer = new PhugTemplateRenderer();
         parent::emitHeaders($response);
@@ -69,7 +69,8 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         return true;
     }
 
-    protected function getConfigConstants(): array {
+    protected function getConfigConstants(): array
+    {
         $object = new Config();
         $reflectionObject = new ReflectionObject($object);
         $constants = $reflectionObject->getConstants();

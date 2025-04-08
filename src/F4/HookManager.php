@@ -43,30 +43,35 @@ class HookManager
     protected static array $hooks = [];
     protected static array $baseContext = [];
 
-    public static function setBaseContext(array $context): void {
+    public static function setBaseContext(array $context): void
+    {
         self::$baseContext = $context;
     }
-    public static function getBaseContext(): array {
+    public static function getBaseContext(): array
+    {
         return self::$baseContext;
     }
-    public static function addHook(string $hookName, callable $callback): void {
+    public static function addHook(string $hookName, callable $callback): void
+    {
         self::$hooks[$hookName] = [...self::$hooks[$hookName] ?? [], $callback];
     }
-    public static function getHooks(?string $name=null): array {
-        return $name ? (self::$hooks[$name]??[]) : self::$hooks;
+    public static function getHooks(?string $name = null): array
+    {
+        return $name ? (self::$hooks[$name] ?? []) : self::$hooks;
     }
-    public static function resetHooks(?string $name=null): void {
-        if($name) {
+    public static function resetHooks(?string $name = null): void
+    {
+        if ($name) {
             self::$hooks[$name] = [];
-        }
-        else {
+        } else {
             self::$hooks = [];
         }
     }
-    public static function triggerHook(string $hookName, array $context): array {
+    public static function triggerHook(string $hookName, array $context): array
+    {
         $results = [];
-        if(!empty(self::$hooks[$hookName])) {
-            foreach(self::$hooks[$hookName] as $callback) {
+        if (!empty(self::$hooks[$hookName])) {
+            foreach (self::$hooks[$hookName] as $callback) {
                 $results[] = $callback([...self::$baseContext, ...$context]);
             }
         }

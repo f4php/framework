@@ -26,21 +26,19 @@ class Validator
     public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
     public const int ALL_ATTRIBUTES_MUST_BE_CLASSES = 1 << 1;
 
-    public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT)
-    {
-
-    }
+    public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT) {}
     protected static function getFilteredValue(mixed $value, array $filters): mixed
     {
-        (function (ValidatorAttributeInterface ...$filters): void {})(...$filters);
-        foreach($filters as $filter) {
+        (function (ValidatorAttributeInterface ...$filters): void{})(...$filters);
+        foreach ($filters as $filter) {
             $value = $filter->getFilteredValue($value);
         }
         return $value;
     }
-    protected function findInvalidAttributeName(array $attributes): ?string {
-        foreach($attributes as $attribute) {
-            if(!class_exists(class: $name = $attribute->getName())) {
+    protected function findInvalidAttributeName(array $attributes): ?string
+    {
+        foreach ($attributes as $attribute) {
+            if (!class_exists(class: $name = $attribute->getName())) {
                 return $name;
             }
         }
@@ -52,10 +50,11 @@ class Validator
         if ($parameters = (new ReflectionFunction(function: $handler))->getParameters()) {
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
-                $type = (string)$parameter->getType(); // NB: $type could be a pipe-separated list of simple types
+                $type = (string) $parameter->getType(); // NB: $type could be a pipe-separated list of simple types
                 $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
-                if(($this->flags & self::ALL_ATTRIBUTES_MUST_BE_CLASSES) && (
-                    null !== ($invalidAttributeName = $this->findInvalidAttributeName(attributes: $parameter->getAttributes())))
+                if (
+                    ($this->flags & self::ALL_ATTRIBUTES_MUST_BE_CLASSES) && (
+                        null !== ($invalidAttributeName = $this->findInvalidAttributeName(attributes: $parameter->getAttributes())))
                 ) {
                     throw new ValidationFailedException(message: "All argument must be valid class names, '{$invalidAttributeName}' is not");
                 }
@@ -63,34 +62,32 @@ class Validator
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
-                        ->setArgumentType(argumentType: $type); 
-                }
-                else {
+                        ->setArgumentType(argumentType: $type);
+                } else {
                     $filters = [];
                     if ($attributes) {
                         $filters = [
                             ...$filters,
                             ...array_map(
                                 callback: fn($attribute): mixed => $attribute->newInstance(),
-                                array: $attributes
+                            array: $attributes,
                             )
                         ];
-                    }
-                    elseif(
+                    } elseif (
                         ($this->flags & self::SANITIZE_STRINGS_BY_DEFAULT) && (
-                        (array_intersect(explode(separator: '|', string: $type), ['',  'string', '?string']))
-                        || 
-                        ($parameter->isDefaultValueAvailable() && is_string(value: $parameter->getDefaultValue()))
-                    )) {
+                            (array_intersect(explode(separator: '|', string: $type), ['', 'string', '?string']))
+                            ||
+                            ($parameter->isDefaultValueAvailable() && is_string(value: $parameter->getDefaultValue()))
+                        )
+                    ) {
                         $filters[] = new SanitizedString();
                     }
                     try {
                         $filteredArguments[$name] = self::getFilteredValue(
                             value: $arguments[$name] ?? null,
-                            filters: $filters
+                            filters: $filters,
                         ) ?? (($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null);
-                    }
-                    catch (ValidationFailedException $e) {
+                    } catch (ValidationFailedException $e) {
                         $e->setArgumentName(argumentName: $name);
                         $e->setArgumentType(argumentType: $type);
                         throw $e;

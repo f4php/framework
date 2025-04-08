@@ -12,13 +12,9 @@ use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
 
 use F4\Core\Debugger\BacktraceResult;
 
-// use function array_slice;
-// use function explode;
-// use function file_get_contents;
 use function get_class;
 use function header;
 use function json_encode;
-// use function max;
 use function ob_end_clean;
 use function php_sapi_name;
 use function restore_error_handler;
@@ -54,14 +50,14 @@ class ExceptionRenderer
             // $lines = array_slice(array: explode(separator: "\n", string: $file), offset: \max(0, $exception->getLine() - 10), length: 20);
             $data = [
                 'exception' => [
-                    'class'     => get_class($exception),
-                    'code'      => $exception->getCode() ?: 500,
-                    'message'   => $exception->getMessage(),
-                    ...match(Config::DEBUG_MODE) {
+                    'class' => get_class($exception),
+                    'code' => $exception->getCode() ?: 500,
+                    'message' => $exception->getMessage(),
+                    ...match (Config::DEBUG_MODE) {
                         true => [
-                            'file'      => $exception->getFile(),
-                            'line'      => $exception->getLine(),
-                            'trace'     => BacktraceResult::fromThrowable($exception)->toArray()
+                            'file' => $exception->getFile(),
+                            'line' => $exception->getLine(),
+                            'trace' => BacktraceResult::fromThrowable($exception)->toArray()
                         ],
                         default => []
                     }
@@ -93,7 +89,7 @@ class ExceptionRenderer
         } catch (Throwable $e) {
             header(header: "Content-Type: text/plain; charset=" . Config::RESPONSE_CHARSET);
             echo $e->getMessage();
-            if(Config::DEBUG_MODE) {
+            if (Config::DEBUG_MODE) {
                 echo $e->getTraceAsString();
             }
         }

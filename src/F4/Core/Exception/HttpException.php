@@ -75,6 +75,6 @@ class HttpException extends Exception
         if ($code < 400) {
             throw new ErrorException('HTTP error code must be 400 or higher');
         }
-        parent::__construct($message, $code);
+        parent::__construct($message ?: (self::PHRASES[$code] ?? $this->message), $code);
     }
 }

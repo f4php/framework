@@ -31,7 +31,7 @@ class ExportResultClosure extends ExportResultScalar implements ExportResultInte
         $parameters = implode(', ', array_map(function (ReflectionParameter $reflectionParameter): string {
             $type = $reflectionParameter->hasType() ? $reflectionParameter->getType()->__toString() . ' ' : '';
             $name = '$' . $reflectionParameter->name;
-            $defaultValue = $reflectionParameter->isDefaultValueAvailable() ? ' = '.ExportResult::fromVariable($reflectionParameter->getDefaultValue())->getPreview() : null;
+            $defaultValue = $reflectionParameter->isDefaultValueAvailable() ? ' = ' . ExportResult::fromVariable($reflectionParameter->getDefaultValue())->getPreview() : null;
             return "{$type}{$name}{$defaultValue}";
         }, $reflectionFunction->getParameters()));
         return "function {$name}({$parameters}){$type} { /*...*/ }";
@@ -39,7 +39,7 @@ class ExportResultClosure extends ExportResultScalar implements ExportResultInte
     protected static function generateValue(mixed $variable, ?string $name = null): array
     {
         $reflectionFunction = new ReflectionFunction($variable);
-        $parameters =  array_map(function (ReflectionParameter $reflectionParameter): array {
+        $parameters = array_map(function (ReflectionParameter $reflectionParameter): array {
             $type = $reflectionParameter->hasType() ? $reflectionParameter->getType()->__toString() . ' ' : '';
             $name = '$' . $reflectionParameter->name;
             $defaultValue = $reflectionParameter->isDefaultValueAvailable() ? $reflectionParameter->getDefaultValue() : null;

@@ -34,7 +34,7 @@ class BacktraceResult
         $lineOffset = -2;
         return array_map(function (BacktraceFrame $frame) use ($lineOffset): array {
             return [
-                'file' => match($frame->file === 'unknown') {
+                'file' => match ($frame->file === 'unknown') {
                     true => null,
                     default => $frame->file
                 },
@@ -46,9 +46,9 @@ class BacktraceResult
                 'method' => $frame->method,
                 'vendor' => !$frame->applicationFrame,
                 'source' => match ($frame->file === 'unknown' && $frame->lineNumber === 0) {
-                        true => null,
-                        default => self::fetchSourceCode($frame->file, $frame->lineNumber + $lineOffset)
-                    }
+                    true => null,
+                    default => self::fetchSourceCode($frame->file, $frame->lineNumber + $lineOffset)
+                }
             ];
         }, $backtrace->frames());
     }
@@ -57,15 +57,17 @@ class BacktraceResult
         $file = file_get_contents(filename: $file);
         $lines = array_slice(array: explode(separator: "\n", string: $file), offset: max(0, $line - 1), length: $length);
         if ($stripLeadingWhitespace) {
-            $lines = array_map(fn($line) => 
-                mb_substr($line, 
-                min(
-                    array_map(fn($l) => 
-                        mb_strlen(preg_match('/^( +)/u', $l, $m) ? $m[1] : ''),
-                        array_filter($lines, fn($l) => $l) // ignore empty lines
-                    )
-                )
-            ), $lines);
+            $lines = array_map(fn($line) =>
+                mb_substr(
+                    $line,
+                    min(
+                        array_map(
+                            fn($l) =>
+                            mb_strlen(preg_match('/^( +)/u', $l, $m) ? $m[1] : ''),
+                            array_filter($lines, fn($l) => $l) // ignore empty lines
+                        ),
+                    ),
+                ), $lines);
         }
         return implode("\n", $lines);
     }

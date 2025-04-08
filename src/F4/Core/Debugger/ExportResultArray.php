@@ -24,9 +24,9 @@ class ExportResultArray extends ExportResultScalar implements ExportResultInterf
             $value = $variable[$key];
             return match (is_numeric($key)) {
                 true => match ($compact) {
-                    true => ExportResult::fromVariable($value)->getPreview(),
-                    default => "{$key} => " . ExportResult::fromVariable($value)->getPreview()
-                },
+                        true => ExportResult::fromVariable($value)->getPreview(),
+                        default => "{$key} => " . ExportResult::fromVariable($value)->getPreview()
+                    },
                 default => "\"{$key}\" => " . ExportResult::fromVariable($value)->getPreview()
             };
         }, array_keys($variable))) . ']';
@@ -34,7 +34,7 @@ class ExportResultArray extends ExportResultScalar implements ExportResultInterf
     protected static function generateValue(mixed $variable, ?string $name = null): mixed
     {
         return array_map(function ($key) use ($variable): mixed {
-            return ExportResult::fromVariable($variable[$key], (string)$key)->toArray();
+            return ExportResult::fromVariable($variable[$key], (string) $key)->toArray();
         }, array_keys($variable));
     }
 }

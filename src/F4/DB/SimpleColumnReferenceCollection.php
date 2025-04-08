@@ -22,27 +22,26 @@ use function is_numeric;
 class SimpleColumnReferenceCollection extends FragmentCollection
 {
     protected const string GLUE = ', ';
-    public function __construct(...$arguments) {
+    public function __construct(...$arguments)
+    {
         $this->addExpression($arguments);
     }
 
-    public function addExpression($expression): void {
-        if(is_array($expression)) {
-            foreach($expression as $key=>$value) {
-                if(is_numeric($key)) {
+    public function addExpression($expression): void
+    {
+        if (is_array($expression)) {
+            foreach ($expression as $key => $value) {
+                if (is_numeric($key)) {
                     $this->addExpression($value);
-                }
-                else {
+                } else {
                     throw new InvalidArgumentException("Complex references are not supported");
                 }
             }
-        }
-        elseif($expression instanceof FragmentInterface) {
+        } elseif ($expression instanceof FragmentInterface) {
             $this->append($expression);
-        }
-        else {
-            $query = match($quoted = (new ColumnReference((string)$expression))->delimitedIdentifier) {
-                null => (string)$expression,
+        } else {
+            $query = match ($quoted = (new ColumnReference((string) $expression))->delimitedIdentifier) {
+                null => (string) $expression,
                 default => $quoted
             };
             $this->append(new Fragment($query, []));

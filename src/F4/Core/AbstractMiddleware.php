@@ -15,7 +15,8 @@ abstract class AbstractMiddleware implements MiddlewareInterface
         $this->handler = $handler(...);
     }
 
-    public function getHandler(): Closure {
+    public function getHandler(): Closure
+    {
         return $this->handler;
     }
 }

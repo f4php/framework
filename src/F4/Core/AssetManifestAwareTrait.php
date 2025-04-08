@@ -15,11 +15,11 @@ trait AssetManifestAwareTrait
     {
         $entries = Loader::getAssetsManifest(path: $path);
         $entry = $entries[$entryPoint][$property] ?? null;
-        return match(is_array($entry)) {
-            true => array_map(function($entry) use ($prependPath) {
-                return $entry ? (($prependPath?Loader::getAssetPath():'') . $entry) : null;
-            }, $entry),
-            default => $entry ? (($prependPath?Loader::getAssetPath():'') . $entry) : null
+        return match (is_array($entry)) {
+            true => array_map(function ($entry) use ($prependPath) {
+                    return $entry ? (($prependPath ? Loader::getAssetPath() : '') . $entry) : null;
+                }, $entry),
+            default => $entry ? (($prependPath ? Loader::getAssetPath() : '') . $entry) : null
         };
     }
 }

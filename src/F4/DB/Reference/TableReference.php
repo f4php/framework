@@ -7,6 +7,8 @@ namespace F4\DB\Reference;
 use InvalidArgumentException;
 use F4\DB\Reference\SimpleReference;
 
+use function sprintf;
+
 /**
  * 
  * TableReference is a class used to detect table references and convert them to delimeted identifiers

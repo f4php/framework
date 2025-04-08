@@ -10,7 +10,6 @@ use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\Route;
 use F4\Core\RouterInterface;
-use F4\ModuleInterface;
 
 class CoreApiProxy implements CoreApiInterface
 {
@@ -126,7 +125,8 @@ class CoreApiProxy implements CoreApiInterface
     {
         return $this->core->emit($response, $request);
     }
-    public function log(mixed $value, ?string $description = null): void {
+    public function log(mixed $value, ?string $description = null): void
+    {
         $this->core->log($value, $description);
     }
 

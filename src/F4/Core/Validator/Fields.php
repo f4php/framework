@@ -8,6 +8,12 @@ use Attribute;
 use InvalidArgumentException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use function array_filter;
+use function array_keys;
+use function array_map;
+use function array_reduce;
+use function is_array;
+
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Fields implements ValidatorAttributeInterface
 {
@@ -15,13 +21,13 @@ class Fields implements ValidatorAttributeInterface
     protected readonly array $definitions;
     public function __construct(array $definitions)
     {
-        if (\array_filter(array: \array_keys($definitions), callback: fn($key): bool => !\is_string(value: $key))) {
+        if (array_filter(array: array_keys($definitions), callback: fn($key): bool => !\is_string(value: $key))) {
             throw new InvalidArgumentException(message: "Field name must be a string");
         }
         (new class {
             function __invoke(array|ValidatorAttributeInterface $definitions): void
             {
-                \is_array(value: $definitions) && \array_map(callback: function ($definition): void{
+                is_array(value: $definitions) && array_map(callback: function ($definition): void{
                     $this($definition); }, array: $definitions);
             }
         })($definitions);
@@ -37,8 +43,8 @@ class Fields implements ValidatorAttributeInterface
     {
         $result = [];
         foreach ($this->definitions as $name => $filter) {
-            $result[$name] = match (\is_array(value: $filter)) {
-                true => \array_reduce(array: (array) $filter, callback: fn($carry, $filter): mixed => $filter->getFilteredValue($carry), initial: $value[$name] ?? null),
+            $result[$name] = match (is_array(value: $filter)) {
+                true => array_reduce(array: (array) $filter, callback: fn($carry, $filter): mixed => $filter->getFilteredValue($carry), initial: $value[$name] ?? null),
                 default => $filter->getFilteredValue($value[$name] ?? null)
             };
         }

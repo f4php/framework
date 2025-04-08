@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use ErrorException;
-use RuntimeException;
 
 use Composer\Pcre\Preg;
 
@@ -33,7 +32,7 @@ use function preg_quote;
  * Directly extending Nyholm\Psr7\ServerRequest is heavily discouraged by the developers of Nyholm\* package
  * 
  */
-class Request implements RequestInterface 
+class Request implements RequestInterface
 {
     protected PsrServerRequestInterface $psrRequest;
     protected string $path;
@@ -46,7 +45,7 @@ class Request implements RequestInterface
     public function __construct(?PsrServerRequestInterface $psrRequest = null)
     {
         $psr17Factory = new Psr17Factory();
-        $request = match($psrRequest) {
+        $request = match ($psrRequest) {
             null => (new ServerRequestCreator(
                 $psr17Factory, // ServerRequestFactory
                 $psr17Factory, // UriFactory
@@ -63,7 +62,8 @@ class Request implements RequestInterface
         $this->initialize();
     }
 
-    public function initialize() {
+    public function initialize()
+    {
         $languages = [Config::DEFAULT_LANGUAGE, ...array_keys(Config::DICTIONARIES)];
         $languagesPattern =
             implode(separator: '|', array: array_map(callback: function ($language): string {
@@ -85,7 +85,7 @@ class Request implements RequestInterface
         $this->path = $matches['path'];
         $this->extension = $matches['extension'];
         $this->language = $matches['language'];
-        $this->debugExtension = match(Config::DEBUG_MODE) {
+        $this->debugExtension = match (Config::DEBUG_MODE) {
             true => $matches['debugExtension'],
             default => null
         };
@@ -95,7 +95,8 @@ class Request implements RequestInterface
             ...$this->getParsedBody() ?? []
         ]);
     }
-    static public function fromPsr(psrServerRequestInterface $psrRequest): static {
+    static public function fromPsr(psrServerRequestInterface $psrRequest): static
+    {
         return new self(psrRequest: $psrRequest);
     }
     protected function getAvailableExtensions(): array
@@ -105,12 +106,12 @@ class Request implements RequestInterface
             callback: function ($extensions, $emitterConfiguration): array {
                 return [...$extensions, ...$emitterConfiguration['extensions'] ?? []];
             },
-            initial: []
+            initial: [],
         );
     }
     protected function getAvailableDebugExtensions(): array
     {
-        return match(Config::DEBUG_MODE && !empty(Config::DEBUG_EXTENSION)) {
+        return match (Config::DEBUG_MODE && !empty(Config::DEBUG_EXTENSION)) {
             true => [Config::DEBUG_EXTENSION],
             default => []
         };

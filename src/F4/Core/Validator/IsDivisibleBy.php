@@ -8,15 +8,15 @@ use Attribute;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use function is_numeric;
+
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsDivisibleBy implements ValidatorAttributeInterface
 {
-    public function __construct(protected int $target)
-    {
-    }
+    public function __construct(protected int $target) {}
     public function getFilteredValue(mixed $value): mixed
     {
-        return match (\is_numeric(value: $value) && ($value % $this->target === 0)) {
+        return match (is_numeric(value: $value) && ($value % $this->target === 0)) {
             false => throw new ValidationFailedException(message: "'{$value}' is not an integer"),
             default => $value
         };

@@ -7,16 +7,16 @@ namespace F4\Core\Validator;
 use Attribute;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use function mb_trim;
+
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Trim implements ValidatorAttributeInterface
 {
-    public function __construct(protected ?string $characters = null)
-    {
-    }
+    public function __construct(protected ?string $characters = null) {}
 
     public function getFilteredValue(mixed $value): mixed
     {
-        return \mb_trim($value, $this->characters);
+        return mb_trim($value, $this->characters);
     }
 
 }

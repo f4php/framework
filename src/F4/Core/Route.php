@@ -6,6 +6,7 @@ namespace F4\Core;
 
 use Closure;
 use InvalidArgumentException;
+use ReflectionFunction;
 use Throwable;
 use ValueError;
 
@@ -233,7 +234,9 @@ class Route implements RouteInterface
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request'=>$request, 'route'=>$this, 'middleware'=>$this->requestMiddleware]);
             }
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route'=>$this, 'handler'=>$this->handler, 'parameters'=>$arguments]);
-            $response->setData($result = $this->handler->call($this, ...$arguments));
+            $handlerReflection = new ReflectionFunction($this->handler);
+            $handlerThis = $handlerReflection->getClosureThis();
+            $response->setData($result = $this->handler->call($handlerThis, ...$arguments));
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route'=>$this, 'result'=>$result]);
             if(isset($this->responseMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response'=>$response, 'route'=>$this, 'middleware'=>$this->responseMiddleware]);
@@ -247,7 +250,9 @@ class Route implements RouteInterface
         catch (Throwable $exception) {
             foreach ($this->exceptionHandlers as $className => $handler) {
                 if (!$className || ($exception instanceof $className)) {
-                    if(($result = $handler->call($this, $exception, $request, $response, $this)) instanceof ResponseInterface) {
+                    $handlerReflection = new ReflectionFunction($handler);
+                    $handlerThis = $handlerReflection->getClosureThis();
+                    if(($result = $handler->call($handlerThis, $exception, $request, $response, $this)) instanceof ResponseInterface) {
                         $response = $result;
                         return null;
                     }

@@ -79,7 +79,7 @@ class Core implements CoreApiInterface
         }
         $coreApiProxy = new $coreApiProxyClassName($this);
         $this->setCoreApiProxy(coreApiProxy: $coreApiProxy);
-        HookManager::setBaseContext(['f4'=>$coreApiProxy]);
+        HookManager::setBaseContext(['f4' => $coreApiProxy]);
         $router = new $routerClassName();
         $this->setRouter(router: $router);
         HookManager::triggerHook(hookName: HookManager::AFTER_CORE_CONSTRUCT, context: []);
@@ -111,47 +111,46 @@ class Core implements CoreApiInterface
             null => $this->setUpEmitterNormally(),
             default => Closure::fromCallable(callback: $customHandler)->call($this, $this->setUpEmitterNormally(...))
         };
-        HookManager::triggerHook(hookName: HookManager::AFTER_SETUP_EMITTER, context: ['emitter'=>$this->emitter]);
+        HookManager::triggerHook(hookName: HookManager::AFTER_SETUP_EMITTER, context: ['emitter' => $this->emitter]);
         return $this;
     }
     public function registerModules(?callable $customHandler = null): static
     {
-        HookManager::triggerHook(hookName: HookManager::BEFORE_REGISTER_MODULES, context: ['modules'=>$this->modules]);
+        HookManager::triggerHook(hookName: HookManager::BEFORE_REGISTER_MODULES, context: ['modules' => $this->modules]);
         match ($customHandler) {
             null => $this->registerModulesNormally(),
             default => Closure::fromCallable(callback: $customHandler)->call($this, $this->registerModulesNormally(...))
         };
-        HookManager::triggerHook(hookName: HookManager::AFTER_REGISTER_MODULES, context: ['modules'=>$this->modules]);
+        HookManager::triggerHook(hookName: HookManager::AFTER_REGISTER_MODULES, context: ['modules' => $this->modules]);
         return $this;
     }
     public function processRequest(?callable $customHandler = null): static
     {
-        HookManager::triggerHook(hookName: HookManager::BEFORE_PROCESS_REQUEST, context: ['request'=>$this->request]);
+        HookManager::triggerHook(hookName: HookManager::BEFORE_PROCESS_REQUEST, context: ['request' => $this->request]);
         match ($customHandler) {
             null => $this->processRequestNormally(),
             default => Closure::fromCallable(callback: $customHandler)->call($this, $this->processRequestNormally(...))
         };
-        HookManager::triggerHook(hookName: HookManager::AFTER_PROCESS_REQUEST, context: ['request'=>$this->request]);
+        HookManager::triggerHook(hookName: HookManager::AFTER_PROCESS_REQUEST, context: ['request' => $this->request]);
         return $this;
     }
     public function emitResponse(?callable $customHandler = null): static
     {
-        HookManager::triggerHook(hookName: HookManager::BEFORE_EMIT_RESPONSE, context: ['response'=>$this->response]);
-        if(Config::DEBUG_MODE && $this->debugger->checkIfEnabledByRequest($this->request)) {
-            $this->debugger->captureAndEmit(emitCallback: function() use ($customHandler): void {
+        HookManager::triggerHook(hookName: HookManager::BEFORE_EMIT_RESPONSE, context: ['response' => $this->response]);
+        if (Config::DEBUG_MODE && $this->debugger->checkIfEnabledByRequest($this->request)) {
+            $this->debugger->captureAndEmit(emitCallback: function () use ($customHandler): void {
                 match ($customHandler) {
                     null => $this->emitResponseNormally(),
                     default => Closure::fromCallable(callback: $customHandler)->call($this, $this->emitResponseNormally(...))
                 };
-                HookManager::triggerHook(hookName: HookManager::AFTER_EMIT_RESPONSE, context: ['response'=>$this->response]);
+                HookManager::triggerHook(hookName: HookManager::AFTER_EMIT_RESPONSE, context: ['response' => $this->response]);
             });
-        }
-        else {
+        } else {
             match ($customHandler) {
                 null => $this->emitResponseNormally(),
                 default => Closure::fromCallable(callback: $customHandler)->call($this, $this->emitResponseNormally(...))
             };
-            HookManager::triggerHook(hookName: HookManager::AFTER_EMIT_RESPONSE, context: ['response'=>$this->response]);
+            HookManager::triggerHook(hookName: HookManager::AFTER_EMIT_RESPONSE, context: ['response' => $this->response]);
         }
         return $this;
     }
@@ -170,10 +169,10 @@ class Core implements CoreApiInterface
     }
     protected function setUpEnvironmentNormally(bool $skipOutputBuffering = false, bool $skipErrorHandling = false): void
     {
-        if(!$skipOutputBuffering) {
+        if (!$skipOutputBuffering) {
             $this->enableOutputBufferCapture();
         }
-        if(!$skipErrorHandling) {
+        if (!$skipErrorHandling) {
             set_exception_handler(callback: function (Throwable $exception): void {
                 $format = $this->getResponse() ? $this->getResponseFormat() : Config::DEFAULT_RESPONSE_FORMAT;
                 ExceptionRenderer::handleException(exception: $exception, format: $format);
@@ -194,17 +193,17 @@ class Core implements CoreApiInterface
         if (!empty(Config::TIMEZONE)) {
             $this->setTimezone(timezone: Config::TIMEZONE);
         }
-        if(Config::SESSION_ENABLED) {
+        if (Config::SESSION_ENABLED) {
             session_name(Config::SESSION_COOKIE_NAME);
             session_set_cookie_params([
-                'lifetime'  => Config::SESSION_LIFETIME,
-                'path'      => Config::SESSION_PATH,
-                'domain'    => Config::SESSION_DOMAIN,
-                'secure'    => Config::SESSION_SECURE_ONLY,
-                'httponly'  => Config::SESSION_HTTP_ONLY,
-                'samesite'  => Config::SESSION_SAME_SITE
+                'lifetime' => Config::SESSION_LIFETIME,
+                'path' => Config::SESSION_PATH,
+                'domain' => Config::SESSION_DOMAIN,
+                'secure' => Config::SESSION_SECURE_ONLY,
+                'httponly' => Config::SESSION_HTTP_ONLY,
+                'samesite' => Config::SESSION_SAME_SITE
             ]);
-            if(!session_start()) {
+            if (!session_start()) {
                 throw new ErrorException('Failed to initialize session');
             }
         }
@@ -221,7 +220,7 @@ class Core implements CoreApiInterface
         };
         return $this;
     }
-    protected function registerModulesNormally(array $modules = Config::MODULES): static 
+    protected function registerModulesNormally(array $modules = Config::MODULES): static
     {
         foreach ($modules as $name => $module) {
             if (!is_a(object_or_class: $module, class: ModuleInterface::class, allow_string: true)) {
@@ -248,16 +247,16 @@ class Core implements CoreApiInterface
         if (empty(Config::RESPONSE_EMITTERS[$this->getResponseFormat()])) {
             throw new ErrorException(message: "Failed to find renderer for '{$this->getResponseFormat()}'");
         }
-        if(!$this->emit(response: $this->getResponse(), request: $this->getRequest())) {
+        if (!$this->emit(response: $this->getResponse(), request: $this->getRequest())) {
             throw new ErrorException(message: 'Failed to emit response');
         }
     }
     protected function restoreEnvironmentNormally(bool $skipOutputBuffering = false, bool $skipErrorHandling = false): void
     {
-        if(!$skipOutputBuffering) {
+        if (!$skipOutputBuffering) {
             $this->flushOutputBufferCapture();
         }
-        if(!$skipErrorHandling) {
+        if (!$skipErrorHandling) {
             restore_error_handler();
             restore_exception_handler();
         }
@@ -276,32 +275,32 @@ class Core implements CoreApiInterface
     }
 
     // All Core API methods are to be implemented below
-    public function setRequestHandler(callable $handler): static 
+    public function setRequestHandler(callable $handler): static
     {
         $this->router->setRequestMiddleware(requestMiddleware: $handler);
         return $this;
     }
-    public function before(callable $handler): static 
+    public function before(callable $handler): static
     {
         return $this->setRequestHandler(handler: $handler);
     }
-    public function setResponseHandler(callable $handler): static 
+    public function setResponseHandler(callable $handler): static
     {
         $this->router->setResponseMiddleware(responseMiddleware: $handler);
         return $this;
     }
-    public function after(callable $handler): static 
+    public function after(callable $handler): static
     {
         return $this->setResponseHandler(handler: $handler);
     }
-    public function addExceptionHandler(string $exceptionClassName, callable $handler): static 
+    public function addExceptionHandler(string $exceptionClassName, callable $handler): static
     {
         $this->router->addExceptionHandler(exceptionClassName: $exceptionClassName, exceptionHandler: $handler);
         return $this;
     }
-    public function on(string $exceptionClassName, callable $handler): static 
+    public function on(string $exceptionClassName, callable $handler): static
     {
-        return $this->addExceptionHandler(exceptionClassName: $exceptionClassName,handler: $handler);
+        return $this->addExceptionHandler(exceptionClassName: $exceptionClassName, handler: $handler);
     }
     public function setRequest(RequestInterface $request): static
     {
@@ -360,6 +359,14 @@ class Core implements CoreApiInterface
     {
         return $this->router;
     }
+    public function getMatchingRoute(): ?Route
+    {
+        return $this->router->getMatchingRoute($this->request, $this->response);
+    }
+    public function getMatchingRouteGroup(): ?RouteGroup
+    {
+        return $this->router->getMatchingRouteGroup($this->request, $this->response);
+    }
     public function setRouter(RouterInterface $router): static
     {
         $this->router = $router;
@@ -371,7 +378,7 @@ class Core implements CoreApiInterface
     }
     public function setDebugger(DebuggerInterface $debugger): static
     {
-        $this->debugger= $debugger;
+        $this->debugger = $debugger;
         return $this;
     }
     public function setTemplate(string $template, ?string $format = null): static
@@ -390,7 +397,7 @@ class Core implements CoreApiInterface
     }
     public function log(mixed $value, ?string $description = null): void
     {
-        if(isset($this->debugger)) {
+        if (isset($this->debugger)) {
             $this->debugger->log($value, $description);
         }
     }

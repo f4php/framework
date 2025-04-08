@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use ErrorException;
-use InvalidArgumentException;
+use ReflectionFunction;
 use Throwable;
 
 use F4\HookManager;
@@ -19,8 +18,6 @@ use F4\Core\Route;
 use F4\Core\RouterInterface;
 
 use function array_reduce;
-use function is_callable;
-use function count;
 
 class Router implements RouterInterface
 {
@@ -43,6 +40,12 @@ class Router implements RouterInterface
             true => $routeOrPath,
             default => new Route(pathDefinition: $routeOrPath, handler: $handler)
         });
+    }
+    public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route {
+        return $this->getMatches($request, $response)[1] ?? null;
+    }
+    public function getMatchingRouteGroup(RequestInterface $request, ResponseInterface $response): ?RouteGroup {
+        return $this->getMatches($request, $response)[0] ?? null;
     }
     protected function getMatches(RequestInterface $request, ResponseInterface $response): array {
         $matchingGroupsData = array_reduce($this->routeGroups, function ($result, RouteGroup $routeGroup) use ($request, $response): array {
@@ -102,7 +105,9 @@ class Router implements RouterInterface
             catch (Throwable $exception) {
                 foreach ($this->exceptionHandlers as $className => $handler) {
                     if (!$className || ($exception instanceof $className)) {
-                        if(($result = $handler->call($this, $exception, $request, $response, $matchingRoute)) instanceof ResponseInterface) {
+                        $handlerReflection = new ReflectionFunction($handler);
+                        $handlerThis = $handlerReflection->getClosureThis();
+                        if(($result = $handler->call($handlerThis, $exception, $request, $response, $matchingRoute)) instanceof ResponseInterface) {
                             $response = $result;
                             return null;
                         }

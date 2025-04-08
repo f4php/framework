@@ -467,23 +467,14 @@ final class RouteTest extends TestCase
         $request = new MockRequest(requestMethod: 'GET', requestPath: '/');
         $response = new MockResponse(responseFormat: 'text/html');
         $route = Route::any('/', 
-        function (): string {
-            /**
-             * @var Route $this
-             */
-            return $this->getState('test');
+        function () use (&$route): string {
+            return $route->getState('test');
         })
-            ->before(function (Request $request, Response $response): void {
-                /**
-                 * @var Route $this
-                 */
-                $this->setState('test', 'test value 1');
+            ->before(function (Request $request, Response $response, Route $route): void {
+                $route->setState('test', 'test value 1');
             })
-            ->after(function (Response $response, Request $request): void {
-                /**
-                 * @var Route $this
-                 */
-                $this->setState('test', 'test value 2');
+            ->after(function (Response $response, Request $request, Route $route): void {
+                $route->setState('test', 'test value 2');
             });
         $this->assertSame('test value 1', $route->invoke(request: $request, response: $response));
         $this->assertSame('test value 2', $route->getState('test'));

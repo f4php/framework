@@ -55,85 +55,89 @@ class Debugger implements DebuggerInterface
     protected array $logEntries = [];
     protected array $queries = [];
     protected mixed $templateContext = null;
-    public function __construct() {
+    public function __construct()
+    {
 
         Profiler::init();
 
-        HookManager::addHook(HookManager::AFTER_CORE_CONSTRUCT, function($context) {
+        HookManager::addHook(HookManager::AFTER_CORE_CONSTRUCT, function ($context) {
             Profiler::addSnapshot('Core ready');
         });
-        HookManager::addHook(HookManager::AFTER_SETUP_REQUEST_RESPONSE, function($context) {
+        HookManager::addHook(HookManager::AFTER_SETUP_REQUEST_RESPONSE, function ($context) {
             Profiler::addSnapshot('Setup request/response');
         });
-        HookManager::addHook(HookManager::AFTER_SETUP_ENVIRONMENT, function($context) {
+        HookManager::addHook(HookManager::AFTER_SETUP_ENVIRONMENT, function ($context) {
             Profiler::addSnapshot('Setup environment');
         });
-        HookManager::addHook(HookManager::AFTER_SETUP_EMITTER, function($context) {
+        HookManager::addHook(HookManager::AFTER_SETUP_EMITTER, function ($context) {
             Profiler::addSnapshot('Setup emitter');
         });
-        HookManager::addHook(HookManager::AFTER_REGISTER_MODULES, function($context) {
+        HookManager::addHook(HookManager::AFTER_REGISTER_MODULES, function ($context) {
             Profiler::addSnapshot('Register modules');
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTING, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTING, function ($context) {
             Profiler::addSnapshot('Route matching');
         });
-        HookManager::addHook(HookManager::BEFORE_REQUEST_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_REQUEST_MIDDLEWARE, function ($context) {
             $this->requestMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP_REQUEST_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP_REQUEST_MIDDLEWARE, function ($context) {
             $this->routeGroupRequestMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, function ($context) {
             $this->routeRequestMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP, function ($context) {
             $this->routeGroup = $context['routeGroup'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE, function ($context) {
             $this->route = $context['route'];
             $this->routeParameters = $context['parameters'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, function ($context) {
             $this->routeResponseMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE, function ($context) {
             $this->routeGroupResponseMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::BEFORE_RESPONSE_MIDDLEWARE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_RESPONSE_MIDDLEWARE, function ($context) {
             $this->responseMiddleware = $context['middleware'];
         });
-        HookManager::addHook(HookManager::AFTER_PROCESS_REQUEST, function($context) {
+        HookManager::addHook(HookManager::AFTER_PROCESS_REQUEST, function ($context) {
             Profiler::addSnapshot('Prepare response');
         });
-        HookManager::addHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, function($context) {
+        HookManager::addHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, function ($context) {
             $this->templateContext = $context['context'];
         });
-        HookManager::addHook(HookManager::BEFORE_EMIT_RESPONSE, function($context) {
+        HookManager::addHook(HookManager::BEFORE_EMIT_RESPONSE, function ($context) {
             $this->request = $context['f4']->getRequest();
             $this->response = $context['f4']->getResponse();
         });
-        HookManager::addHook(HookManager::AFTER_EMIT_RESPONSE, function($context) {
+        HookManager::addHook(HookManager::AFTER_EMIT_RESPONSE, function ($context) {
             Profiler::addSnapshot('Render response');
         });
         // HookManager::addHook(HookManager::AFTER_ROUTE, function($context) {
-            
+
         // });
-        if(Config::DEBUG_DB_QUERIES) {
-            HookManager::addHook(HookManager::BEFORE_SQL_SUBMIT, 
-            function($context) {
-                Profiler::addSnapshot(); // makes sql profiling more accurate
-            });
-            HookManager::addHook(HookManager::AFTER_SQL_SUBMIT, function($context) {
-                $this->queries[count($this->queries)+1] = $context['statement'];
-                Profiler::addSnapshot('Execute query '.count($this->queries), $context['statement']??null);
+        if (Config::DEBUG_DB_QUERIES) {
+            HookManager::addHook(
+                HookManager::BEFORE_SQL_SUBMIT,
+                function ($context) {
+                    Profiler::addSnapshot(); // makes sql profiling more accurate
+                }
+            );
+            HookManager::addHook(HookManager::AFTER_SQL_SUBMIT, function ($context) {
+                $this->queries[count($this->queries) + 1] = $context['statement'];
+                Profiler::addSnapshot('Execute query ' . count($this->queries), $context['statement'] ?? null);
             });
         }
     }
-    public function log(mixed $value, ?string $description = null): void {
+    public function log(mixed $value, ?string $description = null): void
+    {
         $this->logEntries[] = [
             'value' => $value,
             'description' => $description,
-            'trace' => match($caller = debug_backtrace()[3] ?? null) {
+            'trace' => match ($caller = debug_backtrace()[3] ?? null) {
                 null => [],
                 default => [
                     $caller,
@@ -141,7 +145,8 @@ class Debugger implements DebuggerInterface
             }
         ];
     }
-    public function checkIfEnabledByRequest(RequestInterface $request): bool {
+    public function checkIfEnabledByRequest(RequestInterface $request): bool
+    {
         return $request->getDebugExtension() !== null;
     }
     public function captureAndEmit(callable $emitCallback): bool
@@ -149,7 +154,7 @@ class Debugger implements DebuggerInterface
         ob_start();
         $emitCallback();
         $headers = [];
-        foreach(headers_list() as $value) {
+        foreach (headers_list() as $value) {
             [$name, $value] = mb_split(':\s*', $value);
             $headers[$name] = [$value];
         }
@@ -170,7 +175,7 @@ class Debugger implements DebuggerInterface
                 'routeGroupResponseMiddleware' => $this->routeGroupResponseMiddleware ? self::exportClosure($this->routeGroupResponseMiddleware->getHandler()) : null,
                 'responseMiddleware' => $this->responseMiddleware ? self::exportClosure($this->responseMiddleware->getHandler()) : null,
             ],
-            'request'=>[
+            'request' => [
                 'headers' => $this->request->getHeaders(),
                 'body' => $this->request->getBody()->getContents(),
                 'method' => $this->request->getMethod(),
@@ -178,12 +183,12 @@ class Debugger implements DebuggerInterface
                 'extension' => $this->request->getExtension(),
                 'debugExtension' => $this->request->getDebugExtension(),
             ],
-            'response'=>[
+            'response' => [
                 'code' => $this->response->getStatusCode(),
                 'status' => $this->response->getReasonPhrase(),
                 'data' => ExportResult::fromVariable($this->response->getData())->toArray()['value'] ?? null,
                 'meta' => ExportResult::fromVariable($this->response->getMetaData())->toArray()['value'] ?? null,
-                'exception' => match($exception = $this->response->getException()) {
+                'exception' => match ($exception = $this->response->getException()) {
                     null => null,
                     default => [
                         'code' => $exception->getCode(),
@@ -194,14 +199,14 @@ class Debugger implements DebuggerInterface
                     ]
                 },
                 'format' => $this->response->getResponseFormat(),
-                'template' => match($template = $this->response->getTemplate()) {
+                'template' => match ($template = $this->response->getTemplate()) {
                     null => null,
                     default => [
                         'path' => $template,
                         'context' => ExportResult::fromVariable($this->templateContext)->toArray()['value'] ?? null,
-                        'folders' => array_map(function($path) {
-                            return realpath($path);
-                        }, Config::TEMPLATE_PATHS),
+                        'folders' => array_map(function ($path) {
+                                return realpath($path);
+                            }, Config::TEMPLATE_PATHS),
                         // 'body' => '',
                     ]
                 },
@@ -212,11 +217,11 @@ class Debugger implements DebuggerInterface
             // 'hooks' => ExportResult::fromVariable(HookManager::getHooks())->toArray(),
             'profiler' => Profiler::getSnapshots(),
             'config' => ExportResult::fromVariable(new Config())->toArray(),
-            'log' => array_map(function($entry) {
+            'log' => array_map(function ($entry) {
                 return [
                     'description' => $entry['description'],
                     'trace' => $entry['trace'],
-                    'value'=>ExportResult::fromVariable($entry['value'])->toArray()
+                    'value' => ExportResult::fromVariable($entry['value'])->toArray()
                 ];
             }, $this->logEntries),
             'session' => ExportResult::fromVariable($_SESSION ?? [])->toArray(),
@@ -242,14 +247,16 @@ class Debugger implements DebuggerInterface
         return true;
     }
 
-    protected static function exportClosure(Closure $closure): array {
+    protected static function exportClosure(Closure $closure): array
+    {
         $closureReflection = new ReflectionFunction($closure);
-        $code = implode("\n", 
+        $code = implode(
+            "\n",
             array_slice(
-            mb_split('\r?\n', file_get_contents($closureReflection->getFileName())),
-                $closureReflection->getStartLine() -1,
+                mb_split('\r?\n', file_get_contents($closureReflection->getFileName())),
+                $closureReflection->getStartLine() - 1,
                 $closureReflection->getEndLine() - $closureReflection->getStartLine() + 1
-            )
+            ),
         );
         return [
             'name' => $closureReflection->name,

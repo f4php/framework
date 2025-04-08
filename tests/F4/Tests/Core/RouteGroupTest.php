@@ -85,18 +85,15 @@ final class RouteGroupTest extends TestCase
         $response = new MockResponse(responseFormat: $responseFormat);
 
         $routePathDefinition = 'GET /';
+
+        $route = new Route($routePathDefinition, function () use (&$route): string {
+            return $route->getState('test');
+        });
+
         $routeGroup = RouteGroup::withRoutes(
-            (new Route($routePathDefinition, function (): string{
-                /**
-                 * @var Route $this
-                 */
-                return $this->getState('test');
-            }))
-                ->before(function (RequestInterface $request, ResponseInterface $response) {
-                    /**
-                     * @var Route $this
-                     */
-                    $this->setState('test', $request->getHeaderLine('X-Test-Header'));
+            $route
+                ->before(function (RequestInterface $request, ResponseInterface $response, Route $route) {
+                    $route->setState('test', $request->getHeaderLine('X-Test-Header'));
                 }),
         )
             ->before(function (RequestInterface $request, ResponseInterface $response, ?RouteGroup $routeGroup) {
@@ -115,17 +112,12 @@ final class RouteGroupTest extends TestCase
         $response = new MockResponse(responseFormat: $responseFormat);
 
         $routePathDefinition = 'GET /';
+        $route = new Route($routePathDefinition, function () use (&$route): void{
+            $route->setState('test', 'test-value-1');
+        });
         $routeGroup = RouteGroup::withRoutes(
-            (new Route($routePathDefinition, function (): void{
-                /**
-                 * @var Route $this
-                 */
-                $this->setState('test', 'test-value-1');
-            }))
+            $route
                 ->after(function (ResponseInterface $response, RequestInterface $request, ?Route $route) {
-                    /**
-                     * @var Route $this
-                     */
                     return $response->withHeader('X-Test-Header', $route->getState('test'));
                 }),
         )

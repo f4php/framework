@@ -41,6 +41,14 @@ class CoreApiProxy implements CoreApiInterface
     {
         return $this->core->getRouter();
     }
+    public function getMatchingRoute(): ?Route
+    {
+        return $this->core->getMatchingRoute();
+    }
+    public function getMatchingRouteGroup(): ?RouteGroup
+    {
+        return $this->core->getMatchingRouteGroup();
+    }
     public function setRouter(RouterInterface $router): static
     {
         $this->core->setRouter(router: $router);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use F4\Core\CoreApiInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\Route;
@@ -13,6 +12,8 @@ interface RouterInterface
 {
     public function addRoute(Route|string $routeOrPath, ?callable $handler = null): Route;
     public function addRouteGroup(RouteGroup $routeGroup): RouteGroup;
+    public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route;
+    public function getMatchingRouteGroup(RequestInterface $request, ResponseInterface $response): ?RouteGRoup;
     public function invokeMatchingRoutes(RequestInterface &$request, ResponseInterface &$response): mixed;
     public function setRequestMiddleware(RequestMiddleware|callable $requestMiddleware): static;
     public function before(RequestMiddleware|callable $requestMiddleware): static;

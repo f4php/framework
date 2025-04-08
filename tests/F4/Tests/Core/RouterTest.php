@@ -103,21 +103,15 @@ final class RouterTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = 'GET /entities/{entityID:int}';
         $router
-            ->before(function ($request, $response, $route): RequestInterface {
-                /**
-                 * @var Route $this
-                 */
+            ->before(function (RequestInterface $request, ResponseInterface $response, Route $route): RequestInterface {
                 $route->setState('test', 'test value 2');
-                $this->setState('test2', 'test value 3');
+                $route->setState('test2', 'test value 3');
                 return $request->withHeader('X-Test-Header', 'test value');
             });
-        $router->addRoute($routePathDefinition, function (): array {
-            /**
-             * @var Route $this
-             */
+        $route = $router->addRoute($routePathDefinition, function () use (&$route): array {
             return [
-                $this->getState('test'),
-                $this->getState('test2'),
+                $route->getState('test'),
+                $route->getState('test2'),
             ];
         });
         $result = $router->invokeMatchingRoutes(request: $request, response: $response);
@@ -211,21 +205,15 @@ final class RouterTest extends TestCase
         $response = new MockResponse();
         $routePathDefinition = 'GET /entities/{entityID:int}';
         $router
-            ->before(function($request, $response, $route) {
-                /**
-                 * @var Route $this
-                 */
+            ->before(function(RequestInterface $request, ResponseInterface $response, Route $route) {
                 return $route ? $route->setState('test', 'test-value') : '';
             })
             ->on(TestException::class, function ($exception, $request, $response, $route): string {
                 return $exception->getMessage();
             });
-        $router
-            ->addRoute($routePathDefinition, function (): void {
-                /**
-                 * @var Route $this
-                 */
-                throw new TestException($this->getState('test'));
+        $route = $router
+            ->addRoute($routePathDefinition, function () use (&$route): void {
+                throw new TestException($route->getState('test'));
             });
         $result = $router->invokeMatchingRoutes(request: $request, response: $response);
         $this->assertSame('test-value', $result);

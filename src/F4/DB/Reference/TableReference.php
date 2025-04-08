@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\DB\Reference;
 
 use InvalidArgumentException;
+use F4\DB;
 use F4\DB\Reference\SimpleReference;
 
 use function sprintf;
@@ -25,7 +26,7 @@ class TableReference extends SimpleReference
         if (empty($matches['table'])) {
             throw new InvalidArgumentException('Cannot locate table identifier');
         }
-        return sprintf('"%s"', $matches['table']);
+        return sprintf('%s', DB::escapeIdentifier($matches['table']));
     }
 }
 

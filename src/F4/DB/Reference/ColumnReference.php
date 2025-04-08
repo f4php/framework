@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\DB\Reference;
 
 use InvalidArgumentException;
+use F4\DB;
 use F4\DB\Reference\SimpleReference;
 
 use function sprintf;
@@ -26,8 +27,8 @@ class ColumnReference extends SimpleReference
             throw new InvalidArgumentException('Cannot locate column identifier');
         }
         return match (empty($matches['table'])) {
-            true => sprintf('"%s"', $matches['column']),
-            default => sprintf('"%s"."%s"', $matches['table'], $matches['column'])
+            true => sprintf('%s', DB::escapeIdentifier($matches['column'])),
+            default => sprintf('%s.%s', DB::escapeIdentifier($matches['table']), DB::escapeIdentifier($matches['column']))
         };
     }
 }

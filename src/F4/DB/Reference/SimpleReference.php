@@ -6,6 +6,7 @@ namespace F4\DB\Reference;
 
 use Composer\Pcre\Regex;
 use InvalidArgumentException;
+use F4\DB;
 use F4\DB\Reference\ReferenceInterface;
 
 use function sprintf;
@@ -43,7 +44,7 @@ class SimpleReference implements ReferenceInterface
         if (empty($matches['identifier'])) {
             throw new InvalidArgumentException('Cannot locate identifier');
         }
-        return sprintf('"%s"', $matches['identifier']);
+        return sprintf('%s', DB::escapeIdentifier($matches['identifier']));
     }
 }
 

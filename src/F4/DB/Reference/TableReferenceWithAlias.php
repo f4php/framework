@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\DB\Reference;
 
 use InvalidArgumentException;
+use F4\DB;
 use F4\DB\Reference\SimpleReference;
 
 use function sprintf;
@@ -26,8 +27,8 @@ class TableReferenceWithAlias extends SimpleReference
             throw new InvalidArgumentException('Cannot locate table identifier');
         }
         return match (empty($matches['alias'])) {
-            true => sprintf('"%s"', $matches['table']),
-            default => sprintf('"%s" AS "%s"', $matches['table'], $matches['alias']),
+            true => sprintf('%s', DB::escapeIdentifier($matches['table'])),
+            default => sprintf('%s AS %s', DB::escapeIdentifier($matches['table']), DB::escapeIdentifier($matches['alias'])),
         };
     }
 }

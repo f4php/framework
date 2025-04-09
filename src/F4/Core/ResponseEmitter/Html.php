@@ -34,10 +34,12 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
             $response = $response->withStatus($code, HttpException::PHRASES[$code] ?? 'Internal Server Error');
         }
         $response = $response->withHeader('Content-Type', "text/html; charset=" . Config::RESPONSE_CHARSET);
+        $timestamp = time();
         $data = [
             // todo: convert config and request to data structure
             'config' => $this->getConfigConstants(),
             'request' => [
+                'path' => $request->getPath(),
                 'headers' => $request->getHeaders(),
                 'parameters' => $request->getParameters(),
                 'validated-parameters' => $request->getValidatedParameters(),
@@ -46,6 +48,8 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
                 'headers' => $response->getHeaders(),
                 'meta' => $response->getMetaData(),
                 'data' => $response->getData(),
+                'datetime' => date('c', $timestamp),
+                'timezone' => Config::TIMEZONE ?: date_default_timezone_get(),
                 'exception' => match ($exception = $response->getException()) {
                     null => null,
                     default => [

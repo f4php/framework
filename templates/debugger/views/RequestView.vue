@@ -3,6 +3,8 @@
     TabList
       Tab(value="headers")
         | Headers
+      Tab(value="parameters")
+        | Parameters
       Tab(value="body" :disabled="!body")
         | Unparsed Body
     TabPanels
@@ -10,6 +12,10 @@
         HttpHeaders(:value="headers" v-if="headers")
         EmptySection(v-else)
           | There are no request headers
+      TabPanel(value="parameters")
+        VarDump(:value="parameters" v-if="parameters && parameters.length")
+        EmptySection(v-else)
+          | There are no request parameters
       TabPanel(value="body")
         FormattedValue(:value="body" type="code/form-data" v-if="body")
         EmptySection(v-else)
@@ -26,6 +32,7 @@ import TabPanels from 'primevue/tabpanels';
 import EmptySection from '../components/EmptySection.vue';
 import FormattedValue from '../components/FormattedValue.vue';
 import HttpHeaders from '../components/HttpHeaders.vue';
+import VarDump from '../components/VarDump.vue';
 
 export default {
   components: {
@@ -37,6 +44,7 @@ export default {
     TabList,
     TabPanel,
     TabPanels,
+    VarDump,
   },
   computed: {
     body() {
@@ -44,6 +52,9 @@ export default {
     },
     headers() {
       return this.$root.request.headers;
+    },
+    parameters() {
+      return this.$root.request.parameters;
     },
   },
   methods: {

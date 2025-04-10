@@ -15,7 +15,7 @@ use function array_reduce;
 use function is_array;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-class Fields implements ValidatorAttributeInterface
+class ArrayKeys implements ValidatorAttributeInterface
 {
 
     protected readonly array $definitions;

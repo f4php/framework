@@ -136,7 +136,7 @@ final class RouteTest extends TestCase
         $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testIntegerMisatching(): void
+    public function testIntegerMismatching(): void
     {
         $requestMethod = 'PUT';
         $requestPath = '/entities/abc';
@@ -150,7 +150,7 @@ final class RouteTest extends TestCase
         $this->assertSame(false, $route->checkMatch(request: $request, response: $response));
     }
 
-    public function testBooleanMisatching(): void
+    public function testBooleanMismatching(): void
     {
         $requestMethod = 'GET';
         $requestPath = '/entities/1';

@@ -155,7 +155,7 @@ class Debugger implements DebuggerInterface
         $emitCallback();
         $headers = [];
         foreach (headers_list() as $value) {
-            [$name, $value] = mb_split(':\s*', $value);
+            [$name, $value] = mb_split(':\s*', $value, 2);
             $headers[$name] = [$value];
         }
         header_remove(null);
@@ -169,25 +169,25 @@ class Debugger implements DebuggerInterface
                 ...($this->route ? self::exportClosure($this->route->getHandler()) : []),
                 'parameters' => ExportResult::fromVariable($this->routeParameters)->toArray()['value'] ?? [],
                 'requestMiddleware' => $this->requestMiddleware ? self::exportClosure($this->requestMiddleware->getHandler()) : null,
+                'responseMiddleware' => $this->responseMiddleware ? self::exportClosure($this->responseMiddleware->getHandler()) : null,
                 'routeGroupRequestMiddleware' => $this->routeGroupRequestMiddleware ? self::exportClosure($this->routeGroupRequestMiddleware->getHandler()) : null,
+                'routeGroupResponseMiddleware' => $this->routeGroupResponseMiddleware ? self::exportClosure($this->routeGroupResponseMiddleware->getHandler()) : null,
                 'routeRequestMiddleware' => $this->routeRequestMiddleware ? self::exportClosure($this->routeRequestMiddleware->getHandler()) : null,
                 'routeResponseMiddleware' => $this->routeResponseMiddleware ? self::exportClosure($this->routeResponseMiddleware->getHandler()) : null,
-                'routeGroupResponseMiddleware' => $this->routeGroupResponseMiddleware ? self::exportClosure($this->routeGroupResponseMiddleware->getHandler()) : null,
-                'responseMiddleware' => $this->responseMiddleware ? self::exportClosure($this->responseMiddleware->getHandler()) : null,
             ],
             'request' => [
-                'headers' => $this->request->getHeaders(),
                 'body' => $this->request->getBody()->getContents(),
+                'debugExtension' => $this->request->getDebugExtension(),
+                'extension' => $this->request->getExtension(),
+                'headers' => $this->request->getHeaders(),
                 'method' => $this->request->getMethod(),
                 'path' => $this->request->getPath(),
-                'extension' => $this->request->getExtension(),
-                'debugExtension' => $this->request->getDebugExtension(),
+                'parameters' => ExportResult::fromVariable($this->request->getParameters())->toArray()['value'] ?? []
             ],
             'response' => [
+                'body' => $output,
                 'code' => $this->response->getStatusCode(),
-                'status' => $this->response->getReasonPhrase(),
                 'data' => ExportResult::fromVariable($this->response->getData())->toArray()['value'] ?? null,
-                'meta' => ExportResult::fromVariable($this->response->getMetaData())->toArray()['value'] ?? null,
                 'exception' => match ($exception = $this->response->getException()) {
                     null => null,
                     default => [
@@ -199,6 +199,9 @@ class Debugger implements DebuggerInterface
                     ]
                 },
                 'format' => $this->response->getResponseFormat(),
+                'headers' => $headers,
+                'meta' => ExportResult::fromVariable($this->response->getMetaData())->toArray()['value'] ?? null,
+                'status' => $this->response->getReasonPhrase(),
                 'template' => match ($template = $this->response->getTemplate()) {
                     null => null,
                     default => [
@@ -210,8 +213,6 @@ class Debugger implements DebuggerInterface
                         // 'body' => '',
                     ]
                 },
-                'headers' => $headers,
-                'body' => $output
             ],
             'queries' => ExportResult::fromVariable($this->queries)->toArray(),
             // 'hooks' => ExportResult::fromVariable(HookManager::getHooks())->toArray(),

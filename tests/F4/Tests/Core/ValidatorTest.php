@@ -8,13 +8,13 @@ use PHPUnit\Framework\TestCase;
 use F4\Core\Validator;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ArrayOf;
+use F4\Core\Validator\ArrayKeys;
 use F4\Core\Validator\CastBool;
 use F4\Core\Validator\CastBoolean;
 use F4\Core\Validator\CastFloat;
 use F4\Core\Validator\CastInt;
 use F4\Core\Validator\CastInteger;
 use F4\Core\Validator\DefaultValue;
-use F4\Core\Validator\Fields;
 use F4\Core\Validator\Filter;
 use F4\Core\Validator\IsBool;
 use F4\Core\Validator\IsBoolean;
@@ -221,11 +221,11 @@ final class ValidatorTest extends TestCase
         $this->assertSame('c', $arguments['oneof1']);
     }
 
-    public function testFields(): void
+    public function testArrayKeys(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[Fields(['name' => new SanitizedString, 'email' => new IsEmail])] array $fields1 = [], ): void {
+            function (#[ArrayKeys(['name' => new SanitizedString, 'email' => new IsEmail])] array $fields1 = [], ): void {
             },
             [
                 'fields1' => [
@@ -237,12 +237,12 @@ final class ValidatorTest extends TestCase
         $this->assertSame(['name' => '&lt;b&gt;name&lt;/b&gt;', 'email' => 'valid@email.test'], $arguments['fields1']);
     }
 
-    public function testFieldsIncorrectArguments(): void
+    public function testArrayKeysIncorrectArguments(): void
     {
         $this->expectException(TypeError::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[Fields(['key' => 'invalid-value'])] string $fields1, ): void {
+            function (#[ArrayKeys(['key' => 'invalid-value'])] string $fields1, ): void {
             },
             [
                 'fields1' => [],
@@ -250,12 +250,12 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame('c', $arguments['fields1']);
     }
-    public function testFieldsIncorrectArguments2(): void
+    public function testArrayKeysIncorrectArguments2(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[Fields(['string'])] string $fields1, ): void {
+            function (#[ArrayKeys(['string'])] string $fields1, ): void {
             },
             [
                 'fields1' => [],

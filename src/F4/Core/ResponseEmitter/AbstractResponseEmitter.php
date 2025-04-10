@@ -11,8 +11,10 @@ use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
+use function array_diff_key;
 use function array_find;
 use function array_keys;
+use function gmdate;
 use function header;
 use function headers_sent;
 use function in_array;
@@ -51,7 +53,9 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
     public function emitHeaders(ResponseInterface $response): void
     {
         $statusCode = $response->getStatusCode();
-        foreach ($response->getHeaders() as $header => $values) {
+        $headers = $response->getHeaders();
+        $headers += array_diff_key(['Expires' => [sprintf('%s GMT', gmdate('D, d M Y H:i:s', 239772600))]], $headers);
+        foreach ($headers as $header => $values) {
             $name = $this->filterHeaderName($header);
             $first = $name !== 'Set-Cookie';
             foreach ($values as $value) {

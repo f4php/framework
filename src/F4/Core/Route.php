@@ -200,9 +200,9 @@ class Route implements RouteInterface
     {
         return $this->requestPathRegExp;
     }
-    public function getRequestParameters(RequestInterface $request): array
+    public function getRequestParameters(RequestInterface $request, ?string $pathPrefix = null): array
     {
-        $pathArguments = $this->extractPathArgumentsFromRequest(request: $request) ?? [];
+        $pathArguments = $this->extractPathArgumentsFromRequest(request: $request, pathPrefix: $pathPrefix) ?? [];
         $queryArguments = $request->getQueryParams() ?? [];
         $bodyArguments = $request->getParsedBody() ?? [];
         return [...$bodyArguments, ...$queryArguments, ...$pathArguments];
@@ -221,10 +221,10 @@ class Route implements RouteInterface
             &&
             Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat);
     }
-    public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed
+    public function invoke(RequestInterface &$request, ResponseInterface &$response, ?string $pathPrefix = null): mixed
     {
         $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
-        $parameters = $this->getRequestParameters($request);
+        $parameters = $this->getRequestParameters($request, $pathPrefix);
         $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: $parameters);
         $request->setParameters($parameters);
         $request->setValidatedParameters($arguments);
@@ -267,9 +267,15 @@ class Route implements RouteInterface
         }
         return $result;
     }
-    protected function extractPathArgumentsFromRequest(RequestInterface $request): array
+    protected function extractPathArgumentsFromRequest(RequestInterface $request, ?string $pathPrefix): array
     {
-        $subject = "{$request->getMethod()} {$request->getPath()}";
+        $requestMethod = $request->getMethod();
+        $requestPath = $request->getPath();
+        $requestPath = match ($pathPrefix) {
+            null => $requestPath,
+            default => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath)
+        };
+        $subject = "{$requestMethod} {$requestPath}";
         if (!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
             return [];
         }

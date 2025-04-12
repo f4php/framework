@@ -19,7 +19,7 @@ interface RouteInterface
     public function getHandler(): Closure;
     public function getRequestPathRegExp(): string;
     public function checkMatch(RequestInterface $request, ResponseInterface $response, ?string $pathPrefix = null): bool;
-    public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed;
+    public function invoke(RequestInterface &$request, ResponseInterface &$response, ?string $pathPrefix = null): mixed;
     public function setRequestMiddleware(RequestMiddleware|callable $requestMiddleware): static;
     public function before(RequestMiddleware|callable $requestMiddleware): static;
     public function setResponseMiddleware(ResponseMiddleware|callable $responseMiddleware): static;

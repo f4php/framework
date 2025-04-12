@@ -15,9 +15,9 @@ interface ResponseInterface extends PsrResponseInterface
     public function getResponseFormat(): string;
     public function setTemplate(string $template, ?string $format = null): static;
     public function getTemplate(?string $format = null): ?string;
-    public function setMetaData(string $name, mixed $fragment): void;
+    public function setMetaData(string $name, mixed $fragment): static;
     public function getMetaData(): array;
-    public function setException(HttpException $exception): void;
+    public function setException(HttpException $exception): static;
     public function getException(): ?HttpException;
     public function setData(mixed $data): static;
     public function getData(): mixed;

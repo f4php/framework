@@ -79,17 +79,19 @@ class Response implements ResponseInterface
     {
         return $this->templates[$format ?? $this->responseFormat] ?? (($format === Config::DEFAULT_RESPONSE_FORMAT) ? Config::DEFAULT_TEMPLATE : null);
     }
-    public function setMetaData(string $name, mixed $value): void
+    public function setMetaData(string $name, mixed $value): static
     {
         $this->metaData[$name] = $value;
+        return $this;
     }
     public function getMetaData(): array
     {
         return $this->metaData;
     }
-    public function setException(HttpException $exception): void
+    public function setException(HttpException $exception): static
     {
         $this->exception = $exception;
+        return $this;
     }
     public function getException(): ?HttpException
     {

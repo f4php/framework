@@ -100,7 +100,7 @@ class RouteGroup implements RouteGroupInterface
                     HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP_REQUEST_MIDDLEWARE, context: ['request' => $request, 'routeGroup' => $this, 'middleware' => $this->requestMiddleware]);
                 }
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP, context: ['routeGroup' => $this]);
-                $result = $route->invoke($request, $response);
+                $result = $route->invoke($request, $response, $this->pathPrefix);
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_GROUP, context: ['routeGroup' => $this]);
                 if (isset($this->responseMiddleware)) {
                     HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_GROUP_RESPONSE_MIDDLEWARE, context: ['response' => $response, 'routeGroup' => $this, 'middleware' => $this->responseMiddleware]);

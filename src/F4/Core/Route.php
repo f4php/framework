@@ -56,40 +56,39 @@ class Route implements RouteInterface
         };
         $this->setHandler(handler: $handler);
     }
-
-    static public function get(string $pathDefinition, callable $handler): static
+    public static function get(string $pathDefinition, callable $handler): static
     {
         return new static("GET {$pathDefinition}", $handler);
     }
-    static public function head(string $pathDefinition, callable $handler): static
+    public static function head(string $pathDefinition, callable $handler): static
     {
         return new static("HEAD {$pathDefinition}", $handler);
     }
-    static public function post(string $pathDefinition, callable $handler): static
+    public static function post(string $pathDefinition, callable $handler): static
     {
         return new static("POST {$pathDefinition}", $handler);
     }
-    static public function put(string $pathDefinition, callable $handler): static
+    public static function put(string $pathDefinition, callable $handler): static
     {
         return new static("PUT {$pathDefinition}", $handler);
     }
-    static public function delete(string $pathDefinition, callable $handler): static
+    public static function delete(string $pathDefinition, callable $handler): static
     {
         return new static("DELETE {$pathDefinition}", $handler);
     }
-    static public function connect(string $pathDefinition, callable $handler): static
+    public static function connect(string $pathDefinition, callable $handler): static
     {
         return new static("CONNECT {$pathDefinition}", $handler);
     }
-    static public function options(string $pathDefinition, callable $handler): static
+    public static function options(string $pathDefinition, callable $handler): static
     {
         return new static("OPTIONS {$pathDefinition}", $handler);
     }
-    static public function trace(string $pathDefinition, callable $handler): static
+    public static function trace(string $pathDefinition, callable $handler): static
     {
         return new static("TRACE {$pathDefinition}", $handler);
     }
-    static public function any(string $pathDefinition, callable $handler): static
+    public static function any(string $pathDefinition, callable $handler): static
     {
         return new static("GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE {$pathDefinition}", $handler);
     }

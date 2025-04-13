@@ -26,6 +26,7 @@ use F4\Core\Validator;
 use function array_map;
 use function array_keys;
 use function array_walk;
+use function call_user_func;
 use function implode;
 use function in_array;
 use function is_numeric;
@@ -178,9 +179,12 @@ class Route implements RouteInterface
         }
         return $this->templates[$format] ?? null;
     }
-    protected function setHandler(callable $handler): static
+    public function setHandler(callable $handler): static
     {
-        $this->handler = ($handler instanceof Closure) ? $handler : $handler(...);
+        $this->handler = match($handler instanceof Closure) {
+            true => $handler,
+            default => $handler(...)
+        };
         return $this;
     }
     public function setName($name): static
@@ -223,9 +227,10 @@ class Route implements RouteInterface
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response, ?string $pathPrefix = null): mixed
     {
+        $handler = $this->getHandler();
         $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
         $parameters = $this->getRequestParameters($request, $pathPrefix);
-        $arguments = $validator->getFilteredArguments(handler: $this->handler, arguments: $parameters);
+        $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
         $request->setParameters($parameters);
         $request->setValidatedParameters($arguments);
         try {
@@ -237,10 +242,13 @@ class Route implements RouteInterface
                 };
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
             }
-            HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $this->handler, 'parameters' => $arguments]);
-            $handlerReflection = new ReflectionFunction($this->handler);
+            HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $handler, 'parameters' => $arguments]);
+            $handlerReflection = new ReflectionFunction($handler);
             $handlerThis = $handlerReflection->getClosureThis();
-            $response->setData($result = $this->handler->call($handlerThis, ...$arguments));
+            $response->setData($result = match($handlerThis) {
+                null => $handler(...$arguments),
+                default => $handler->call($handlerThis, ...$arguments)
+            });
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route' => $this, 'result' => $result]);
             if (isset($this->responseMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response' => $response, 'route' => $this, 'middleware' => $this->responseMiddleware]);

@@ -16,6 +16,7 @@ interface RouteInterface
     public function getTemplate(string $format = Config::DEFAULT_RESPONSE_FORMAT): ?string;
     public function setName($name): static;
     public function getName(): string|null;
+    public function setHandler(callable $handler): static;
     public function getHandler(): Closure;
     public function getRequestPathRegExp(): string;
     public function checkMatch(RequestInterface $request, ResponseInterface $response, ?string $pathPrefix = null): bool;

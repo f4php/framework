@@ -9,6 +9,8 @@ use F4\Core\AssetManifestAwareTrait;
 use Phug\{AbstractCompilerModule, CompilerEvent};
 use Phug\Compiler\Event\NodeEvent;
 
+use function array_reduce;
+use function iterator_to_array;
 use function is_array;
 use function mb_strlen;
 use function mb_substr;
@@ -49,6 +51,9 @@ class ViteBundleModule extends AbstractCompilerModule
                             $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
                             $containerNode->appendChild($bundleClientScriptNode);
                         } else {
+                            $preload = array_reduce(iterator_to_array($node->getAttributes()), function($result, $attribute) { 
+                                return $result || ($attribute->getName() === 'preload');
+                            }, false);
                             $scriptNodeTemplate = new \Phug\Parser\Node\ElementNode();
                             $scriptNodeTemplate->setName('script');
                             $linkNodeTemplate = new \Phug\Parser\Node\ElementNode();
@@ -63,6 +68,15 @@ class ViteBundleModule extends AbstractCompilerModule
                                 }
                             }
                             if ($scriptSrc = self::getManifestData(entryPoint: self::ENTRY_POINT_NAME_PREFIX . $bundleName, property: 'file')) {
+                                if($preload) {
+                                    $preloadNode = new \Phug\Parser\Node\ElementNode();
+                                    $preloadNode->setName('link');
+                                    $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $scriptSrc)));
+                                    $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"preload"'));
+                                    $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('as')->setValue('"script"'));
+                                    $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('crossorigin')->setValue('"anonymous"'));
+                                    $containerNode->appendChild($preloadNode);
+                                }
                                 $scriptNode = clone $scriptNodeTemplate;
                                 $scriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', $scriptSrc)));
                                 if (!$scriptNode->getAttribute('type')) {
@@ -72,9 +86,19 @@ class ViteBundleModule extends AbstractCompilerModule
                             }
                             if (is_array($linkHrefs = self::getManifestData(entryPoint: self::ENTRY_POINT_NAME_PREFIX . $bundleName, property: 'css'))) {
                                 foreach ($linkHrefs as $linkHref) {
+                                    if($preload) {
+                                        $preloadNode = new \Phug\Parser\Node\ElementNode();
+                                        $preloadNode->setName('link');
+                                        $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHref)));
+                                        $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"preload"'));
+                                        $preloadNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('as')->setValue('"style"'));
+                                        $containerNode->appendChild($preloadNode);
+                                    }
                                     $linkNode = clone $linkNodeTemplate;
                                     $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHref)));
-                                    $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue(sprintf('"%s"', 'stylesheet')));
+                                    if (!$linkNode->getAttribute('rel')) {
+                                        $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue(sprintf('"%s"', 'stylesheet')));
+                                    }
                                     $containerNode->appendChild($linkNode);
                                 }
                             } else if ($linkHrefs) {

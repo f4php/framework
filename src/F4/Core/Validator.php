@@ -50,6 +50,9 @@ class Validator
         if ($parameters = (new ReflectionFunction(function: $handler))->getParameters()) {
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
+                if ($parameter->isVariadic()) {
+                    throw new ValidationFailedException(message: "Variadic parameters are not supported, '{$name}' is variadic");
+                }
                 $type = (string) $parameter->getType(); // NB: $type could be a pipe-separated list of simple types
                 $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
                 if (
@@ -83,10 +86,11 @@ class Validator
                         $filters[] = new SanitizedString();
                     }
                     try {
+                        $defaultValue = ($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null;
                         $filteredArguments[$name] = self::getFilteredValue(
-                            value: $arguments[$name] ?? null,
+                            value: $arguments[$name] ?? $defaultValue ?: null,
                             filters: $filters,
-                        ) ?? (($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null);
+                        ) ?? $defaultValue;
                     } catch (ValidationFailedException $e) {
                         $e->setArgumentName(argumentName: $name);
                         $e->setArgumentType(argumentType: $type);

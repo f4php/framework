@@ -26,7 +26,6 @@ use F4\Core\Validator;
 use function array_map;
 use function array_keys;
 use function array_walk;
-use function call_user_func;
 use function implode;
 use function in_array;
 use function is_numeric;
@@ -218,12 +217,17 @@ class Route implements RouteInterface
         $responseFormat = $response->getResponseFormat();
         $requestPath = match ($pathPrefix) {
             null => $requestPath,
-            default => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath)
+            default => match(Preg::isMatch(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), subject: $requestPath)) {
+                true => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath),
+                default => null
+            }
         };
-        return
-            Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")
-            &&
-            Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat);
+        return match($requestPath) {
+            null => false,
+            default => Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")
+                       &&
+                       Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat)
+        };
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response, ?string $pathPrefix = null): mixed
     {

@@ -88,7 +88,7 @@ class Validator
                     try {
                         $defaultValue = ($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null;
                         $filteredArguments[$name] = self::getFilteredValue(
-                            value: $arguments[$name] ?? $defaultValue ?: null,
+                            value: ($arguments[$name]??null) ?? $defaultValue,
                             filters: $filters,
                         ) ?? $defaultValue;
                     } catch (ValidationFailedException $e) {

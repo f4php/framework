@@ -119,7 +119,7 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsInt] int $int1, #[IsInt] int $int2, #[IsInt] int $int3, #[IsInteger] int $int4, #[IsInteger] int $int5, #[IsInteger] int $int6, #[IsBool] bool $bool1, #[IsBoolean] bool $bool2, #[IsFloat] float $float1, #[IsFloat] float $float2, #[IsFloat] float $float3, #[IsEmail] string $email1, #[IsNotEmpty] string $notempty1, #[IsUrl] string $url1, #[IsUuid] string $uuid1, #[IsOneOf(['1', '2', 3])] string $oneof1, #[IsOneOf(['1', '2', 3])] int $oneof2, ): void {
+            function (#[IsInt] int $int1, #[IsInt] int $int2, #[IsInt] int $int3, #[IsInteger] int $int4, #[IsInteger] int $int5, #[IsInteger] int $int6, #[IsBool] bool $bool1, #[IsBoolean] bool $bool2, #[IsFloat] float $float1, #[IsFloat] float $float2, #[IsFloat] float $float3, #[IsEmail] string $email1, #[IsNotEmpty] string $notempty1, #[IsUrl] string $url1, #[IsUuid] string $uuid1, #[IsOneOf(['1', '2', 3])] string $oneof1, #[IsOneOf(['1', '2', 3])] int $oneof2): void {
             },
             [
                 'int1' => 5,

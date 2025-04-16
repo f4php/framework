@@ -128,6 +128,8 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('JOIN')),
             'leftJoin' => $this
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('LEFT JOIN')),
+            'leftJoinLateral' => $this
+                ->append((new TableReferenceCollection(...$arguments))->withPrefix('LEFT JOIN LATERAL')),
             'leftOuterJoin' => $this
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('LEFT OUTER JOIN')),
             'limit' => $this

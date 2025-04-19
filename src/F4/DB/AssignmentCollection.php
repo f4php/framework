@@ -38,7 +38,11 @@ class AssignmentCollection extends FragmentCollection
                             null => $key,
                             default => sprintf('%s = ARRAY [{#,...#}]', $quoted)
                         };
-                        $this->append(new Fragment($query, [$value]));
+                        $value = match(count(Fragment::extractPlaceholders($query)) > 1) {
+                            true => $value,
+                            default => [$value]
+                        };
+                        $this->append(new Fragment($query, $value));
                     } else if ($value instanceof FragmentInterface) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,

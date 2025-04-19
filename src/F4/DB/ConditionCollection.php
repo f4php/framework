@@ -57,7 +57,11 @@ class ConditionCollection extends FragmentCollection
                             null => $key,
                             default => sprintf('%s IN ({#,...#})', $quoted)
                         };
-                        $this->append(new Fragment($query, [$value]));
+                        $value = match(count(Fragment::extractPlaceholders($query)) > 1) {
+                            true => $value,
+                            default => [$value]
+                        };
+                        $this->append(new Fragment($query, $value));
                     } elseif ($value instanceof FragmentInterface) {
                         $query = match ($quoted = (new ColumnReference($key))->delimitedIdentifier) {
                             null => $key,

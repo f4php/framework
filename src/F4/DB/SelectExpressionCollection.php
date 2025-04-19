@@ -10,6 +10,7 @@ use F4\DB\Reference\SimpleReference;
 use F4\DB\Reference\ColumnReferenceWithAlias;
 use InvalidArgumentException;
 
+use function count;
 use function is_array;
 use function is_numeric;
 use function is_scalar;
@@ -30,7 +31,6 @@ class SelectExpressionCollection extends FragmentCollection
     {
         $this->addExpression($arguments);
     }
-
     public function addExpression(mixed $expression): void
     {
         if (is_array($expression)) {
@@ -43,7 +43,11 @@ class SelectExpressionCollection extends FragmentCollection
                             null => $key,
                             default => sprintf('({#,...#}) AS %s', $quoted)
                         };
-                        $this->append(new Fragment($query, [$value]));
+                        $value = match(count(Fragment::extractPlaceholders($query)) > 1) {
+                            true => $value,
+                            default => [$value]
+                        };
+                        $this->append(new Fragment($query, $value));
                     } else if ($value instanceof FragmentInterface) {
                         $query = match ($quoted = (new SimpleReference($key))->delimitedIdentifier) {
                             null => $key,

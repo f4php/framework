@@ -102,7 +102,7 @@ class Route implements RouteInterface
         $parameterTypeDefinitionPattern = "(?<parameterTypeDefinition>(any|bool|float|int|regexp|string|uuid|uuid4))";
         $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>[^\)]*?)\)';
         $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
-        $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinitionPattern>[^\{\}\/\.]*?)';
+        $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinition>[^\{\}\/\.]*?)';
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
         $extensions = $this->getAvailableExtensions();
         $extensionDefinitionPattern = implode(separator: '|', array: array_map(callback: function ($extension): string {

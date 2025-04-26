@@ -221,7 +221,6 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
         };
         return $this;
     }
-
     public static function __callStatic(string $method, array $arguments): mixed
     {
         return match ($method) {

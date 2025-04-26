@@ -119,6 +119,4 @@ class FragmentCollection implements FragmentCollectionInterface, FragmentInterfa
             $this->append(new Fragment($expression, []));
         }
     }
-
 }
-

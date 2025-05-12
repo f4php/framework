@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace F4\DB;
 
-use Composer\Pcre\Preg;
-
 use F4\DB\Reference\SimpleReference;
 use F4\DB\Reference\ColumnReferenceWithAlias;
 use InvalidArgumentException;

@@ -152,6 +152,20 @@ final class DBTest extends TestCase
         $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA") VALUES ($1) ON CONFLICT ("fieldF") DO NOTHING', $db2->getPreparedStatement()->query);
         $db3 = DB::insert()->into('table1 t1')->values(['fieldA' => ['1 + {#}' => 2], 'fieldB' => 3])->onConflict('fieldF')->doNothing();
         $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA", "fieldB") VALUES (1 + $1, $2) ON CONFLICT ("fieldF") DO NOTHING', $db3->getPreparedStatement()->query);
+        $db4 = DB::insert()
+            ->into([
+                'table1 t1' => [
+                    'fieldA',
+                    'fieldB',
+                    'fieldC',
+                ]
+            ])->select([
+                'fieldA',
+                'fieldB',
+                'fieldC'
+            ])
+            ->from('table2 t2');
+        $this->assertSame('INSERT INTO "table1" AS "t1" ("fieldA", "fieldB", "fieldC") SELECT "fieldA", "fieldB", "fieldC" FROM "table2" AS "t2"', $db4->getPreparedStatement()->query);
     }
     public function testUpdate(): void
     {

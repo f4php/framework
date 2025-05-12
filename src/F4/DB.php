@@ -18,6 +18,7 @@ use F4\DB\Parenthesize;
 use F4\DB\SelectExpressionCollection;
 use F4\DB\SimpleColumnReferenceCollection;
 use F4\DB\TableReferenceCollection;
+use F4\DB\TableWithColumnsReferenceCollection;
 use F4\DB\ValueExpressionCollection;
 use F4\DB\WithTableReferenceCollection;
 
@@ -123,7 +124,7 @@ class DB extends FragmentCollection implements FragmentCollectionInterface, Frag
             'intersectAll' => $this
                 ->append('INTERSECT ALL'),
             'into' => $this
-                ->append((new TableReferenceCollection(...$arguments))->withPrefix('INTO')),
+                ->append((new TableWithColumnsReferenceCollection(...$arguments))->withPrefix('INTO')),
             'join' => $this
                 ->append((new TableReferenceCollection(...$arguments))->withPrefix('JOIN')),
             'leftJoin' => $this

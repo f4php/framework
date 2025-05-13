@@ -87,10 +87,10 @@ class Router implements RouterInterface
                 [$matchingRouteGroup, $matchingRoute] = $this->getMatches($request, $response);
                 if ($matchingRouteGroup) {
                     HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTING, context: ['route'=>$matchingRoute]);
-                    $result = $matchingRouteGroup->invoke($request, $response) ?? null;
                     if($matchingRoute && ($template = $matchingRoute->getTemplate($response->getResponseFormat()))) {
                         $response->setTemplate($template);
                     }
+                    $result = $matchingRouteGroup->invoke($request, $response) ?? null;
                     HookManager::triggerHook(hookName: HookManager::AFTER_ROUTING, context: ['route'=>$matchingRoute, 'result'=>$result]);
                 }
                 if(isset($this->responseMiddleware)) {

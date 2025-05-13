@@ -13,6 +13,7 @@ use function array_keys;
 use function array_map;
 use function array_reduce;
 use function is_array;
+use function is_string;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class ArrayKeys implements ValidatorAttributeInterface
@@ -21,14 +22,15 @@ class ArrayKeys implements ValidatorAttributeInterface
     protected readonly array $definitions;
     public function __construct(array $definitions)
     {
-        if (array_filter(array: array_keys($definitions), callback: fn($key): bool => !\is_string(value: $key))) {
+        if (array_filter(array: array_keys($definitions), callback: fn($key): bool => !is_string(value: $key))) {
             throw new InvalidArgumentException(message: "Field name must be a string");
         }
         (new class {
             function __invoke(array|ValidatorAttributeInterface $definitions): void
             {
-                is_array(value: $definitions) && array_map(callback: function ($definition): void{
-                    $this($definition); }, array: $definitions);
+                is_array(value: $definitions) && array_map(callback: function ($definition): void {
+                    $this($definition); 
+                }, array: $definitions);
             }
         })($definitions);
         $this->definitions = $definitions;

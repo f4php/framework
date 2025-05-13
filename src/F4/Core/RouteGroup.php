@@ -15,6 +15,7 @@ use F4\Core\Route;
 use function array_find;
 use function array_map;
 use function array_reduce;
+use function is_array;
 
 class RouteGroup implements RouteGroupInterface
 {
@@ -38,10 +39,10 @@ class RouteGroup implements RouteGroupInterface
     }
     public function addRoutes(...$routes): static
     {
-        $routes = array_reduce($routes, function ($result, $route) {
+        $routes = array_reduce($routes, function (array $result, array|Route $route) {
             return [
                 ...$result,
-                ...match (\is_array($route)) {
+                ...match (is_array($route)) {
                     true => [...$route],
                     false => [$route]
                 }

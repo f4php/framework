@@ -159,7 +159,8 @@ final class DBTest extends TestCase
                     'fieldB',
                     'fieldC',
                 ]
-            ])->select([
+            ])
+            ->select([
                 'fieldA',
                 'fieldB',
                 'fieldC'

@@ -11,7 +11,7 @@ use function in_array;
 
 trait CanExtractFormatFromExtensionTrait
 {
-    public function getAvailableExtensions(): array
+    public function getAvailableFormatExtensions(): array
     {
         return array_reduce(
             array: Config::RESPONSE_EMITTERS,

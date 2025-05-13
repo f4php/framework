@@ -28,6 +28,7 @@ use function array_keys;
 use function array_walk;
 use function implode;
 use function in_array;
+use function is_callable;
 use function is_numeric;
 use function preg_quote;
 
@@ -104,7 +105,7 @@ class Route implements RouteInterface
         $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
         $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinition>[^\{\}\/\.]*?)';
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
-        $extensions = $this->getAvailableExtensions();
+        $extensions = $this->getAvailableFormatExtensions();
         $extensionDefinitionPattern = implode(separator: '|', array: array_map(callback: function ($extension): string {
             return preg_quote(str: $extension, delimiter: '/');
         }, array: $extensions));
@@ -161,13 +162,16 @@ class Route implements RouteInterface
         return in_array(needle: $format, haystack: array_keys(Config::RESPONSE_EMITTERS));
     }
 
-    public function setTemplate(string $template, ?string $format = Config::DEFAULT_RESPONSE_FORMAT): static
+    public function setTemplate(string|callable $template, ?string $format = Config::DEFAULT_RESPONSE_FORMAT): static
     {
         if (!$this->checkIfFormatIsSupported(format: $format)) {
             throw new ValueError(message: "format {$format} is not supported");
         }
-        // TODO: check template path validity with realpath
-        $this->templates[$format] = $template;
+        $this->templates[$format] = match(is_callable($template)) {
+            true => $template($format),
+            // TODO: check template path validity with realpath
+            default => $template,
+        };
         return $this;
     }
 

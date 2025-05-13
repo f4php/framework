@@ -12,7 +12,7 @@ use F4\Core\ResponseInterface;
 interface RouteInterface
 {
     public function __construct(string $pathDefinition, callable $handler);
-    public function setTemplate(string $template, ?string $format = Config::DEFAULT_RESPONSE_FORMAT): static;
+    public function setTemplate(string|callable $template, ?string $format = Config::DEFAULT_RESPONSE_FORMAT): static;
     public function getTemplate(string $format = Config::DEFAULT_RESPONSE_FORMAT): ?string;
     public function setName($name): static;
     public function getName(): string|null;

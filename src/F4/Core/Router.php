@@ -48,7 +48,7 @@ class Router implements RouterInterface
         return $this->getMatches($request, $response)[0] ?? null;
     }
     protected function getMatches(RequestInterface $request, ResponseInterface $response): array {
-        $matchingGroupsData = array_reduce($this->routeGroups, function ($result, RouteGroup $routeGroup) use ($request, $response): array {
+        $matchingGroupsData = array_reduce($this->routeGroups, function (array $result, RouteGroup $routeGroup) use ($request, $response): array {
             return match($route = $routeGroup->getMatchingRoute(request: $request, response: $response)) {
                 null => $result,
                 default => [...$result, [

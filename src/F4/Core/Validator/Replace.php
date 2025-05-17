@@ -14,6 +14,6 @@ class Replace implements ValidatorAttributeInterface
     public function __construct(protected string $pattern, protected string $replacement, protected string $modifiers = 'u') {}
     public function getFilteredValue(mixed $value): mixed
     {
-        return Preg::replace(pattern: sprintf('/%s/%s', $this->pattern, $this->modifiers), replacement: $this->replacement, subject: $value);
+        return Preg::replace(pattern: sprintf('/%s/%s', $this->pattern, $this->modifiers), replacement: $this->replacement, subject: $value??'');
     }
 }

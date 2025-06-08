@@ -11,7 +11,8 @@ interface RequestInterface extends PsrServerRequestInterface
     public function getPath(): string;
     public function getExtension(): ?string;
     public function getDebugExtension(): ?string;
-    public function getLanguage(): ?string;
+    public function getPathLocale(): ?string;
+    public function getHeaderLocales(): array;
     public function setPsrRequest(PsrServerRequestInterface $psrRequest): self;
     public function getPsrRequest(): PsrServerRequestInterface;
     static public function fromPsr(psrServerRequestInterface $psrRequest): self;

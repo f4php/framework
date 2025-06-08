@@ -33,7 +33,7 @@ class ViteBundleModule extends AbstractCompilerModule
                 $node = $event->getNode();
                 if ($node instanceof \Phug\Parser\Node\ElementNode) {
                     if (mb_substr($node->getName() ?? '', 0, mb_strlen(self::ELEMENT_NAME)) === self::ELEMENT_NAME) {
-                        // ConditionalNode is a convenient insertion point type that may contain arbitrary number of elements as children                        
+                        // ConditionalNode is a convenient insertion point type that may contain arbitrary number of elements as children
                         $containerNode = new \Phug\Parser\Node\ConditionalNode;
                         $bundleName = mb_trim($node->getAttribute('name'), '\'\"') ?: self::DEFAULT_BUNDLE_NAME;
                         if (Config::DEBUG_MODE && isset($_SERVER[self::VITE_DEVSERVER_HEADER])) {

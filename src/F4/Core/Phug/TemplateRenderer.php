@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace F4\Core\Phug;
 
+use F4\Core\CoreApiInterface;
 use F4\Config;
-use F4\Core\Phug\{ViteBundleModule, StripViteResourceModule};
+use F4\Core\Phug\{FluentResourceModule, StripViteResourceModule, ViteBundleModule};
 
 use Phug;
 use Phug\Component\ComponentExtension;
@@ -16,7 +17,6 @@ use function sys_get_temp_dir;
 
 class TemplateRenderer
 {
-
     public function __construct(protected $options = [])
     {
         // workaround for undefined stdout
@@ -33,15 +33,15 @@ class TemplateRenderer
                 'memory_limit' => -1,
                 'execution_max_time' => -1,
                 'modules' => [
+                    FluentResourceModule::class,
                     ViteBundleModule::class,
                     StripViteResourceModule::class,
-                ]
+                ],
             ],
             ...$options
         ]);
         ComponentExtension::enable();
     }
-
     public function displayFile(string $file, array $args = []): void
     {
         if (Config::DEBUG_MODE === true) {
@@ -50,7 +50,6 @@ class TemplateRenderer
             Optimizer::call('displayFile', [$file, $args]);
         }
     }
-
     public static function getPaths(?array $paths = null): array
     {
         $paths = Config::TEMPLATE_RELATIVE_PATHS ? (array) $paths : [];
@@ -65,6 +64,5 @@ class TemplateRenderer
         }
         return $realpaths;
     }
-
 }
 

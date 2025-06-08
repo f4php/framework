@@ -21,12 +21,13 @@ use F4\ModuleInterface;
 use F4\HookManager;
 
 use F4\Core\CanExtractFormatFromExtensionTrait;
+use F4\Core\CanExtractLocaleFromExtensionTrait;
 
 use F4\Core\CoreApiInterface;
 use F4\Core\DebuggerInterface;
 use F4\Core\ExceptionRenderer;
 
-// use F4\Core\LocalizerInterface;
+use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 
@@ -38,6 +39,10 @@ use F4\Core\Route;
 use F4\Core\RouteGroup;
 use F4\Core\RouterInterface;
 
+use function array_filter;
+use function array_keys;
+use function array_map;
+use function arsort;
 use function class_exists;
 use function date_default_timezone_set;
 use function error_reporting;
@@ -60,18 +65,17 @@ use function set_exception_handler;
 class Core implements CoreApiInterface
 {
     use CanExtractFormatFromExtensionTrait;
-
+    use CanExtractLocaleFromExtensionTrait;
     protected array $modules = [];
     protected CoreApiInterface $coreApiProxy;
     protected DebuggerInterface $debugger;
     protected ResponseEmitterInterface $emitter;
     protected RouterInterface $router;
-    // TODO: add localizer
-    // protected LocalizerInterface $localizer;
+    protected LocalizerInterface $localizer;
     protected RequestInterface $request;
     protected ResponseInterface $response;
 
-    public function __construct(string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS, string $routerClassName = Config::CORE_ROUTER_CLASS, string $debuggerClassName = Config::CORE_DEBUGGER_CLASS)
+    public function __construct(string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS, string $routerClassName = Config::CORE_ROUTER_CLASS, string $localizerClassName = Config::CORE_LOCALIZER_CLASS, string $debuggerClassName = Config::CORE_DEBUGGER_CLASS)
     {
         if (Config::DEBUG_MODE) {
             $debugger = new $debuggerClassName();
@@ -82,6 +86,8 @@ class Core implements CoreApiInterface
         HookManager::setBaseContext(['f4' => $coreApiProxy]);
         $router = new $routerClassName();
         $this->setRouter(router: $router);
+        $localizer = new $localizerClassName();
+        $this->setLocalizer(localizer: $localizer);
         HookManager::triggerHook(hookName: HookManager::AFTER_CORE_CONSTRUCT, context: []);
     }
     public function setUpRequestResponse(?callable $customHandler = null): static
@@ -102,6 +108,16 @@ class Core implements CoreApiInterface
             default => Closure::fromCallable(callback: $customHandler)->call($this, $this->setUpEnvironmentNormally(...))
         };
         HookManager::triggerHook(hookName: HookManager::AFTER_SETUP_ENVIRONMENT, context: []);
+        return $this;
+    }
+    public function setUpLocalizer(?callable $customHandler = null): static
+    {
+        HookManager::triggerHook(hookName: HookManager::BEFORE_SETUP_LOCALIZER, context: []);
+        match ($customHandler) {
+            null => $this->setUpLocalizerNormally(),
+            default => Closure::fromCallable(callback: $customHandler)->call($this, $this->setUpLocalizerNormally(...))
+        };
+        HookManager::triggerHook(hookName: HookManager::AFTER_SETUP_LOCALIZER, context: ['localizer' => $this->localizer]);
         return $this;
     }
     public function setUpEmitter(?callable $customHandler = null): static
@@ -208,6 +224,26 @@ class Core implements CoreApiInterface
             }
         }
     }
+    protected function setupLocalizerNormally(): static
+    {
+        $requestPathLocale = $this->getRequest()->getPathLocale();
+        $requestHeaderLocales = array_keys($this->getRequest()->getHeaderLocales());
+        $requestSessionLocale = $_SESSION['F4']['locale'] ?? '';
+        $clientLocales = array_filter([
+            $requestPathLocale,
+            ...$requestHeaderLocales,
+            $requestSessionLocale,
+            Config::DEFAULT_LOCALE,
+        ]);
+        $serverLocales = array_map(fn($locale) => $locale['weight'], Config::LOCALES);
+        arsort($serverLocales);
+        $negotiatedLocale = (string)array_values(array_intersect($clientLocales, array_keys($serverLocales)))[0] ?? '';
+        $this->setLocale($negotiatedLocale); // will throw on unsupported locale
+        if(Config::REMEMBER_LOCALE) {
+            $_SESSION['F4']['locale'] = $negotiatedLocale;
+        }
+        return $this;
+    }
     protected function setupEmitterNormally(): static
     {
         $this->setResponseFormat(format: $format = match ($extension = $this->getRequest()->getExtension()) {
@@ -216,7 +252,7 @@ class Core implements CoreApiInterface
         });
         $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
             true => throw new ErrorException(message: "Failed to locate emitter for '{$format}'"),
-            default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this)
+            default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this->coreApiProxy)
         };
         return $this;
     }
@@ -342,6 +378,15 @@ class Core implements CoreApiInterface
     {
         return $this->getResponse()->getResponseFormat();
     }
+    public function setLocale(string $locale): static
+    {
+        $this->getLocalizer()->setLocale($locale);
+        return $this;
+    }
+    public function getLocale(): string
+    {
+        return $this->getLocalizer()->getLocale();
+    }
     public function getTemplate(?string $format = null): string
     {
         return $this->getResponse()->getTemplate(format: $format);
@@ -358,6 +403,15 @@ class Core implements CoreApiInterface
     public function getRouter(): RouterInterface
     {
         return $this->router;
+    }
+    public function getLocalizer(): LocalizerInterface
+    {
+        return $this->localizer;
+    }
+    public function setLocalizer(LocalizerInterface $localizer): static 
+    {
+        $this->localizer = $localizer;
+        return $this;
     }
     public function getMatchingRoute(): ?Route
     {

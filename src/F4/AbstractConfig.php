@@ -104,9 +104,19 @@ abstract class AbstractConfig
     public const string DEFAULT_LANGUAGE = 'en';
 
     public const string CORE_ROUTER_CLASS = Router::class;
-    // public const string CORE_LOCALIZER_CLASS = Localizer::class;
+    public const string CORE_LOCALIZER_CLASS = Localizer::class;
     public const string CORE_API_PROXY_CLASS = CoreApiProxy::class;
     public const string DEFAULT_TEMPLATE = __DIR__ . '/../../templates/it-worked.pug';
+
+    public const string DEFAULT_LOCALE = 'en';
+    public const array LOCALES = [
+        'en' => [
+            'extensions' => ['.en'],
+            'resources' => [],
+            'weight' => 1,
+        ],
+    ];
+    public const bool REMEMBER_LOCALE = true;
 
 }
 

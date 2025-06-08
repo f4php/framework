@@ -8,19 +8,23 @@ use ErrorException;
 use ReflectionObject;
 use ReflectionClassConstant;
 
-use F4\Config;
-use F4\HookManager;
 use F4\Config\SensitiveParameter;
+use F4\Config;
 use F4\Core\Exception\HttpException;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
+use F4\HookManager;
 
 use F4\Core\ResponseEmitter\AbstractResponseEmitter;
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
-use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
+use F4\Core\Phug\TemplateRenderer;
 
-use function in_array;
+use function array_keys;
+use function array_reduce;
+use function count;
+use function date;
+use function date_default_timezone_get;
 
 class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
@@ -36,8 +40,8 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         $response = $response->withHeader('Content-Type', "text/html; charset=" . Config::RESPONSE_CHARSET);
         $timestamp = time();
         $data = [
-            // todo: convert config and request to data structure
             'config' => $this->getConfigConstants(),
+            't' => $this->f4->getLocalizer()->getTranslateFunction(),
             'request' => [
                 'path' => $request->getPath(),
                 'headers' => $request->getHeaders(),
@@ -62,7 +66,9 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         HookManager::triggerHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, [
             'context' => $data
         ]);
-        $pugRenderer = new PhugTemplateRenderer();
+        $pugRenderer = new TemplateRenderer([
+            'f4' => $this->f4
+        ]);
         parent::emitHeaders($response);
         if (parent::shouldEmitBody($response)) {
             if (empty($template = $response->getTemplate())) {

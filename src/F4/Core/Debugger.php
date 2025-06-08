@@ -18,7 +18,7 @@ use F4\Core\MiddlewareInterface;
 use F4\Core\Debugger\ExportResult;
 use F4\Core\Debugger\BacktraceResult;
 
-use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
+use F4\Core\Phug\TemplateRenderer;
 
 use Closure;
 use ErrorException;
@@ -68,6 +68,9 @@ class Debugger implements DebuggerInterface
         });
         HookManager::addHook(HookManager::AFTER_SETUP_ENVIRONMENT, function ($context) {
             Profiler::addSnapshot('Setup environment');
+        });
+        HookManager::addHook(HookManager::AFTER_SETUP_LOCALIZER, function ($context) {
+            Profiler::addSnapshot('Setup localizer');
         });
         HookManager::addHook(HookManager::AFTER_SETUP_EMITTER, function ($context) {
             Profiler::addSnapshot('Setup emitter');
@@ -243,7 +246,7 @@ class Debugger implements DebuggerInterface
             'Content-Type',
             "text/html; charset=" . Config::RESPONSE_CHARSET,
         ), true, 200);
-        $pugRenderer = new PhugTemplateRenderer();
+        $pugRenderer = new TemplateRenderer();
         $pugRenderer->displayFile(__DIR__ . '/../../../templates/debugger/debugger.pug', $data);
         return true;
     }

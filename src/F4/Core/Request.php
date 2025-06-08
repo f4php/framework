@@ -18,11 +18,15 @@ use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 
-use function array_keys;
+use F4\Core\CanExtractFormatFromExtensionTrait;
+use F4\Core\CanExtractLocaleFromExtensionTrait;
+
+use function arsort;
 use function array_map;
 use function array_reduce;
 use function implode;
 use function in_array;
+use function explode;
 use function json_decode;
 use function mb_strpos;
 use function preg_quote;
@@ -34,11 +38,13 @@ use function preg_quote;
  */
 class Request implements RequestInterface
 {
+    use CanExtractFormatFromExtensionTrait;
+    use CanExtractLocaleFromExtensionTrait;
     protected PsrServerRequestInterface $psrRequest;
     protected string $path;
     protected ?string $extension = null;
     protected ?string $debugExtension = null;
-    protected ?string $language = null;
+    protected ?string $pathLocale = null;
     protected mixed $parameters = [];
     protected mixed $validatedParameters = [];
 
@@ -64,32 +70,33 @@ class Request implements RequestInterface
 
     public function initialize()
     {
-        $languages = [Config::DEFAULT_LANGUAGE, ...array_keys(Config::DICTIONARIES)];
-        $languagesPattern =
-            implode(separator: '|', array: array_map(callback: function ($language): string {
-                return preg_quote(str: $language, delimiter: '/');
-            }, array: $languages));
-        $extensions = $this->getAvailableExtensions();
-        $extensionsPattern =
+        $localeExtensions = $this->getAvailableLocaleExtensions();
+        $localeExtensionsPattern = implode(separator: '|', array: array_map(callback: function ($extension): string {
+            return preg_quote(str: $extension, delimiter: '/');
+        }, array: $localeExtensions));
+        $formatExtensions = $this->getAvailableFormatExtensions();
+        $formatExtensionsPattern =
             implode(separator: '|', array: array_map(callback: function ($extension): string {
                 return preg_quote(str: $extension, delimiter: '/');
-            }, array: $extensions));
+            }, array: $formatExtensions));
         $debugExtensions = $this->getAvailableDebugExtensions();
         $debugExtensionsPattern =
             implode(separator: '|', array: array_map(callback: function ($debugExtension): string {
                 return preg_quote(str: $debugExtension, delimiter: '/');
             }, array: $debugExtensions));
-        if (!Preg::isMatch(pattern: "/(?<path>\/.*?)(?<extension>{$extensionsPattern})?(\((?<language>{$languagesPattern})\))?(?<debugExtension>{$debugExtensionsPattern})?$/Anu", subject: $this->getUri()->getPath(), matches: $matches)) {
+        if (!Preg::isMatch(pattern: "/(?<path>\/.*?)(?<localeExtension>{$localeExtensionsPattern})?(?<formatExtension>{$formatExtensionsPattern})?(?<debugExtension>{$debugExtensionsPattern})?$/Anu", subject: $this->getUri()->getPath(), matches: $matches)) {
             throw new ErrorException(message: 'request-uri-cannot-be-parsed');
         }
         $this->path = $matches['path'];
-        $this->extension = $matches['extension'];
-        $this->language = $matches['language'];
+        $this->extension = $matches['formatExtension'];
+        $this->pathLocale = match($matches['localeExtension']) {
+            null => null,
+            default => $this->getLocaleFromExtension($matches['localeExtension']),
+        };
         $this->debugExtension = match (Config::DEBUG_MODE) {
             true => $matches['debugExtension'],
             default => null
         };
-
         $this->setParameters([
             ...$this->getQueryParams() ?? [],
             ...$this->getParsedBody() ?? []
@@ -98,16 +105,6 @@ class Request implements RequestInterface
     static public function fromPsr(psrServerRequestInterface $psrRequest): static
     {
         return new self(psrRequest: $psrRequest);
-    }
-    protected function getAvailableExtensions(): array
-    {
-        return array_reduce(
-            array: Config::RESPONSE_EMITTERS,
-            callback: function ($extensions, $emitterConfiguration): array {
-                return [...$extensions, ...$emitterConfiguration['extensions'] ?? []];
-            },
-            initial: [],
-        );
     }
     protected function getAvailableDebugExtensions(): array
     {
@@ -124,9 +121,35 @@ class Request implements RequestInterface
     {
         return $this->extension;
     }
-    public function getLanguage(): ?string
+    public function getPathLocale(): ?string
     {
-        return $this->language;
+        return $this->pathLocale;
+    }
+    public function getHeaderLocales(): array
+    {
+        $locales = match($acceptLanguageHeader = $this->getHeaderLine('Accept-Language')) {
+            null => [],
+            default => array_reduce(
+                explode(',', $acceptLanguageHeader),
+                function ($carry, $part) {
+                    $sections = explode(';', trim($part));
+                    $locale = trim($sections[0]);
+                    $quality = 1.0;
+                    if (isset($sections[1])) {
+                        $q = explode('=', $sections[1]);
+                        if (isset($q[1]) && $q[0] === 'q') {
+                            $quality = (float) $q[1];
+                        }
+                    }
+                    $locale = str_replace('-', '_', $locale);
+                    $carry[$locale] = $quality;
+                    return $carry;
+                },
+                []
+            )
+        };
+        arsort($locales);
+        return $locales;
     }
     public function getPath(): string
     {

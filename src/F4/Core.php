@@ -227,7 +227,7 @@ class Core implements CoreApiInterface
     protected function setupLocalizerNormally(): static
     {
         $requestPathLocale = $this->getRequest()->getPathLocale();
-        $requestHeaderLocales = array_keys($this->getRequest()->getHeaderLocales());
+        $requestHeaderLocales = Config::LOCALE_HEADERS ? array_keys($this->getRequest()->getHeaderLocales()) : [];
         $requestSessionLocale = $_SESSION['F4']['locale'] ?? '';
         $clientLocales = array_filter([
             $requestPathLocale,

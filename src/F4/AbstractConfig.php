@@ -117,6 +117,7 @@ abstract class AbstractConfig
         ],
     ];
     public const bool REMEMBER_LOCALE = true;
+    public const bool LOCALE_HEADERS = true;
 
 }
 

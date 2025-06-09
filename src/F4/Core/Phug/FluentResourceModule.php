@@ -8,6 +8,7 @@ use Phug\{AbstractCompilerModule, CompilerEvent};
 use Phug\Compiler\Event\NodeEvent;
 
 use function dirname;
+use function mb_trim;
 
 class FluentResourceModule extends AbstractCompilerModule
 {

@@ -24,12 +24,17 @@ class FluentResourceModule extends AbstractCompilerModule
                         $localizer = $f4->getLocalizer();
                         $locale = $localizer->getLocale();
                         $path = dirname($this->getContainer()->getPath());
-                        $nodeSrc = mb_trim($node->getAttribute('src'), '\'\"');
-                        $nodeLocale = mb_trim($node->getAttribute('locale'), '\'\"');
-                        if ($locale === $nodeLocale) {
-                            $localizer->addresource($path.'/'.$nodeSrc, true);
+                        $localeAttribute = mb_trim($node->getAttribute('locale'), '\'\"');
+                        $srcAttribute = mb_trim($node->getAttribute('src')??'', '\'\"');
+                        if ($locale === $localeAttribute) {
+                            if($srcAttribute) {
+                                $localizer->addResource(resource: $path.'/'.$srcAttribute, allowOverrides: true);
+                            }
+                            else if (($textNode = $node->getChildAt(0)) instanceof \Phug\Parser\Node\TextNode) {
+                                $localizer->addFtl(string: $textNode->getValue(), allowOverrides: true);
+                            }
                         }
-                        $node = (new \Phug\Parser\Node\CommentNode())->hide();
+                        $node = (new \Phug\Parser\Node\CommentNode)->hide();
                         $event->setNode($node);
                     }
                 }

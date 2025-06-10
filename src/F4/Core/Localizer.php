@@ -25,6 +25,10 @@ class Localizer implements LocalizerInterface
     {
         $this->setLocale($locale);
     }
+    public function addFtl(string $string, bool $allowOverrides = false): void
+    {
+        $this->bundle->addFtl($string, $allowOverrides);
+    }
     public function addResource(string $resource, bool $allowOverrides = false): void
     {
         $this->bundle->addFtl(file_get_contents($resource), $allowOverrides);
@@ -35,7 +39,7 @@ class Localizer implements LocalizerInterface
     }
     public function getTranslateFunction(): callable
     {
-        return fn(string $message, array $arguments): string => $this->bundle->message($message, $arguments) ?: '';
+        return fn(string $message, array $arguments = []): string => $this->bundle->message($message, $arguments) ?: '';
     }
     public function setLocale(string $locale): void
     {

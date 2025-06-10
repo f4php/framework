@@ -6,6 +6,7 @@ namespace F4\Core\Phug;
 
 use Phug\{AbstractCompilerModule, CompilerEvent};
 use Phug\Compiler\Event\NodeEvent;
+use Exception;
 
 use function dirname;
 use function mb_trim;
@@ -24,7 +25,9 @@ class FluentResourceModule extends AbstractCompilerModule
                         $localizer = $f4->getLocalizer();
                         $locale = $localizer->getLocale();
                         $path = dirname($this->getContainer()->getPath());
-                        $localeAttribute = mb_trim($node->getAttribute('locale'), '\'\"');
+                        if(!$localeAttribute = mb_trim($node->getAttribute('locale')??'', '\'\"')) {
+                            throw new Exception('locale attribute is required for ftl:resource');
+                        }
                         $srcAttribute = mb_trim($node->getAttribute('src')??'', '\'\"');
                         if ($locale === $localeAttribute) {
                             if($srcAttribute) {

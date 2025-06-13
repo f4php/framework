@@ -101,7 +101,7 @@ class Route implements RouteInterface
         $methodDefinitionPattern = implode(separator: '|', array: $methods) . ')(\|(' . implode(separator: '|', array: $methods) . ')){0,' . (count(value: $methods) - 1) . '}';
         $parameterNameDefinitionPattern = '(?<parameterNameDefinition>[a-zA-Z_][a-zA-Z0-9_]*?)';
         $parameterTypeDefinitionPattern = "(?<parameterTypeDefinition>(any|bool|float|int|regexp|string|uuid|uuid4))";
-        $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>[^\)]*?)\)';
+        $parameterTypeOptionsDefinitionPattern = '\((?<parameterTypeOptionsDefinition>.*?)\)';
         $parameterDefinitionPattern = "(?<parameterDefinition>\{{$parameterNameDefinitionPattern}(\s*\:\s*{$parameterTypeDefinitionPattern}({$parameterTypeOptionsDefinitionPattern})?)?\})";
         $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinition>[^\{\}\/\.]*?)';
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';

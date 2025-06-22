@@ -38,6 +38,7 @@ use F4\Core\Validator\Min;
 use F4\Core\Validator\OneOf;
 use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
+use F4\Core\Validator\SanitizedUuid;
 use F4\Core\Validator\Trim;
 use F4\Core\Validator\UnsafeString;
 
@@ -677,5 +678,42 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame('test', $arguments['parameter']);
     }
+    public function testSanitizedUuid(): void
+    {
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (#[SanitizedUuid] int $uuid1): void {
+            },
+            [
+                'uuid1' => 'not-a-uuid',
+            ],
+        );
+        $value2 = $validator->getFilteredArguments(
+            function (#[SanitizedUuid] int $uuid2): void {
+            },
+            [
+                'uuid2' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',
+            ],
+        );
+        $value3 = $validator->getFilteredArguments(
+            function (#[SanitizedUuid(1)] int $uuid3): void {
+            },
+            [
+                'uuid3' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',
+            ],
+        );
+        $value4 = $validator->getFilteredArguments(
+            function (#[SanitizedUuid(4)] int $uuid4): void {
+            },
+            [
+                'uuid4' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',
+            ],
+        );
+        $this->assertSame(null, $value1['uuid1']);
+        $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value2['uuid2']);
+        $this->assertSame(null, $value3['uuid3']);
+        $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value4['uuid4']);
+
+   }
 
 }

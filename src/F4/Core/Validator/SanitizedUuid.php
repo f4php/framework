@@ -7,11 +7,10 @@ namespace F4\Core\Validator;
 use Attribute;
 use Composer\Pcre\Preg;
 use InvalidArgumentException;
-use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-class IsUuid implements ValidatorAttributeInterface
+class SanitizedUuid implements ValidatorAttributeInterface
 {
     protected const array PATTERNS = [
         0 => '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/',
@@ -30,7 +29,7 @@ class IsUuid implements ValidatorAttributeInterface
     public function getFilteredValue(mixed $value): mixed
     {
         return match (Preg::isMatch(pattern: self::PATTERNS[$this->version], subject: $value)) {
-            false => throw new ValidationFailedException(message: "{$value} is not a valid UUID"),
+            false => null,
             default => $value
         };
     }

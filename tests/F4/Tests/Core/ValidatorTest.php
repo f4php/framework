@@ -38,6 +38,7 @@ use F4\Core\Validator\Min;
 use F4\Core\Validator\OneOf;
 use F4\Core\Validator\RegExp;
 use F4\Core\Validator\SanitizedString;
+use F4\Core\Validator\SanitizedUrl;
 use F4\Core\Validator\SanitizedUuid;
 use F4\Core\Validator\Trim;
 use F4\Core\Validator\UnsafeString;
@@ -455,10 +456,10 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsUrl] string $regexp1): void {
+            function (#[IsUrl] string $url1): void {
             },
             [
-                'regexp1' => 'invalid url',
+                'url1' => 'invalid url',
             ],
         );
     }
@@ -713,7 +714,26 @@ final class ValidatorTest extends TestCase
         $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value2['uuid2']);
         $this->assertSame(null, $value3['uuid3']);
         $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value4['uuid4']);
-
    }
+    public function testSanitizedUrl(): void
+    {
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (#[SanitizedUrl] string $url1): void {
+            },
+            [
+                'url1' => 'invalid url',
+            ],
+        );
+        $value2 = $validator->getFilteredArguments(
+            function (#[SanitizedUrl] string $url2): void {
+            },
+            [
+                'url2' => 'https://user_name:some_password@www.example.com:8080/path/to/resource.html?param1=value1&param2=value2#section1',
+            ],
+        );
+        $this->assertSame(null, $value1['url1']);
+        $this->assertSame('https://user_name:some_password@www.example.com:8080/path/to/resource.html?param1=value1&param2=value2#section1', $value2['url2']);
+    }
 
 }

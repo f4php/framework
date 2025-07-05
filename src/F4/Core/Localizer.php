@@ -20,7 +20,6 @@ class Localizer implements LocalizerInterface
 {
     private string $locale;
     private FluentBundle $bundle;
-
     public function __construct(string $locale = Config::DEFAULT_LOCALE)
     {
         $this->setLocale($locale);

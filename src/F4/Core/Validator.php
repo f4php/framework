@@ -25,7 +25,6 @@ class Validator
 {
     public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
     public const int ALL_ATTRIBUTES_MUST_BE_CLASSES = 1 << 1;
-
     public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT) {}
     protected static function getFilteredValue(mixed $value, array $filters): mixed
     {
@@ -61,7 +60,7 @@ class Validator
                 ) {
                     throw new ValidationFailedException(message: "All argument must be valid class names, '{$invalidAttributeName}' is not");
                 }
-                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF));
+                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF)) > 0;
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
                         ->setArgumentName(argumentName: $name)
@@ -73,7 +72,7 @@ class Validator
                             ...$filters,
                             ...array_map(
                                 callback: fn($attribute): mixed => $attribute->newInstance(),
-                            array: $attributes,
+                                array: $attributes,
                             )
                         ];
                     } elseif (

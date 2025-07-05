@@ -18,7 +18,6 @@ use function is_string;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class ArrayKeys implements ValidatorAttributeInterface
 {
-
     protected readonly array $definitions;
     public function __construct(array $definitions)
     {
@@ -35,12 +34,10 @@ class ArrayKeys implements ValidatorAttributeInterface
         })($definitions);
         $this->definitions = $definitions;
     }
-
     protected function getDefinitions()
     {
         return $this->definitions;
     }
-
     public function getFilteredValue(mixed $value): mixed
     {
         $result = [];
@@ -50,7 +47,6 @@ class ArrayKeys implements ValidatorAttributeInterface
                 default => $filter->getFilteredValue($value[$name] ?? null)
             };
         }
-        ;
         return $result;
     }
 }

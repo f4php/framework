@@ -27,7 +27,7 @@ class SanitizedUuid implements ValidatorAttributeInterface
     }
     public function getFilteredValue(mixed $value): mixed
     {
-        return match (Preg::isMatch(pattern: self::PATTERNS[$this->version], subject: $value)) {
+        return match (Preg::isMatch(pattern: self::PATTERNS[$this->version], subject: $value ?? '')) {
             false => null,
             default => $value
         };

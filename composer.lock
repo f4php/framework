@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d46f13e83b85b2bba12e198ecfe30c7",
+    "content-hash": "7ee7f650e2da273edf9b0e1082a25122",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -142,6 +142,59 @@
                 }
             ],
             "time": "2024-11-12T16:29:46+00:00"
+        },
+        {
+            "name": "f4php/db",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/f4php/db.git",
+                "reference": "7d2fbf1fd5ec0921a91ad7deb469f77a45cf0baf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/f4php/db/zipball/7d2fbf1fd5ec0921a91ad7deb469f77a45cf0baf",
+                "reference": "7d2fbf1fd5ec0921a91ad7deb469f77a45cf0baf",
+                "shasum": ""
+            },
+            "require": {
+                "composer/pcre": "^3.3",
+                "ext-pgsql": "*",
+                "php": "^8.4.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^11.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "F4\\": "src/F4"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dennis Kreminsky",
+                    "email": "dennis@kreminsky.com"
+                }
+            ],
+            "description": "DB is a database query builder for F4, a (really) lightweight web application framework",
+            "keywords": [
+                "database",
+                "f4",
+                "framework",
+                "query builder"
+            ],
+            "support": {
+                "issues": "https://github.com/f4php/db/issues",
+                "source": "https://github.com/f4php/db/tree/v0.0.1"
+            },
+            "time": "2025-07-05T07:43:28+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

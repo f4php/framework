@@ -29,7 +29,6 @@ trait ExceptionHandlerTrait
     {
         return $this->addExceptionHandler(exceptionClassName: $exceptionClassName, exceptionHandler: $exceptionHandler);
     }
-
     public function processException(Throwable $exception, ...$arguments): mixed
     {
         foreach ($this->exceptionHandlers as $className => $handler) {

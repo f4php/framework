@@ -12,5 +12,4 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 class SanitizedString extends Filter implements ValidatorAttributeInterface
 {
     public function __construct(protected int $filter = FILTER_SANITIZE_FULL_SPECIAL_CHARS, protected int|array $options = FILTER_FLAG_NO_ENCODE_QUOTES | FILTER_NULL_ON_FAILURE) {}
-
 }

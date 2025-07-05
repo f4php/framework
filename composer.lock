@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7ee7f650e2da273edf9b0e1082a25122",
+    "content-hash": "b5d1958db2d44724236fa8673feeb3a4",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -195,6 +195,56 @@
                 "source": "https://github.com/f4php/db/tree/v0.0.1"
             },
             "time": "2025-07-05T07:43:28+00:00"
+        },
+        {
+            "name": "f4php/hookmanager",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/f4php/hookmanager.git",
+                "reference": "6f29c33cd1e7f0fc4c8509c58b413c3caed26cab"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/f4php/hookmanager/zipball/6f29c33cd1e7f0fc4c8509c58b413c3caed26cab",
+                "reference": "6f29c33cd1e7f0fc4c8509c58b413c3caed26cab",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.4.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^11.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "F4\\": "src/F4"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dennis Kreminsky",
+                    "email": "dennis@kreminsky.com"
+                }
+            ],
+            "description": "HookManager is internal hook management SDK for F4, a lightweight web application framework",
+            "keywords": [
+                "f4",
+                "framework",
+                "hook manager"
+            ],
+            "support": {
+                "issues": "https://github.com/f4php/hookmanager/issues",
+                "source": "https://github.com/f4php/hookmanager/tree/v0.0.1"
+            },
+            "time": "2025-07-05T11:40:01+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

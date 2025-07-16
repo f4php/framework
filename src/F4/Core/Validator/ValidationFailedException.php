@@ -28,5 +28,4 @@ class ValidationFailedException extends InvalidArgumentException
     {
         return $this->argumentType;
     }
-
 }

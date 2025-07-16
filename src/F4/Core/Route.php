@@ -238,10 +238,10 @@ class Route implements RouteInterface
         $handler = $this->getHandler();
         $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
         $parameters = $this->getRequestParameters($request, $pathPrefix);
-        $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
-        $request->setParameters($parameters);
-        $request->setValidatedParameters($arguments);
         try {
+            $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
+            $request->setParameters($parameters);
+            $request->setValidatedParameters($arguments);
             if (isset($this->requestMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
                 $request = match (($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {

@@ -43,6 +43,7 @@ use F4\Core\Validator\SanitizedUuid;
 use F4\Core\Validator\Trim;
 use F4\Core\Validator\UnsafeString;
 
+use ErrorException;
 use InvalidArgumentException;
 use TypeError;
 
@@ -734,6 +735,26 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(null, $value1['url1']);
         $this->assertSame('https://user_name:some_password@www.example.com:8080/path/to/resource.html?param1=value1&param2=value2#section1', $value2['url2']);
+    }
+
+    public function testValidationFailedException(): void
+    {
+        try {
+            $validator = new Validator();
+            $validator->getFilteredArguments(
+                function (#[IsOneOf(['a', 'b', 'c'])] string $oneof1): void {
+                },
+                [
+                    'oneof1' => 'd',
+                ],
+            );
+            throw new ErrorException('ValidationFailedException is expected but was not thrown');
+        }
+        catch(ValidationFailedException $e) {
+            $this->assertSame('oneof1', $e->getArgumentName());
+            $this->assertSame('string', $e->getArgumentType());
+            $this->assertSame('d', $e->getArgumentValue());
+        }
     }
 
 }

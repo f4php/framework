@@ -34,11 +34,11 @@ class Validator
         }
         return $value;
     }
-    protected function findInvalidAttributeName(array $attributes): ?string
+    protected function findInvalidAttribute(array $attributes): ?ReflectionAttribute
     {
         foreach ($attributes as $attribute) {
-            if (!class_exists(class: $name = $attribute->getName())) {
-                return $name;
+            if (!class_exists(class: $attribute->getName())) {
+                return $attribute;
             }
         }
         return null;
@@ -50,21 +50,29 @@ class Validator
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
                 if ($parameter->isVariadic()) {
-                    throw new ValidationFailedException(message: "Variadic parameters are not supported, '{$name}' is variadic");
+                    throw new ValidationFailedException(message: "Variadic parameters are not supported, '{$name}' is variadic")
+                        ->withArgumentName(argumentName: $name)
+                        ;
                 }
                 $type = (string) $parameter->getType(); // NB: $type could be a pipe-separated list of simple types
                 $attributes = $parameter->getAttributes(name: ValidatorAttributeInterface::class, flags: ReflectionAttribute::IS_INSTANCEOF);
+                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF)) > 0;
+                $defaultValue = ($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null;
+                $value = ($arguments[$name]??null) ?? $defaultValue;
                 if (
                     ($this->flags & self::ALL_ATTRIBUTES_MUST_BE_CLASSES) && (
-                        null !== ($invalidAttributeName = $this->findInvalidAttributeName(attributes: $parameter->getAttributes())))
+                        null !== ($invalidAttribute = $this->findInvalidAttribute(attributes: $parameter->getAttributes())))
                 ) {
-                    throw new ValidationFailedException(message: "All argument must be valid class names, '{$invalidAttributeName}' is not");
+                    throw new ValidationFailedException(message: "All attributes must be valid class names, '{$invalidAttribute->getName()}' is not")
+                        ->withArgumentName(argumentName: $name)
+                        ;
                 }
-                $hasAttributeDefaults = count(value: $parameter->getAttributes(name: DefaultValue::class, flags: ReflectionAttribute::IS_INSTANCEOF)) > 0;
                 if (!isset($arguments[$name]) && !$parameter->isOptional() && !$hasAttributeDefaults) {
                     throw (new ValidationFailedException(message: "Argument '{$name}' failed validation, a value is required"))
-                        ->setArgumentName(argumentName: $name)
-                        ->setArgumentType(argumentType: $type);
+                        ->withArgumentName(argumentName: $name)
+                        ->withArgumentType(argumentType: $type)
+                        ->withArgumentValue(argumentValue: $arguments[$name] ?? null)
+                        ;
                 } else {
                     $filters = [];
                     if ($attributes) {
@@ -85,15 +93,15 @@ class Validator
                         $filters[] = new SanitizedString();
                     }
                     try {
-                        $defaultValue = ($parameter->isDefaultValueAvailable() && !$hasAttributeDefaults) ? $parameter->getDefaultValue() : null;
                         $filteredArguments[$name] = self::getFilteredValue(
-                            value: ($arguments[$name]??null) ?? $defaultValue,
+                            value: $value,
                             filters: $filters,
                         ) ?? $defaultValue;
                     } catch (ValidationFailedException $e) {
-                        $e->setArgumentName(argumentName: $name);
-                        $e->setArgumentType(argumentType: $type);
-                        throw $e;
+                        throw $e
+                            ->withArgumentName(argumentName: $name)
+                            ->withArgumentType(argumentType: $type)
+                            ->withArgumentValue(argumentValue: $value);
                     }
                 }
             }

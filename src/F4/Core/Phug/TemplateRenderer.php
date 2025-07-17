@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace F4\Core\Phug;
 
-use F4\Core\CoreApiInterface;
 use F4\Config;
 use F4\Core\Phug\{FluentResourceModule, StripViteResourceModule, ViteBundleModule};
 
-use Phug;
+use Phug\Phug;
 use Phug\Component\ComponentExtension;
 use Phug\Optimizer;
 

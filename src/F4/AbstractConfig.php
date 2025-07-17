@@ -80,7 +80,7 @@ abstract class AbstractConfig
             'extensions' => ['.json'],
             'class' => \F4\Core\ResponseEmitter\Json::class,
         ],
-            // this emitter only supports command-line invokation
+        // this emitter only supports command-line invokation
         Core\ResponseEmitter\Cli::INTERNAL_MIME_TYPE => [
             'extensions' => [],
             'class' => \F4\Core\ResponseEmitter\Cli::class,
@@ -118,6 +118,5 @@ abstract class AbstractConfig
     ];
     public const bool REMEMBER_LOCALE = true;
     public const bool LOCALE_HEADERS = true;
-
 }
 

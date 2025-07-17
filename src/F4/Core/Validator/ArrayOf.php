@@ -25,8 +25,12 @@ class ArrayOf implements ValidatorAttributeInterface
         return match (is_array(value: $value)) {
             false => [],
             default => array_map(callback: function ($valueItem): mixed {
-                    return array_reduce(array: $this->filters, callback: fn($result, $attributeInstance): mixed => $attributeInstance->getFilteredValue($result), initial: $valueItem);
-                }, array: $value)
+                return array_reduce(
+                    array: $this->filters, 
+                    callback: fn($result, $attributeInstance): mixed => $attributeInstance->getFilteredValue($result),
+                    initial: $valueItem
+                );
+            }, array: $value)
         };
     }
 }

@@ -742,8 +742,7 @@ final class ValidatorTest extends TestCase
         try {
             $validator = new Validator();
             $validator->getFilteredArguments(
-                function (#[IsOneOf(['a', 'b', 'c'])] string $oneof1): void {
-                },
+                function (#[IsOneOf(['a', 'b', 'c'])] string $oneof1): void {},
                 [
                     'oneof1' => 'd',
                 ],
@@ -754,6 +753,36 @@ final class ValidatorTest extends TestCase
             $this->assertSame('oneof1', $e->getArgumentName());
             $this->assertSame('string', $e->getArgumentType());
             $this->assertSame('d', $e->getArgumentValue());
+        }
+    }
+    public function testValidationFailedExceptionContext(): void
+    {
+        try {
+            $validator = new Validator();
+            $validator->getFilteredArguments(
+                function (
+                    #[ArrayKeys([
+                        'name' => new SanitizedString, 
+                        'email' => new IsEmail])
+                    ] array $user = []
+                ): void {},
+                [
+                    'user' => [
+                        'name' => 'User name',
+                        'email' => 'invalid_email.test',
+                    ],
+                ],
+            );
+            throw new ErrorException('ValidationFailedException is expected but was not thrown');
+        }
+        catch(ValidationFailedException $e) {
+            $this->assertSame('user[email]', $e->getContext()->getPathAsString());
+            $this->assertSame(ArrayKeys::class, $e->getContext()->getNodes()[0]->getType());
+            $this->assertSame(IsEmail::class, $e->getContext()->getNodes()[1]->getType());
+            $this->assertSame('user', $e->getContext()->getNodes()[0]->getName());
+            $this->assertSame('email', $e->getContext()->getNodes()[1]->getName());
+            $this->assertSame(['name'=>'User name', 'email' => 'invalid_email.test'], $e->getContext()->getNodes()[0]->getValue());
+            $this->assertSame('invalid_email.test', $e->getContext()->getNodes()[1]->getValue());
         }
     }
 

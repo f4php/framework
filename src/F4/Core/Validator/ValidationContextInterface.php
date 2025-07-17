@@ -7,5 +7,5 @@ namespace F4\Core\Validator;
 interface ValidationContextInterface
 {
     public function getNodes(): array;
-    public function withNode(string $name, ValidatorAttributeInterface $attribute): static;
+    public function withNode(string $name, ?ValidatorAttributeInterface $attribute = null, mixed $value = null): static;
 }

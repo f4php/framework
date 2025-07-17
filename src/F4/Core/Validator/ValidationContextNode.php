@@ -12,12 +12,15 @@ class ValidationContextNode implements ValidationContextNodeInterface
 {
     protected string $name;
     protected string $type;
-    protected ValidatorAttributeInterface $attribute;
-    public function __construct(string $name, ValidatorAttributeInterface $attribute)
+    protected mixed $value;
+    protected ?ValidatorAttributeInterface $attribute = null;
+    public function __construct(string $name, ?ValidatorAttributeInterface $attribute = null, mixed $value = null)
     {
-        $this
-            ->withName($name)
-            ->withAttribute($attribute);
+        $this->withName($name);
+        $this->withValue($value);
+        if($attribute) {
+            $this->withAttribute($attribute);
+        }
     }
     public function getAttribute(): ValidatorAttributeInterface
     {
@@ -31,6 +34,10 @@ class ValidationContextNode implements ValidationContextNodeInterface
     {
         return $this->type;
     }
+    public function getValue(): mixed
+    {
+        return $this->value;
+    }
     public function withAttribute(ValidatorAttributeInterface $attribute): static
     {
         $this->attribute = $attribute;
@@ -40,6 +47,11 @@ class ValidationContextNode implements ValidationContextNodeInterface
     public function withName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
+    public function withValue(mixed $value): static
+    {
+        $this->value = $value;
         return $this;
     }
 }

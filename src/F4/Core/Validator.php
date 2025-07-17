@@ -8,6 +8,7 @@ use Closure;
 
 use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\DefaultValue;
+use F4\Core\Validator\ValidationContext;
 use F4\Core\Validator\ValidationFailedException;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
@@ -16,6 +17,7 @@ use ReflectionFunction;
 
 use function array_intersect;
 use function array_map;
+use function array_reduce;
 use function class_exists;
 use function count;
 use function explode;
@@ -26,14 +28,6 @@ class Validator
     public const int SANITIZE_STRINGS_BY_DEFAULT = 1;
     public const int ALL_ATTRIBUTES_MUST_BE_CLASSES = 1 << 1;
     public function __construct(protected int $flags = self::SANITIZE_STRINGS_BY_DEFAULT) {}
-    protected static function getFilteredValue(mixed $value, array $filters): mixed
-    {
-        (function (ValidatorAttributeInterface ...$filters): void{})(...$filters);
-        foreach ($filters as $filter) {
-            $value = $filter->getFilteredValue($value);
-        }
-        return $value;
-    }
     protected function findInvalidAttribute(array $attributes): ?ReflectionAttribute
     {
         foreach ($attributes as $attribute) {
@@ -93,9 +87,11 @@ class Validator
                         $filters[] = new SanitizedString();
                     }
                     try {
-                        $filteredArguments[$name] = self::getFilteredValue(
-                            value: $value,
-                            filters: $filters,
+                        $filteredArguments[$name] = array_reduce(
+                            array: $filters,
+                            callback: fn(mixed $value, ValidatorAttributeInterface $filter): mixed
+                                => $filter->getFilteredValue($value, new ValidationContext()->withNode($name, $filter, $value)),
+                            initial: $value
                         ) ?? $defaultValue;
                     } catch (ValidationFailedException $e) {
                         throw $e

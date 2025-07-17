@@ -8,6 +8,8 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 use F4\Core\Validator\ValidationContextInterface;
 use F4\Core\Validator\ValidationContextNode;
 
+use function array_reduce;
+
 class ValidationContext implements ValidationContextInterface
 {
     protected array $nodes = [];
@@ -21,9 +23,17 @@ class ValidationContext implements ValidationContextInterface
     {
         return $this->nodes;
     }
-    public function withNode(string $name, ValidatorAttributeInterface $attribute): static
+    public function getPathAsString(): string
     {
-        $this->nodes[] = new ValidationContextNode($name, $attribute);
+        return array_reduce(
+            array: $this->nodes,
+            callback: fn($result, $node) => $result ? "{$result}[{$node->getName()}]" : $node->getName(),
+            initial: '',
+        );
+    }
+    public function withNode(string $name, ?ValidatorAttributeInterface $attribute = null, mixed $value = null): static
+    {
+        $this->nodes[] = new ValidationContextNode(name: $name, attribute: $attribute, value: $value);
         return $this;
     }
 }

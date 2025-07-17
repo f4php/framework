@@ -6,6 +6,8 @@ namespace F4\Core\Validator;
 
 use Attribute;
 use InvalidArgumentException;
+use F4\Core\Validator\ValidationContext;
+use F4\Core\Validator\ValidationContextInterface;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
 use function array_filter;
@@ -38,13 +40,18 @@ class ArrayKeys implements ValidatorAttributeInterface
     {
         return $this->definitions;
     }
-    public function getFilteredValue(mixed $value): mixed
+    public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         $result = [];
         foreach ($this->definitions as $name => $filter) {
             $result[$name] = match (is_array(value: $filter)) {
-                true => array_reduce(array: (array) $filter, callback: fn($carry, $filter): mixed => $filter->getFilteredValue($carry), initial: $value[$name] ?? null),
-                default => $filter->getFilteredValue($value[$name] ?? null)
+                true => array_reduce(
+                    array: (array) $filter,
+                    callback: fn(mixed $carry, ValidatorAttributeInterface $filter): mixed 
+                        => $filter->getFilteredValue($carry, new ValidationContext($context)->withNode($name, $filter, $carry)),
+                    initial: $value[$name] ?? null
+                ),
+                default => $filter->getFilteredValue($value[$name] ?? null, new ValidationContext($context)->withNode($name, $filter, $value[$name] ?? null))
             };
         }
         return $result;

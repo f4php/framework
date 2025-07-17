@@ -7,6 +7,7 @@ namespace F4\Core\Validator;
 use Attribute;
 use Composer\Pcre\Preg;
 use InvalidArgumentException;
+use F4\Core\Validator\ValidationContextInterface;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
@@ -25,7 +26,7 @@ class SanitizedUuid implements ValidatorAttributeInterface
             throw new InvalidArgumentException(message: "UUID version {$version} is not supported");
         }
     }
-    public function getFilteredValue(mixed $value): mixed
+    public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (Preg::isMatch(pattern: self::PATTERNS[$this->version], subject: $value ?? '')) {
             false => null,

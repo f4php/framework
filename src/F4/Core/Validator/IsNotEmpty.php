@@ -16,7 +16,7 @@ class IsNotEmpty implements ValidatorAttributeInterface
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match(empty($value)) {
-            true => throw new ValidationFailedException(message: "'{$value}' is not a valid email address")
+            true => throw new ValidationFailedException(message: "Empty parameter value is not allowed")
                 ->withContext($context),
             default => $value
         };

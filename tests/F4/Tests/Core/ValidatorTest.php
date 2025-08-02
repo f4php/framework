@@ -762,7 +762,7 @@ final class ValidatorTest extends TestCase
             $validator->getFilteredArguments(
                 function (
                     #[ArrayKeys([
-                        'name' => new SanitizedString, 
+                        'name' => new SanitizedString,
                         'email' => new IsEmail])
                     ] array $user = []
                 ): void {},

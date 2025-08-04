@@ -25,6 +25,7 @@ use function array_reduce;
 use function count;
 use function date;
 use function date_default_timezone_get;
+use function get_class;
 
 class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
 {
@@ -59,6 +60,7 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
                     default => [
                         'code' => $exception->getCode(),
                         'message' => $exception->getMessage(),
+                        'type' => get_class($exception),
                     ]
                 },
             ],

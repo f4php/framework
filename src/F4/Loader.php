@@ -63,7 +63,7 @@ class Loader
     public static function getEnvironments(): array
     {
         if (!$fileContents = file_get_contents(filename: self::$path . "/composer.json")) {
-            throw new ErrorException('Faile to locate composer.json file');
+            throw new ErrorException('Failed to locate composer.json file');
         }
         $composerConfiguration = json_decode(json: $fileContents, associative: true, flags: JSON_THROW_ON_ERROR);
         return $composerConfiguration['extra']['f4']['environments'] ?? [] ?: [];

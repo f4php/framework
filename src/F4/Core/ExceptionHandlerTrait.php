@@ -17,10 +17,10 @@ trait ExceptionHandlerTrait
     public function addExceptionHandler(string $exceptionClassName, callable $exceptionHandler): static
     {
         if (!is_subclass_of(object_or_class: $exceptionClassName, class: Throwable::class)) {
-            throw new InvalidArgumentException(message: '${exceptionClassName} is not throwable');
+            throw new InvalidArgumentException(message: "{$exceptionClassName} is not throwable");
         }
         if (isset($this->exceptionHandlers[$exceptionClassName])) {
-            throw new InvalidArgumentException(message: '${exceptionClassName} handler is already set');
+            throw new InvalidArgumentException(message: "{$exceptionClassName} handler is already set");
         }
         $this->exceptionHandlers[$exceptionClassName] = $exceptionHandler(...);
         return $this;

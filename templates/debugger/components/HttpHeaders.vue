@@ -1,6 +1,6 @@
 <template lang="pug">
 .headers
-  .headers-table(v-if="this.items.length")
+  .headers-table(v-if="items.length")
     .headers-row-search
       IconField
         InputIcon
@@ -18,14 +18,15 @@
           severity="secondary" 
           v-tooltip="{ value: 'Copy header to clipboard', showDelay: 700 }"
           @click.prevent="copyHeaderToClipoboard(header)")/
-    .headers-row-empty(v-else)
+    EmptySection(v-else).headers-row-empty
       | No matching headers were found
-  .headers-row-empty(v-else)
+  EmptySection(v-else)
     | No headers were found
 </template>
 <script>
 
 import Button from 'primevue/button';
+import EmptySection from './EmptySection.vue';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
@@ -34,6 +35,7 @@ import Toast from 'primevue/toast';
 export default {
   components: {
     Button,
+    EmptySection,
     IconField,
     InputIcon,
     InputText,
@@ -101,8 +103,6 @@ export default {
     &-empty
       grid-column 1 / span 3
       text-align center
-      padding 1.5rem 0
-      font-style italic
     &-search
       display flex
       justify-content flex-end

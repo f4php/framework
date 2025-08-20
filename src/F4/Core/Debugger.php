@@ -11,6 +11,7 @@ use F4\HookManager;
 use F4\Loader;
 use F4\Profiler;
 use F4\Core\DebuggerInterface;
+use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\MiddlewareInterface;
@@ -41,6 +42,7 @@ use function sprintf;
 
 class Debugger implements DebuggerInterface
 {
+    protected LocalizerInterface $localizer;
     protected RequestInterface $request;
     protected ResponseInterface $response;
     protected ?MiddlewareInterface $requestMiddleware = null;
@@ -115,6 +117,7 @@ class Debugger implements DebuggerInterface
         HookManager::addHook(HookManager::BEFORE_EMIT_RESPONSE, function ($context) {
             $this->request = $context['f4']->getRequest();
             $this->response = $context['f4']->getResponse();
+            $this->localizer = $context['f4']->getLocalizer();
         });
         HookManager::addHook(HookManager::AFTER_EMIT_RESPONSE, function ($context) {
             Profiler::addSnapshot('Render response');
@@ -168,6 +171,24 @@ class Debugger implements DebuggerInterface
             throw new ErrorException('CLI mode debugger is not yet implemented');
         }
         $data = [
+            'config' => ExportResult::fromVariable(new Config())->toArray(),
+            // 'hooks' => ExportResult::fromVariable(HookManager::getHooks())->toArray(),
+            'localizer' => [
+                'locale' => $this->localizer->getLocale(),
+                'resources' => $this->localizer->getResources(),
+            ],
+            'log' => array_map(function ($entry) {
+                return [
+                    'description' => $entry['description'],
+                    'trace' => $entry['trace'],
+                    'value' => ExportResult::fromVariable($entry['value'])->toArray()
+                ];
+            }, $this->logEntries),
+            'profiler' => Profiler::getSnapshots(),
+            'project' => [
+                'root' => realpath(Loader::getPath()),
+            ],
+            'queries' => ExportResult::fromVariable($this->queries)->toArray(),
             'route' => [
                 ...($this->route ? self::exportClosure($this->route->getHandler()) : []),
                 'parameters' => ExportResult::fromVariable($this->routeParameters)->toArray()['value'] ?? [],
@@ -217,21 +238,7 @@ class Debugger implements DebuggerInterface
                     ]
                 },
             ],
-            'queries' => ExportResult::fromVariable($this->queries)->toArray(),
-            // 'hooks' => ExportResult::fromVariable(HookManager::getHooks())->toArray(),
-            'profiler' => Profiler::getSnapshots(),
-            'config' => ExportResult::fromVariable(new Config())->toArray(),
-            'log' => array_map(function ($entry) {
-                return [
-                    'description' => $entry['description'],
-                    'trace' => $entry['trace'],
-                    'value' => ExportResult::fromVariable($entry['value'])->toArray()
-                ];
-            }, $this->logEntries),
             'session' => ExportResult::fromVariable($_SESSION ?? [])->toArray(),
-            'project' => [
-                'root' => realpath(Loader::getPath()),
-            ],
             'system' => ExportResult::fromVariable([
                 'F4 environment' => Loader::getCurrentEnvironment(),
                 'F4 version' => InstalledVersions::getPrettyVersion('f4php/framework'),

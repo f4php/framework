@@ -16,10 +16,20 @@ const router = createRouter({
           name: 'config',
           component: () => import('../views/ConfigView.vue')
         },
+        // {
+        //   path: 'hooks',
+        //   name: 'hooks',
+        //   component: () => import('../views/HooksView.vue')
+        // },
         {
-          path: 'hooks',
-          name: 'hooks',
-          component: () => import('../views/HooksView.vue')
+          path: 'localizer',
+          name: 'localizer',
+          component: () => import('../views/LocalizerView.vue')
+        },
+        {
+          path: 'profiler',
+          name: 'profiler',
+          component: () => import('../views/ProfilerView.vue')
         },
         {
           path: 'queries',
@@ -40,11 +50,6 @@ const router = createRouter({
           path: 'route',
           name: 'route',
           component: () => import('../views/RouteView.vue')
-        },
-        {
-          path: 'profiler',
-          name: 'profiler',
-          component: () => import('../views/ProfilerView.vue')
         },
         {
           path: 'session',

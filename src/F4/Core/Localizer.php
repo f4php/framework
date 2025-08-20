@@ -12,6 +12,7 @@ use Major\Fluent\Bundle\FluentBundle;
 
 use function array_keys;
 use function array_map;
+use function array_unique;
 use function file_get_contents;
 use function in_array;
 use function sprintf;
@@ -20,6 +21,7 @@ class Localizer implements LocalizerInterface
 {
     private string $locale;
     private FluentBundle $bundle;
+    private array $resources = [];
     public function __construct(string $locale = Config::DEFAULT_LOCALE)
     {
         $this->setLocale($locale);
@@ -31,10 +33,18 @@ class Localizer implements LocalizerInterface
     public function addResource(string $resource, bool $allowOverrides = false): void
     {
         $this->bundle->addFtl(file_get_contents($resource), $allowOverrides);
+        $this->resources = array_unique([
+            ...$this->resources,
+            $resource,
+        ]);
     }
     public function getLocale(): string
     {
         return $this->locale;
+    }
+    public function getResources(): array
+    {
+        return $this->resources;
     }
     public function getTranslateFunction(): callable
     {
@@ -47,6 +57,7 @@ class Localizer implements LocalizerInterface
         }
         $this->locale = $locale;
         $this->bundle = new FluentBundle($locale, strict: true);
+        $this->resources = [];
         array_map(fn($resource) => $this->addResource($resource), Config::LOCALES[$locale]['resources'] ?? []);
     }
 }

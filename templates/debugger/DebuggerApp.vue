@@ -8,6 +8,10 @@ export default {
       type: Array,
       required: true
     },
+    localizer: {
+      type: Object,
+      required: true
+    },
     log: {
       type: Array,
       required: true

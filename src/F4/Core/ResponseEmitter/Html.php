@@ -42,7 +42,7 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
         $timestamp = time();
         $data = [
             'config' => $this->getConfigConstants(),
-            't' => $this->f4->getLocalizer()->getTranslateFunction(),
+            'locale' => $this->f4->getLocalizer()->getLocale(),
             'request' => [
                 'path' => $request->getPath(),
                 'headers' => $request->getHeaders(),
@@ -50,11 +50,8 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
                 'validated-parameters' => $request->getValidatedParameters(),
             ],
             'response' => [
-                'headers' => $response->getHeaders(),
-                'meta' => $response->getMetaData(),
                 'data' => $response->getData(),
                 'datetime' => date('c', $timestamp),
-                'timezone' => Config::TIMEZONE ?: date_default_timezone_get(),
                 'exception' => match ($exception = $response->getException()) {
                     null => null,
                     default => [
@@ -63,7 +60,11 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
                         'type' => get_class($exception),
                     ]
                 },
+                'headers' => $response->getHeaders(),
+                'meta' => $response->getMetaData(),
+                'timezone' => Config::TIMEZONE ?: date_default_timezone_get(),
             ],
+            't' => $this->f4->getLocalizer()->getTranslateFunction(),
         ];
         HookManager::triggerHook(HookManager::AFTER_TEMPLATE_CONTEXT_READY, [
             'context' => $data

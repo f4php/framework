@@ -32,7 +32,8 @@ class TemplateRenderer
                 'memory_limit' => -1,
                 'execution_max_time' => -1,
                 'modules' => [
-                    FluentResourceModule::class,
+                    // this module is not compatible with Phug's cache implementation, so it's disabled until a solution is implemented
+                    // FluentResourceModule::class,
                     ViteBundleModule::class,
                     StripViteResourceModule::class,
                 ],

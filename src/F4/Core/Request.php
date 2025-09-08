@@ -99,7 +99,7 @@ class Request implements RequestInterface
         };
         $this->setParameters([
             ...$this->getQueryParams() ?? [],
-            ...$this->getParsedBody() ?? []
+            ...$this->getParsedBody() ?? [],
         ]);
     }
     static public function fromPsr(psrServerRequestInterface $psrRequest): static

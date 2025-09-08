@@ -231,8 +231,8 @@ class Core implements CoreApiInterface
         $requestSessionLocale = $_SESSION['F4']['locale'] ?? '';
         $clientLocales = array_filter([
             $requestPathLocale,
-            ...$requestHeaderLocales,
             $requestSessionLocale,
+            ...$requestHeaderLocales,
             Config::DEFAULT_LOCALE,
         ]);
         $serverLocales = array_map(fn($locale) => $locale['weight'], Config::LOCALES);

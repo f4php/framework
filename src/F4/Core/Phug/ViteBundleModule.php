@@ -27,6 +27,7 @@ class ViteBundleModule extends AbstractCompilerModule
     protected const string FALLBACK_CSS_BUNDLE_NAME = Config::TEMPLATE_PUG_FALLBACK_CSS_BUNDLE_NAME;
     protected const string VITE_DEVSERVER_HEADER = 'HTTP_X_VITE_DEVSERVER';
     protected bool $viteClientCodeAdded = false;
+    protected bool $fallbackCssBundleAdded = false;
     public function getEventListeners(): array
     {
         return [
@@ -108,11 +109,12 @@ class ViteBundleModule extends AbstractCompilerModule
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"stylesheet"'));
                                 $containerNode->appendChild($linkNode);
                             }
-                            if (self::FALLBACK_CSS_BUNDLE_NAME && ($linkHref = self::getManifestData(entryPoint: self::FALLBACK_CSS_BUNDLE_NAME, property: 'file'))) {
+                            if (self::FALLBACK_CSS_BUNDLE_NAME && !$this->fallbackCssBundleAdded && ($linkHref = self::getManifestData(entryPoint: self::FALLBACK_CSS_BUNDLE_NAME, property: 'file'))) {
                                 $linkNode = clone $linkNodeTemplate;
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHref)));
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"stylesheet"'));
                                 $containerNode->appendChild($linkNode);
+                                $this->fallbackCssBundleAdded = true;
                             }
                         }
                         $event->setNode($containerNode);

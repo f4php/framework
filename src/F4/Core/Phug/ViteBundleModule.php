@@ -24,6 +24,7 @@ class ViteBundleModule extends AbstractCompilerModule
     protected const string ELEMENT_NAME = 'vite:bundle';
     protected const string ENTRY_POINT_NAME_PREFIX = 'virtual:f4/';
     protected const string DEFAULT_BUNDLE_NAME = 'default';
+    protected const string FALLBACK_CSS_BUNDLE_NAME = Config::TEMPLATE_PUG_FALLBACK_CSS_BUNDLE_NAME;
     protected const string VITE_DEVSERVER_HEADER = 'HTTP_X_VITE_DEVSERVER';
     protected bool $viteClientCodeAdded = false;
     public function getEventListeners(): array
@@ -41,14 +42,14 @@ class ViteBundleModule extends AbstractCompilerModule
                             $scriptNode->setName('script');
                             if (!$this->viteClientCodeAdded) {
                                 $viteClientScriptNode = clone $scriptNode;
-                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', '/@vite/client')));
-                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
+                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue('"/@vite/client"'));
+                                $viteClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue('"module"'));
                                 $containerNode->appendChild($viteClientScriptNode);
                                 $this->viteClientCodeAdded = true;
                             }
                             $bundleClientScriptNode = clone $scriptNode;
-                            $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"%s"', '/@id/__x00__' . self::ENTRY_POINT_NAME_PREFIX . $bundleName)));
-                            $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue(sprintf('"%s"', 'module')));
+                            $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('src')->setValue(sprintf('"/@id/__x00__%s%s"', self::ENTRY_POINT_NAME_PREFIX, $bundleName)));
+                            $bundleClientScriptNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('type')->setValue('"module"'));
                             $containerNode->appendChild($bundleClientScriptNode);
                         } else {
                             $preload = array_reduce(iterator_to_array($node->getAttributes()), function($result, $attribute) { 
@@ -97,14 +98,20 @@ class ViteBundleModule extends AbstractCompilerModule
                                     $linkNode = clone $linkNodeTemplate;
                                     $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHref)));
                                     if (!$linkNode->getAttribute('rel')) {
-                                        $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue(sprintf('"%s"', 'stylesheet')));
+                                        $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"stylesheet"'));
                                     }
                                     $containerNode->appendChild($linkNode);
                                 }
                             } else if ($linkHrefs) {
                                 $linkNode = clone $linkNodeTemplate;
                                 $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHrefs)));
-                                $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue(sprintf('"%s"', 'stylesheet')));
+                                $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"stylesheet"'));
+                                $containerNode->appendChild($linkNode);
+                            }
+                            if (self::FALLBACK_CSS_BUNDLE_NAME && ($linkHref = self::getManifestData(entryPoint: self::FALLBACK_CSS_BUNDLE_NAME, property: 'file'))) {
+                                $linkNode = clone $linkNodeTemplate;
+                                $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('href')->setValue(sprintf('"%s"', $linkHref)));
+                                $linkNode->getAttributes()->attach(new \Phug\Parser\Node\AttributeNode()->setName('rel')->setValue('"stylesheet"'));
                                 $containerNode->appendChild($linkNode);
                             }
                         }

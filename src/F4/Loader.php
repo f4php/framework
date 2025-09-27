@@ -10,7 +10,6 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionNamedType;
-use ReflectionUnionType;
 
 use F4\AbstractConfig;
 use F4\Config\FromEnvironmentVariable;
@@ -23,10 +22,10 @@ use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PsrPrinter;
 use Nette\PhpGenerator\Constant;
 
-use function json_decode;
-use function is_array;
-use function file_get_contents;
 use function file_exists;
+use function file_get_contents;
+use function is_array;
+use function json_decode;
 use function mb_substr;
 
 class Loader
@@ -160,7 +159,7 @@ class Loader
     {
         $filename = self::$path . '/public' . self::$assetPath . ($path ?? '.vite/manifest.json');
         if (!file_exists($filename)) {
-            throw new ErrorException('Cannot locate manifest file, did you forget to run `npm run build` in project root?');
+            throw new ErrorException('Cannot locate vite manifest file, try running `npm run build` in project root');
         }
         return json_decode(json: file_get_contents(filename: $filename), associative: true, flags: JSON_THROW_ON_ERROR);
     }

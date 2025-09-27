@@ -22,9 +22,9 @@ class Localizer implements LocalizerInterface
     private string $locale;
     private FluentBundle $bundle;
     private array $resources = [];
-    public function __construct(string $locale = Config::DEFAULT_LOCALE)
+    public function __construct(string $locale = Config::DEFAULT_LOCALE, array $options = Config::LOCALIZER_OPTIONS)
     {
-        $this->setLocale($locale);
+        $this->setLocale($locale, $options);
     }
     public function addFtl(string $string, bool $allowOverrides = false): void
     {
@@ -50,13 +50,16 @@ class Localizer implements LocalizerInterface
     {
         return fn(string $message, array $arguments = []): string => $this->bundle->message($message, $arguments) ?: '';
     }
-    public function setLocale(string $locale): void
+    public function setLocale(string $locale, array $options = []): void
     {
         if (!in_array(needle: $locale, haystack: array_keys(Config::LOCALES))) {
             throw new InvalidArgumentException(sprintf("Locale '%s' not found, please check your Config", $locale));
         }
         $this->locale = $locale;
-        $this->bundle = new FluentBundle($locale, strict: true);
+        $this->bundle = new FluentBundle(...[
+            ...$options,
+            'locale' => $locale,
+        ]);
         $this->resources = [];
         array_map(fn($resource) => $this->addResource($resource), Config::LOCALES[$locale]['resources'] ?? []);
     }

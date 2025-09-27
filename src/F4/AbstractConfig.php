@@ -109,6 +109,12 @@ abstract class AbstractConfig
     public const string CORE_API_PROXY_CLASS = CoreApiProxy::class;
     public const string DEFAULT_TEMPLATE = __DIR__ . '/../../templates/it-worked.pug';
 
+    public const array LOCALIZER_OPTIONS = [
+        'allowOverrides' => false,
+        'strict' => false,
+        'useIsolating' => true,
+    ];
+
     public const string DEFAULT_LOCALE = 'en';
     public const array LOCALES = [
         'en' => [

@@ -11,5 +11,5 @@ interface LocalizerInterface
     public function getLocale(): string;
     public function getResources(): array;
     public function getTranslateFunction(): callable;
-    public function setLocale(string $locale): void;
+    public function setLocale(string $locale, array $options = []): void;
 }

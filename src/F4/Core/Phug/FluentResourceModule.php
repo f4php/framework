@@ -39,6 +39,8 @@ class FluentResourceModule extends AbstractCompilerModule
                         }
                         $node = (new \Phug\Parser\Node\CommentNode)->hide();
                         $event->setNode($node);
+                        // $node = (new \Phug\Parser\Node\ExpressionNode)->setValue(''); // todo: php code may be constructed here to add support for injecting ftl resources in cached templates
+                        // $event->setNode($node);
                     }
                 }
             }

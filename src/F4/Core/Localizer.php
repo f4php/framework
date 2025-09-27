@@ -50,7 +50,7 @@ class Localizer implements LocalizerInterface
     {
         return fn(string $message, array $arguments = []): string => $this->bundle->message($message, $arguments) ?: '';
     }
-    public function setLocale(string $locale, array $options = []): void
+    public function setLocale(string $locale, array $options = Config::LOCALIZER_OPTIONS): void
     {
         if (!in_array(needle: $locale, haystack: array_keys(Config::LOCALES))) {
             throw new InvalidArgumentException(sprintf("Locale '%s' not found, please check your Config", $locale));

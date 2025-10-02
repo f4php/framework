@@ -48,7 +48,7 @@
         "nyholm/psr7-server": "^1.1",
         "spatie/backtrace": "^1.7",
         "jrmajor/fluent": "^1.1",
-        "f4php/db": "^0.0.7",
+        "f4php/db": "^0.0.8",
         "f4php/hookmanager": "^0.0.1"
     },
     "require-dev": {

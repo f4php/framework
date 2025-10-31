@@ -9,6 +9,7 @@ use F4\Core\Validator\ValidationContext;
 use F4\Core\Validator\ValidationContextInterface;
 use F4\Core\Validator\ValidatorAttributeInterface;
 
+use function array_combine;
 use function array_map;
 use function array_reduce;
 use function is_array;
@@ -26,17 +27,22 @@ class ArrayOf implements ValidatorAttributeInterface
     {
         return match (is_array(value: $value)) {
             false => [],
-            default => array_map(
-                fn(int|string $name, mixed $valueItem): mixed
-                    => array_reduce(
-                        array: $this->filters,
-                        callback: fn($carry, $filter): mixed => 
-                            $filter->getFilteredValue($carry, new ValidationContext($context)->withNode((string)$name, $filter, $carry)),
-                        initial: $valueItem
+            default =>
+                // the use of array_combine is essential for associative arrays
+                array_combine(
+                    array_keys($value),
+                    array_map(
+                        fn(int|string $name, mixed $valueItem): mixed
+                            => array_reduce(
+                                array: $this->filters,
+                                callback: fn($carry, $filter): mixed => 
+                                    $filter->getFilteredValue($carry, new ValidationContext($context)->withNode((string)$name, $filter, $carry)),
+                                initial: $valueItem
+                            ),
+                        array_keys($value),
+                        array_values($value)
                     ),
-                array_keys($value),
-                array_values($value),
-            )
+                )
         };
     }
 }

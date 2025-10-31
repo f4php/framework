@@ -294,6 +294,19 @@ final class ValidatorTest extends TestCase
         $this->assertSame(['a', '&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
     }
 
+    public function testArrayOfAssociative(): void
+    {
+        $validator = new Validator();
+        $arguments = $validator->getFilteredArguments(
+            function (#[ArrayOf(new SanitizedString())] array $array1 = [], ): void {
+            },
+            [
+                'array1' => ['a'=>'b', 'c'=>'<b></b>'],
+            ],
+        );
+        $this->assertSame(['a'=>'b', 'c'=>'&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
+    }
+
     public function testFallbackToDefaultValue(): void
     {
         $validator = new Validator();

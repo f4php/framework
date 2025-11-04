@@ -35,8 +35,10 @@ use F4\Core\Validator\IsUuid;
 use F4\Core\Validator\IsUrl;
 use F4\Core\Validator\Max;
 use F4\Core\Validator\Min;
+use F4\Core\Validator\NullIfEmpty;
 use F4\Core\Validator\OneOf;
 use F4\Core\Validator\RegExp;
+use F4\Core\Validator\Replace;
 use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\SanitizedUrl;
 use F4\Core\Validator\SanitizedUuid;
@@ -49,7 +51,6 @@ use TypeError;
 
 final class ValidatorTest extends TestCase
 {
-
     public function testStringSanitizationByDefault(): void
     {
         $validator = new Validator(flags: Validator::SANITIZE_STRINGS_BY_DEFAULT);
@@ -63,7 +64,6 @@ final class ValidatorTest extends TestCase
 
         $this->assertSame('&lt;p&gt;Unsafe string&lt;/p&gt;', $arguments['arg']);
     }
-
     public function testNoStringSanitizationByDefault(): void
     {
         $validator = new Validator(flags: ~Validator::SANITIZE_STRINGS_BY_DEFAULT);
@@ -77,7 +77,6 @@ final class ValidatorTest extends TestCase
 
         $this->assertSame('<p>Unsafe string</p>', $arguments['arg']);
     }
-
     public function testCasting(): void
     {
         $validator = new Validator();
@@ -117,7 +116,6 @@ final class ValidatorTest extends TestCase
         $this->assertSame(5.67, $arguments['float2']);
         $this->assertSame(0.0, $arguments['float3']);
     }
-
     public function testValidValidationAttributes(): void
     {
         $validator = new Validator();
@@ -223,7 +221,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame('c', $arguments['oneof1']);
     }
-
     public function testArrayKeys(): void
     {
         $validator = new Validator();
@@ -239,7 +236,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(['name' => '&lt;b&gt;name&lt;/b&gt;', 'email' => 'valid@email.test'], $arguments['fields1']);
     }
-
     public function testArrayKeysIncorrectArguments(): void
     {
         $this->expectException(TypeError::class);
@@ -279,8 +275,6 @@ final class ValidatorTest extends TestCase
         );
         // $this->assertSame('c', $arguments['fields1']);
     }
-
-
     public function testArrayOf(): void
     {
         $validator = new Validator();
@@ -293,7 +287,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(['a', '&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
     }
-
     public function testArrayOfAssociative(): void
     {
         $validator = new Validator();
@@ -301,12 +294,11 @@ final class ValidatorTest extends TestCase
             function (#[ArrayOf(new SanitizedString())] array $array1 = [], ): void {
             },
             [
-                'array1' => ['a'=>'b', 'c'=>'<b></b>'],
+                'array1' => ['a' => 'b', 'c' => '<b></b>'],
             ],
         );
-        $this->assertSame(['a'=>'b', 'c'=>'&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
+        $this->assertSame(['a' => 'b', 'c' => '&lt;b&gt;&lt;/b&gt;'], $arguments['array1']);
     }
-
     public function testFallbackToDefaultValue(): void
     {
         $validator = new Validator();
@@ -332,7 +324,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame('a', $arguments['default1']);
     }
-
     public function testNullAsDefaultValueAttributes(): void
     {
         $validator = new Validator();
@@ -345,7 +336,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(null, $arguments['default1']);
     }
-
     public function testStrictTypeCheckWithNull(): void
     {
         $validator = new Validator();
@@ -359,7 +349,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(null, $arguments['oneof1']);
     }
-
     public function testStrictTypeCheck(): void
     {
         $this->expectException(TypeError::class);
@@ -375,7 +364,6 @@ final class ValidatorTest extends TestCase
         $this->assertSame(null, $arguments['oneof1']);
         $closure->call($this, $arguments); // null cannot be passed as string, and there's no other default available for $oneof1
     }
-
     public function testInvalidInteger(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -388,7 +376,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testInvalidBoolean(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -401,7 +388,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testInvalidFloat(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -414,7 +400,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testInvalidEmail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -427,7 +412,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testInvalidOneOf(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -440,7 +424,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testInvalidUuid(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -489,7 +472,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testIsDivisibleBy(): void
     {
         $validator = new Validator();
@@ -502,7 +484,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(9, $arguments['divisible1']);
     }
-
     public function testIsDivisibleByFail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -527,7 +508,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(11, $arguments['greater1']);
     }
-
     public function testIsGreaterThanFail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -540,7 +520,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testIsGreaterThanOrEqual(): void
     {
         $validator = new Validator();
@@ -553,7 +532,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(10, $arguments['greater1']);
     }
-
     public function testIsGreaterThanOrEqualFail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -578,7 +556,6 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame(9, $arguments['greater1']);
     }
-
     public function testIsLessThanFail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -631,7 +608,6 @@ final class ValidatorTest extends TestCase
         $this->assertSame('127.0.0.1', $arguments['ip1']);
         $this->assertSame('2001:db8::8a2e:370:7334', $arguments['ip2']);
     }
-
     public function testIpAddressFail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -644,7 +620,6 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testIpAddressV6Fail(): void
     {
         $this->expectException(ValidationFailedException::class);
@@ -657,17 +632,14 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testAllAttributesMustBeClasses(): void
     {
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator(flags: Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
         $validator->getFilteredArguments(
-            function (
-                /**
-                 *  @phpstan-ignore attribute.notFound
-                 */
-                #[NotAClassName] // invalid
+            function ( /**
+               *  @phpstan-ignore attribute.notFound
+               */ #[NotAClassName] // invalid
                 int $parameter): void {
             },
             [
@@ -675,16 +647,13 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
     public function testAllAttributesCanByAnything(): void
     {
         $validator = new Validator(flags: ~Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
         $arguments = $validator->getFilteredArguments(
-            function (
-                /**
-                 *  @phpstan-ignore attribute.notFound
-                 */
-                #[NotAClassName] // valid
+            function ( /**
+               *  @phpstan-ignore attribute.notFound
+               */ #[NotAClassName] // valid
                 int $parameter): void {
             },
             [
@@ -728,7 +697,7 @@ final class ValidatorTest extends TestCase
         $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value2['uuid2']);
         $this->assertSame(null, $value3['uuid3']);
         $this->assertSame('1a8e4cd9-85c0-45d4-9732-8f866c9e3f27', $value4['uuid4']);
-   }
+    }
     public function testSanitizedUrl(): void
     {
         $validator = new Validator();
@@ -749,7 +718,6 @@ final class ValidatorTest extends TestCase
         $this->assertSame(null, $value1['url1']);
         $this->assertSame('https://user_name:some_password@www.example.com:8080/path/to/resource.html?param1=value1&param2=value2#section1', $value2['url2']);
     }
-
     public function testValidationFailedException(): void
     {
         try {
@@ -761,8 +729,7 @@ final class ValidatorTest extends TestCase
                 ],
             );
             throw new ErrorException('ValidationFailedException is expected but was not thrown');
-        }
-        catch(ValidationFailedException $e) {
+        } catch (ValidationFailedException $e) {
             $this->assertSame('oneof1', $e->getArgumentName());
             $this->assertSame('string', $e->getArgumentType());
             $this->assertSame('d', $e->getArgumentValue());
@@ -773,12 +740,8 @@ final class ValidatorTest extends TestCase
         try {
             $validator = new Validator();
             $validator->getFilteredArguments(
-                function (
-                    #[ArrayKeys([
-                        'name' => new SanitizedString,
-                        'email' => new IsEmail])
-                    ] array $user = []
-                ): void {},
+                function (#[ArrayKeys(['name' => new SanitizedString, 'email' => new IsEmail])] array $user = []): void {
+                },
                 [
                     'user' => [
                         'name' => 'User name',
@@ -787,16 +750,50 @@ final class ValidatorTest extends TestCase
                 ],
             );
             throw new ErrorException('ValidationFailedException is expected but was not thrown');
-        }
-        catch(ValidationFailedException $e) {
+        } catch (ValidationFailedException $e) {
             $this->assertSame('user[email]', $e->getContext()->getPathAsString());
             $this->assertSame(ArrayKeys::class, $e->getContext()->getNodes()[0]->getType());
             $this->assertSame(IsEmail::class, $e->getContext()->getNodes()[1]->getType());
             $this->assertSame('user', $e->getContext()->getNodes()[0]->getName());
             $this->assertSame('email', $e->getContext()->getNodes()[1]->getName());
-            $this->assertSame(['name'=>'User name', 'email' => 'invalid_email.test'], $e->getContext()->getNodes()[0]->getValue());
+            $this->assertSame(['name' => 'User name', 'email' => 'invalid_email.test'], $e->getContext()->getNodes()[0]->getValue());
             $this->assertSame('invalid_email.test', $e->getContext()->getNodes()[1]->getValue());
         }
     }
-
+    public function testNullIfEmpty(): void
+    {
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (#[NullIfEmpty] string $emptyString, #[NullIfEmpty] string $emptyInt, #[NullIfEmpty] string $emptyArray, #[NullIfEmpty] string $emptyBool, #[NullIfEmpty] string $emptyFloat, ): void {
+            },
+            [
+                'emptyString' => '',
+                'emptyInt' => 0,
+                'emptyArray' => [],
+                'emptyBool' => false,
+                'emptyFloat' => 0.0,
+            ],
+        );
+        $this->assertSame(null, $value1['emptyString']);
+        $this->assertSame(null, $value1['emptyInt']);
+        $this->assertSame(null, $value1['emptyArray']);
+        $this->assertSame(null, $value1['emptyBool']);
+        $this->assertSame(null, $value1['emptyFloat']);
+    }
+    public function Replace(): void
+    {
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (#[Replace('a', 'b')] string $string1, #[Replace('a', 'b', 'i')] string $string2, #[Replace('a', 'b')] string $string3, ): void {
+            },
+            [
+                'string1' => 'abac',
+                'string2' => 'Abac',
+                'string3' => 'Abac',
+            ],
+        );
+        $this->assertSame('bbbc', $value1['string1']);
+        $this->assertSame('bbbc', $value1['string2']);
+        $this->assertSame('Abbc', $value1['string3']);
+    }
 }

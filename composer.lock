@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "524762b18a1d8d14f71f535063a2f168",
+    "content-hash": "0f40ebdc8bb4a7df08a90287df267d45",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -145,16 +145,16 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.1.2",
+            "version": "v0.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "9679643397a9dfc5117a614eab9676ad2dc552c5"
+                "reference": "97deb59b73029fab1bf86b8fd5fa7c85ebbb1e6c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/9679643397a9dfc5117a614eab9676ad2dc552c5",
-                "reference": "9679643397a9dfc5117a614eab9676ad2dc552c5",
+                "url": "https://api.github.com/repos/f4php/db/zipball/97deb59b73029fab1bf86b8fd5fa7c85ebbb1e6c",
+                "reference": "97deb59b73029fab1bf86b8fd5fa7c85ebbb1e6c",
                 "shasum": ""
             },
             "require": {
@@ -193,9 +193,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.1.2"
+                "source": "https://github.com/f4php/db/tree/v0.1.4"
             },
-            "time": "2025-11-16T13:49:20+00:00"
+            "time": "2025-11-17T21:27:55+00:00"
         },
         {
             "name": "f4php/hookmanager",
@@ -3478,16 +3478,16 @@
         },
         {
             "name": "theseer/tokenizer",
-            "version": "1.3.0",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/theseer/tokenizer.git",
-                "reference": "d74205c497bfbca49f34d4bc4c19c17e22db4ebb"
+                "reference": "b7489ce515e168639d17feec34b8847c326b0b3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/d74205c497bfbca49f34d4bc4c19c17e22db4ebb",
-                "reference": "d74205c497bfbca49f34d4bc4c19c17e22db4ebb",
+                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/b7489ce515e168639d17feec34b8847c326b0b3c",
+                "reference": "b7489ce515e168639d17feec34b8847c326b0b3c",
                 "shasum": ""
             },
             "require": {
@@ -3516,7 +3516,7 @@
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
             "support": {
                 "issues": "https://github.com/theseer/tokenizer/issues",
-                "source": "https://github.com/theseer/tokenizer/tree/1.3.0"
+                "source": "https://github.com/theseer/tokenizer/tree/1.3.1"
             },
             "funding": [
                 {
@@ -3524,7 +3524,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-13T13:44:09+00:00"
+            "time": "2025-11-17T20:03:58+00:00"
         }
     ],
     "aliases": [],

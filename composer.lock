@@ -145,16 +145,16 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.2.1",
+            "version": "v0.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "3b237d4b9d74d8f1ce27db4a0f80cfe5628c3e6c"
+                "reference": "86e833b00b1a04a46699764361aa598dff7076ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/3b237d4b9d74d8f1ce27db4a0f80cfe5628c3e6c",
-                "reference": "3b237d4b9d74d8f1ce27db4a0f80cfe5628c3e6c",
+                "url": "https://api.github.com/repos/f4php/db/zipball/86e833b00b1a04a46699764361aa598dff7076ce",
+                "reference": "86e833b00b1a04a46699764361aa598dff7076ce",
                 "shasum": ""
             },
             "require": {
@@ -193,9 +193,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.2.1"
+                "source": "https://github.com/f4php/db/tree/v0.2.2"
             },
-            "time": "2025-11-27T10:13:45+00:00"
+            "time": "2025-11-27T11:56:11+00:00"
         },
         {
             "name": "f4php/hookmanager",

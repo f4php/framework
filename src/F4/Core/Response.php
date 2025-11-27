@@ -43,7 +43,7 @@ class Response implements ResponseInterface
     }
     static public function fromPsr(psrResponseInterface $psrResponse): static
     {
-        return new self(psrResponse: $psrResponse);
+        return new static(psrResponse: $psrResponse);
     }
     public function setPsrResponse(PsrResponseInterface $psrResponse): static
     {

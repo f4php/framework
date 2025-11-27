@@ -30,7 +30,7 @@
     },
     "scripts": {
         "test": "phpunit --bootstrap tests/F4/Config.php --display-warnings --display-phpunit-deprecations --fail-on-deprecation tests",
-        "phpstan": "phpstan --level=1 analyse src tests"
+        "stan": "phpstan --level=3 analyse src tests"
     },
     "require": {
         "ext-filter": "*",

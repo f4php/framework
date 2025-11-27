@@ -22,7 +22,7 @@ class ExportResultClosure extends ExportResultScalar implements ExportResultInte
         $type = 'closure';
         $preview = static::generatePreview($variable);
         $value = static::generateValue($variable, $name);
-        return new self($name, $type, $preview, $value, $meta);
+        return new static($name, $type, $preview, $value, $meta);
     }
     protected static function generatePreview(mixed $variable, ?string $name = null): string
     {

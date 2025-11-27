@@ -1,3 +1,21 @@
 parameters:
-	ignoreErrors:
-		- '#Call to an undefined static method Phug\\Phug::setOptions\(\)#'
+    ignoreErrors:
+        -
+            message: '#^Call to an undefined static method Phug\\Phug::setOptions\(\)#'
+            identifier: staticMethod.notFound
+        -
+            message: '#^Attribute class F4\\Tests\\Core\\NotAClassName does not exist#'
+            identifier: attribute.notFound
+        -
+            message: '#^Unsafe usage of new static\(\)#'
+            identifier: new.static
+            paths:
+                - src/F4/Core/Request.php
+                - src/F4/Core/Response.php
+        -
+            identifier: varTag.nativeType
+            path: tests/F4/Tests/HookManagerTest.php
+        -
+            message: '#Call to an undefined method Phug\\Util\\ModuleContainerInterface::getPath\(\)#'
+            identifier: method.notFound
+            path: src/F4/Core/Phug/FluentResourceModule.php

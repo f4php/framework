@@ -9,7 +9,6 @@ use Throwable;
 use F4\Config;
 use F4\Core\Phug\TemplateRenderer as PhugTemplateRenderer;
 
-
 use F4\Core\Debugger\BacktraceResult;
 
 use function get_class;
@@ -85,7 +84,7 @@ class ExceptionRenderer
                 // }
             ];
             $pug = new PhugTemplateRenderer();
-            echo $pug->displayFile(__DIR__ . '/../../../templates/exception/exception.pug', $data);
+            $pug->displayFile(__DIR__ . '/../../../templates/exception/exception.pug', $data);
         } catch (Throwable $e) {
             header(header: "Content-Type: text/plain; charset=" . Config::RESPONSE_CHARSET);
             echo $e->getMessage();

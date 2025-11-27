@@ -23,10 +23,10 @@ use function preg_match;
 
 class BacktraceResult
 {
-    public function __construct(protected Throwable $exception) {}
+    final public function __construct(protected Throwable $exception) {}
     public static function fromThrowable(Throwable $exception): static
     {
-        return new self($exception);
+        return new static($exception);
     }
     public function toArray(): array
     {

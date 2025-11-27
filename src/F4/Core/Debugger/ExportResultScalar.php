@@ -12,16 +12,13 @@ use function sprintf;
 class ExportResultScalar implements ExportResultInterface
 {
     protected bool $complex = false;
-    public function __construct(protected ?string $name = null, protected ?string $type = null, protected ?string $preview = null, protected mixed $value = null, protected mixed $meta = null) {}
+    final public function __construct(protected ?string $name = null, protected ?string $type = null, protected ?string $preview = null, protected mixed $value = null, protected mixed $meta = null) {}
 
     public static function fromVariable(mixed $variable, ?string $name = null, mixed $meta = null): static
     {
         $type = gettype($variable);
         $preview = static::generatePreview($variable, $name);
         $value = static::generateValue($variable, $name);
-        /** 
-         * @phpstan-ignore new.static
-         */
         return new static($name, $type, $preview, $value, $meta);
     }
     protected static function generatePreview(mixed $variable, ?string $name = null): string

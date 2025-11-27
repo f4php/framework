@@ -25,7 +25,7 @@ class RouteGroup implements RouteGroupInterface
     protected string $pathPrefix = '';
     protected array $routes = [];
 
-    public function __construct(string $pathPrefix = '', array $routes = [])
+    final public function __construct(string $pathPrefix = '', array $routes = [])
     {
         $this->setPathPrefix($pathPrefix);
         $this->addRoutes($routes);
@@ -56,7 +56,7 @@ class RouteGroup implements RouteGroupInterface
     }
     public static function withRoutes(...$routes): static
     {
-        return (new self())->addRoutes(...$routes);
+        return (new static())->addRoutes(...$routes);
     }
     public static function fromRoutes(...$routes): static
     {

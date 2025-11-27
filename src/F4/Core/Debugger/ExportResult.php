@@ -17,7 +17,7 @@ use function gettype;
 class ExportResult implements ExportResultInterface
 {
     protected ExportResultInterface $exportResult;
-    public function __construct(mixed $variable, ?string $name = null, mixed $meta = null)
+    final public function __construct(mixed $variable, ?string $name = null, mixed $meta = null)
     {
         switch ($type = gettype($variable)) {
             case 'array':
@@ -36,7 +36,7 @@ class ExportResult implements ExportResultInterface
     }
     public static function fromVariable(mixed $variable, ?string $name = null, mixed $meta = null): static
     {
-        return new self($variable, $name, $meta);
+        return new static($variable, $name, $meta);
     }
     public function getPreview(): string
     {

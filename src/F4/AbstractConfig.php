@@ -29,11 +29,9 @@ abstract class AbstractConfig
     public const string DB_PASSWORD = '';
     public const string DB_SCHEMA = '';
     public const ?string DB_APP_NAME = null;
-    // public const bool DB_ALLOW_UNSAFE_RAW_QUERIES = false;
     public const string DB_ADAPTER_CLASS = PostgresqlAdapter::class;
 
     public const bool DB_PERSIST = true;
-    // public const bool DB_KEEP_NULLS = true;
 
     public const array MODULES = [];
 
@@ -47,7 +45,6 @@ abstract class AbstractConfig
     public const string TEMPLATE_PUG_FALLBACK_CSS_BUNDLE_NAME = 'style.css'; // used by vite by default if css splitting is disabled
 
     public const string RESPONSE_CHARSET = 'utf-8';
-    //public const string FILESYSTEM_CHARSET = 'utf-8';
 
     /**
      * Response format defines which emitter will be used for emitting response
@@ -96,8 +93,6 @@ abstract class AbstractConfig
     public const string SESSION_PATH = '/';
     public const string SESSION_SAME_SITE = 'Strict';
     public const bool SESSION_SECURE_ONLY = true;
-    // public const ?string SESSION_HANDLER = null;
-    // public const bool SESSION_IGNORE_IP_ADDRESS = false;
 
     public const string TIMEZONE = '';
 

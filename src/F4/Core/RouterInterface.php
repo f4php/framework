@@ -7,6 +7,7 @@ namespace F4\Core;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\Route;
+use F4\Core\RouteGroup;
 
 interface RouterInterface
 {

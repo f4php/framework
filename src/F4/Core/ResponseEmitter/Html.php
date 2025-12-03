@@ -46,6 +46,7 @@ class Html extends AbstractResponseEmitter implements ResponseEmitterInterface
             'request' => [
                 'path' => $request->getPath(),
                 'headers' => $request->getHeaders(),
+                'method' => $request->getMethod(),
                 'parameters' => $request->getParameters(),
                 'validated-parameters' => $request->getValidatedParameters(),
             ],

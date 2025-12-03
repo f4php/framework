@@ -250,10 +250,6 @@ class Core implements CoreApiInterface
             null => Config::DEFAULT_RESPONSE_FORMAT,
             default => $this->getResponseFormatFromExtension(extension: $extension)
         });
-        $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
-            true => throw new ErrorException(message: "Failed to locate emitter for '{$format}'"),
-            default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this->coreApiProxy)
-        };
         return $this;
     }
     protected function registerModulesNormally(array $modules = Config::MODULES): static
@@ -372,6 +368,10 @@ class Core implements CoreApiInterface
     public function setResponseFormat(string $format): static
     {
         $this->getResponse()->setResponseFormat($format);
+        $this->emitter = match (empty(Config::RESPONSE_EMITTERS[$format]['class']) || !class_exists(class: Config::RESPONSE_EMITTERS[$format]['class'], autoload: true)) {
+            true => throw new ErrorException(message: "Failed to locate emitter for '{$format}'"),
+            default => new (Config::RESPONSE_EMITTERS[$format]['class'])($this->coreApiProxy)
+        };
         return $this;
     }
     public function getResponseFormat(): string

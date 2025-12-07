@@ -24,12 +24,13 @@ use F4\Core\CanExtractLocaleFromExtensionTrait;
 use function arsort;
 use function array_map;
 use function array_reduce;
+use function explode;
 use function implode;
 use function in_array;
-use function explode;
 use function json_decode;
 use function mb_strpos;
 use function preg_quote;
+use function str_replace;
 
 /**
  * 
@@ -127,27 +128,25 @@ class Request implements RequestInterface
     }
     public function getHeaderLocales(): array
     {
-        $locales = match($acceptLanguageHeader = $this->getHeaderLine('Accept-Language')) {
-            null => [],
-            default => array_reduce(
-                explode(',', $acceptLanguageHeader),
-                function ($carry, $part) {
-                    $sections = explode(';', trim($part));
-                    $locale = trim($sections[0]);
-                    $quality = 1.0;
-                    if (isset($sections[1])) {
-                        $q = explode('=', $sections[1]);
-                        if (isset($q[1]) && $q[0] === 'q') {
-                            $quality = (float) $q[1];
-                        }
+        $acceptLanguageHeader = $this->getHeaderLine('Accept-Language');
+        $locales = array_reduce(
+            array: explode(',', $acceptLanguageHeader),
+            callback: function ($carry, $part) {
+                $sections = explode(';', trim($part));
+                $locale = trim($sections[0]);
+                $quality = 1.0;
+                if (isset($sections[1])) {
+                    $q = explode('=', $sections[1]);
+                    if (isset($q[1]) && $q[0] === 'q') {
+                        $quality = (float) $q[1];
                     }
-                    $locale = str_replace('-', '_', $locale);
-                    $carry[$locale] = $quality;
-                    return $carry;
-                },
-                []
-            )
-        };
+                }
+                $locale = str_replace('-', '_', $locale);
+                $carry[$locale] = $quality;
+                return $carry;
+            },
+            initial: [],
+        );
         arsort($locales);
         return $locales;
     }

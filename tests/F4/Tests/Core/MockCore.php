@@ -9,5 +9,4 @@ use F4\Core\CoreApiInterface;
 
 class MockCore extends Core implements CoreApiInterface {
 
-
 }

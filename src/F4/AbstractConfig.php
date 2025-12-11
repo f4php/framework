@@ -9,15 +9,17 @@ use F4\Config\SensitiveParameterKey;
 
 use F4\DB\Adapter\PostgresqlAdapter;
 
+use F4\Core\CoreApiProxy;
+use F4\Core\Debugger;
 use F4\Core\Localizer;
 use F4\Core\Router;
-use F4\Core\CoreApiProxy;
+use F4\Core\SessionManager;
 
 abstract class AbstractConfig
 {
     public const bool DEBUG_MODE = false;
     public const bool DEBUG_DB_QUERIES = true;
-    public const string CORE_DEBUGGER_CLASS = Core\Debugger::class;
+    public const string CORE_DEBUGGER_CLASS = Debugger::class;
     public const string DEBUG_EXTENSION = '+debug';
     public const bool VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES = true;
     public const string DB_HOST = 'localhost';
@@ -85,6 +87,7 @@ abstract class AbstractConfig
         ],
     ];
 
+    public const string SESSION_MANAGER_CLASS = SessionManager::class;
     public const bool SESSION_ENABLED = true;
     public const string SESSION_COOKIE_NAME = 'F4_SESSION_ID';
     public const ?string SESSION_DOMAIN = null;

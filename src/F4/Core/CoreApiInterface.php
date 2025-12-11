@@ -10,6 +10,7 @@ use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\RouterInterface;
+use F4\Core\SessionManagerInterface;
 
 interface CoreApiInterface
 {
@@ -28,6 +29,7 @@ interface CoreApiInterface
     public function getResponse(): ResponseInterface;
     public function getResponseFormat(): string;
     public function getRouter(): RouterInterface;
+    public function getSessionManager(): SessionManagerInterface;
     public function getTemplate(?string $format = null): string;
     public function log(mixed $value, ?string $description = null): void;
     public function on(string $exceptionClassName, callable $handler): static;
@@ -39,6 +41,7 @@ interface CoreApiInterface
     public function setResponseFormat(string $format): static;
     public function setResponseHandler(callable $handler): static;
     public function setRouter(RouterInterface $router): static;
+    public function setSessionManager(SessionManagerInterface $sessionManager): static;
     public function setTemplate(string $template, ?string $format=null): static;
     public function setTimezone(string $timezone): static;
 }

@@ -30,6 +30,7 @@ use F4\Core\ExceptionRenderer;
 use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
+use F4\Core\SessionManagerInterface;
 
 use F4\Core\ResponseEmitter\ResponseEmitterInterface;
 
@@ -74,8 +75,15 @@ class Core implements CoreApiInterface
     protected LocalizerInterface $localizer;
     protected RequestInterface $request;
     protected ResponseInterface $response;
+    protected SessionManagerInterface $sessionManager;
 
-    public function __construct(string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS, string $routerClassName = Config::CORE_ROUTER_CLASS, string $localizerClassName = Config::CORE_LOCALIZER_CLASS, string $debuggerClassName = Config::CORE_DEBUGGER_CLASS)
+    public function __construct(
+        string $coreApiProxyClassName = Config::CORE_API_PROXY_CLASS,
+        string $routerClassName = Config::CORE_ROUTER_CLASS,
+        string $localizerClassName = Config::CORE_LOCALIZER_CLASS,
+        string $debuggerClassName = Config::CORE_DEBUGGER_CLASS,
+        string $sessionManagerClassName = Config::SESSION_MANAGER_CLASS,
+    )
     {
         if (Config::DEBUG_MODE) {
             $debugger = new $debuggerClassName();
@@ -88,6 +96,8 @@ class Core implements CoreApiInterface
         $this->setRouter(router: $router);
         $localizer = new $localizerClassName();
         $this->setLocalizer(localizer: $localizer);
+        $sessionManager = new $sessionManagerClassName();
+        $this->setSessionManager(sessionManager: $sessionManager);
         HookManager::triggerHook(hookName: HookManager::AFTER_CORE_CONSTRUCT, context: []);
     }
     public function setUpRequestResponse(?callable $customHandler = null): static
@@ -210,8 +220,8 @@ class Core implements CoreApiInterface
             $this->setTimezone(timezone: Config::TIMEZONE);
         }
         if (Config::SESSION_ENABLED) {
-            session_name(Config::SESSION_COOKIE_NAME);
-            session_set_cookie_params([
+            $this->sessionManager->setName(Config::SESSION_COOKIE_NAME);
+            $this->sessionManager->setParameters([
                 'lifetime' => Config::SESSION_LIFETIME,
                 'path' => Config::SESSION_PATH,
                 'domain' => Config::SESSION_DOMAIN,
@@ -219,7 +229,7 @@ class Core implements CoreApiInterface
                 'httponly' => Config::SESSION_HTTP_ONLY,
                 'samesite' => Config::SESSION_SAME_SITE
             ]);
-            if (!session_start()) {
+            if(!$this->sessionManager->start()) {
                 throw new ErrorException('Failed to initialize session');
             }
         }
@@ -403,6 +413,15 @@ class Core implements CoreApiInterface
     public function getRouter(): RouterInterface
     {
         return $this->router;
+    }
+    public function getSessionManager(): SessionManagerInterface
+    {
+        return $this->sessionManager;
+    }
+    public function setSessionManager(SessionManagerInterface $sessionManager): static
+    {
+        $this->sessionManager = $sessionManager;
+        return $this;
     }
     public function getLocalizer(): LocalizerInterface
     {

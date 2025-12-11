@@ -168,7 +168,6 @@ final class HookManagerTest extends TestCase
                  */
                 $this->restoreEnvironmentNormally(false, true);
             });
-
         $this->assertSame(1, $result[0]);
         $this->assertSame(2, $result[1]);
         $this->assertSame(3, $result[2]);

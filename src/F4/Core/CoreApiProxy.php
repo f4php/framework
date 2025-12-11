@@ -10,6 +10,7 @@ use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\Route;
 use F4\Core\RouterInterface;
+use F4\Core\SessionManagerInterface;
 
 class CoreApiProxy implements CoreApiInterface
 {
@@ -76,6 +77,10 @@ class CoreApiProxy implements CoreApiInterface
     {
         return $this->core->getRouter();
     }
+    public function getSessionManager(): SessionManagerInterface
+    {
+        return $this->core->getSessionManager();
+    }
     public function getTemplate(?string $format = null): string
     {
         return $this->core->getTemplate(format: $format);
@@ -126,6 +131,11 @@ class CoreApiProxy implements CoreApiInterface
     public function setRouter(RouterInterface $router): static
     {
         $this->core->setRouter(router: $router);
+        return $this;
+    }
+    public function setSessionManager(SessionManagerInterface $sessionManager): static
+    {
+        $this->core->setSessionManager(sessionManager: $sessionManager);
         return $this;
     }
     public function setTemplate(string $template, ?string $format = null): static

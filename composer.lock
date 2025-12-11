@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "70449125667fecfc83cc1a9286ffe4fe",
+    "content-hash": "d18e42561489ab2c2d2f3bcd128c4810",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -145,22 +145,22 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.2.2",
+            "version": "v0.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "86e833b00b1a04a46699764361aa598dff7076ce"
+                "reference": "237c3bb9b5a15d0e114c7ae63d6f31248d947eda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/86e833b00b1a04a46699764361aa598dff7076ce",
-                "reference": "86e833b00b1a04a46699764361aa598dff7076ce",
+                "url": "https://api.github.com/repos/f4php/db/zipball/237c3bb9b5a15d0e114c7ae63d6f31248d947eda",
+                "reference": "237c3bb9b5a15d0e114c7ae63d6f31248d947eda",
                 "shasum": ""
             },
             "require": {
                 "composer/pcre": "^3.3",
                 "ext-pgsql": "*",
-                "f4php/hookmanager": "^0.0.1",
+                "f4php/hookmanager": "^0.0.2",
                 "php": "^8.4.1"
             },
             "require-dev": {
@@ -193,22 +193,22 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.2.2"
+                "source": "https://github.com/f4php/db/tree/v0.2.4"
             },
-            "time": "2025-11-27T11:56:11+00:00"
+            "time": "2025-12-11T20:20:30+00:00"
         },
         {
             "name": "f4php/hookmanager",
-            "version": "v0.0.1",
+            "version": "v0.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/hookmanager.git",
-                "reference": "6f29c33cd1e7f0fc4c8509c58b413c3caed26cab"
+                "reference": "27e2ace876cb58794ba5cbcc708298537953d210"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/hookmanager/zipball/6f29c33cd1e7f0fc4c8509c58b413c3caed26cab",
-                "reference": "6f29c33cd1e7f0fc4c8509c58b413c3caed26cab",
+                "url": "https://api.github.com/repos/f4php/hookmanager/zipball/27e2ace876cb58794ba5cbcc708298537953d210",
+                "reference": "27e2ace876cb58794ba5cbcc708298537953d210",
                 "shasum": ""
             },
             "require": {
@@ -235,7 +235,7 @@
                     "email": "dennis@kreminsky.com"
                 }
             ],
-            "description": "HookManager is internal hook management SDK for F4, a lightweight web application framework",
+            "description": "HookManager is internal hooks core package for F4, a lightweight web development framework",
             "keywords": [
                 "f4",
                 "framework",
@@ -243,9 +243,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/hookmanager/issues",
-                "source": "https://github.com/f4php/hookmanager/tree/v0.0.1"
+                "source": "https://github.com/f4php/hookmanager/tree/v0.0.2"
             },
-            "time": "2025-07-05T11:40:01+00:00"
+            "time": "2025-12-11T20:16:04+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -2424,16 +2424,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.2",
+            "version": "12.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "06713c2633d6d832f2fe98a70511ecaa7cb92c1a"
+                "reference": "6dc2e076d09960efbb0c1272aa9bc156fc80955e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/06713c2633d6d832f2fe98a70511ecaa7cb92c1a",
-                "reference": "06713c2633d6d832f2fe98a70511ecaa7cb92c1a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/6dc2e076d09960efbb0c1272aa9bc156fc80955e",
+                "reference": "6dc2e076d09960efbb0c1272aa9bc156fc80955e",
                 "shasum": ""
             },
             "require": {
@@ -2501,7 +2501,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.2"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.3"
             },
             "funding": [
                 {
@@ -2525,7 +2525,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-08T07:22:32+00:00"
+            "time": "2025-12-11T08:52:59+00:00"
         },
         {
             "name": "sebastian/cli-parser",

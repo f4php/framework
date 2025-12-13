@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d18e42561489ab2c2d2f3bcd128c4810",
+    "content-hash": "4044e76202d93a4877aaf0a41ad28747",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -145,16 +145,16 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.2.4",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "237c3bb9b5a15d0e114c7ae63d6f31248d947eda"
+                "reference": "98e335b48886025d0d4043df5e9d6a4e639244b3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/237c3bb9b5a15d0e114c7ae63d6f31248d947eda",
-                "reference": "237c3bb9b5a15d0e114c7ae63d6f31248d947eda",
+                "url": "https://api.github.com/repos/f4php/db/zipball/98e335b48886025d0d4043df5e9d6a4e639244b3",
+                "reference": "98e335b48886025d0d4043df5e9d6a4e639244b3",
                 "shasum": ""
             },
             "require": {
@@ -193,9 +193,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.2.4"
+                "source": "https://github.com/f4php/db/tree/v0.3.1"
             },
-            "time": "2025-12-11T20:20:30+00:00"
+            "time": "2025-12-13T15:15:23+00:00"
         },
         {
             "name": "f4php/hookmanager",

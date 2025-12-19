@@ -247,15 +247,14 @@ class Route implements RouteInterface
             $request->setValidatedParameters($arguments);
             if (isset($this->requestMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
-                $request = match (($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
-                    true => $requestMiddlewareResult,
-                    default => $request
-                };
-                // in case request object was modified by the middleware, revalidate all the parameters
-                $parameters = $this->getRequestParameters($request, $pathPrefix);
-                $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
-                $request->setParameters($parameters);
-                $request->setValidatedParameters($arguments);
+                if(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
+                    // If request was modified by the middleware, save it and revalidate all the parameters
+                    $request = $requestMiddlewareResult;
+                    $parameters = $this->getRequestParameters($request, $pathPrefix);
+                    $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
+                    $request->setParameters($parameters);
+                    $request->setValidatedParameters($arguments);
+                }
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
             }
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $handler, 'parameters' => $arguments]);

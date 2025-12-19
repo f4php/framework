@@ -53,13 +53,13 @@ class Request implements RequestInterface
     {
         $psr17Factory = new Psr17Factory();
         $request = match ($psrRequest) {
-            null => (new ServerRequestCreator(
+            null => new ServerRequestCreator(
                 $psr17Factory, // ServerRequestFactory
                 $psr17Factory, // UriFactory
                 $psr17Factory, // UploadedFileFactory
-                $psr17Factory  // StreamFactory
-            ))->fromGlobals(),
-            default => $psrRequest
+                $psr17Factory, // StreamFactory
+            )->fromGlobals(),
+            default => $psrRequest,
         };
         if (in_array(needle: $request->getMethod(), haystack: ['DELETE', 'PATCH', 'POST', 'PUT']) && mb_strpos(haystack: $request->getHeaderLine('Content-Type'), needle: 'application/json') !== false) {
             $data = json_decode(json: $request->getBody()->getContents(), associative: true, flags: JSON_THROW_ON_ERROR);
@@ -72,19 +72,29 @@ class Request implements RequestInterface
     public function initialize()
     {
         $localeExtensions = $this->getAvailableLocaleExtensions();
-        $localeExtensionsPattern = implode(separator: '|', array: array_map(callback: function ($extension): string {
-            return preg_quote(str: $extension, delimiter: '/');
-        }, array: $localeExtensions));
+        $localeExtensionsPattern = implode(
+            separator: '|', 
+            array: array_map(
+                callback: fn (string $extension): string => preg_quote(str: $extension, delimiter: '/'),
+                array: $localeExtensions
+            )
+        );
         $formatExtensions = $this->getAvailableFormatExtensions();
-        $formatExtensionsPattern =
-            implode(separator: '|', array: array_map(callback: function ($extension): string {
-                return preg_quote(str: $extension, delimiter: '/');
-            }, array: $formatExtensions));
+        $formatExtensionsPattern = implode(
+            separator: '|', 
+            array: array_map(
+                callback: fn (string $extension): string => preg_quote(str: $extension, delimiter: '/'),
+                array: $formatExtensions
+            )
+        );
         $debugExtensions = $this->getAvailableDebugExtensions();
-        $debugExtensionsPattern =
-            implode(separator: '|', array: array_map(callback: function ($debugExtension): string {
-                return preg_quote(str: $debugExtension, delimiter: '/');
-            }, array: $debugExtensions));
+        $debugExtensionsPattern = implode(
+            separator: '|', 
+            array: array_map(
+                callback: fn (string $debugExtension): string => preg_quote(str: $debugExtension, delimiter: '/'),
+                array: $debugExtensions
+            )
+        );
         if (!Preg::isMatch(pattern: "/(?<path>\/.*?)(?<localeExtension>{$localeExtensionsPattern})?(?<formatExtension>{$formatExtensionsPattern})?(?<debugExtension>{$debugExtensionsPattern})?$/Anu", subject: $this->getUri()->getPath(), matches: $matches)) {
             throw new ErrorException(message: 'request-uri-cannot-be-parsed');
         }
@@ -103,7 +113,7 @@ class Request implements RequestInterface
             ...$this->getParsedBody() ?? [],
         ]);
     }
-    static public function fromPsr(psrServerRequestInterface $psrRequest): static
+    public static function fromPsr(psrServerRequestInterface $psrRequest): static
     {
         return new static(psrRequest: $psrRequest);
     }

@@ -25,7 +25,7 @@ interface RouteGroupInterface
     public function addRoutes(...$routes): static;
     public function setPathPrefix(string $pathPrefix): static;
     public function getPathPrefix(): string;
-    static public function withRoutes(...$routes): static;
-    static public function fromRoutes(...$routes): static;
+    public static function withRoutes(...$routes): static;
+    public static function fromRoutes(...$routes): static;
 
 }

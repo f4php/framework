@@ -28,13 +28,13 @@ interface RouteInterface
     public function addExceptionHandler(string $exceptionClassName, callable $exceptionHandler): static;
     public function on(string $exceptionClassName, callable $exceptionHandler): static;
     public function getExceptionHandlers(?string $exceptionClass = null): array;
-    static public function get(string $pathDefinition, callable $handler): static;
-    static public function head(string $pathDefinition, callable $handler): static;
-    static public function post(string $pathDefinition, callable $handler): static;
-    static public function put(string $pathDefinition, callable $handler): static;
-    static public function delete(string $pathDefinition, callable $handler): static;
-    static public function connect(string $pathDefinition, callable $handler): static;
-    static public function options(string $pathDefinition, callable $handler): static;
-    static public function trace(string $pathDefinition, callable $handler): static;
-    static public function any(string $pathDefinition, callable $handler): static;
+    public static function get(string $pathDefinition, callable $handler): static;
+    public static function head(string $pathDefinition, callable $handler): static;
+    public static function post(string $pathDefinition, callable $handler): static;
+    public static function put(string $pathDefinition, callable $handler): static;
+    public static function delete(string $pathDefinition, callable $handler): static;
+    public static function connect(string $pathDefinition, callable $handler): static;
+    public static function options(string $pathDefinition, callable $handler): static;
+    public static function trace(string $pathDefinition, callable $handler): static;
+    public static function any(string $pathDefinition, callable $handler): static;
 }

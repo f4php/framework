@@ -41,7 +41,7 @@ class Response implements ResponseInterface
             default => $psrResponse
         });
     }
-    static public function fromPsr(psrResponseInterface $psrResponse): static
+    public static function fromPsr(psrResponseInterface $psrResponse): static
     {
         return new static(psrResponse: $psrResponse);
     }

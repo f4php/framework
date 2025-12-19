@@ -15,7 +15,7 @@ interface RequestInterface extends PsrServerRequestInterface
     public function getHeaderLocales(): array;
     public function setPsrRequest(PsrServerRequestInterface $psrRequest): self;
     public function getPsrRequest(): PsrServerRequestInterface;
-    static public function fromPsr(psrServerRequestInterface $psrRequest): self;
+    public static function fromPsr(psrServerRequestInterface $psrRequest): self;
     public function setParameters(array $parameters): static;
     public function getParameters(): mixed;
     public function getParameter(string $name): mixed;

@@ -256,7 +256,7 @@ class Core implements CoreApiInterface
     }
     protected function setupEmitterNormally(): static
     {
-        $this->setResponseFormat(format: $format = match ($extension = $this->getRequest()->getExtension()) {
+        $this->setResponseFormat(format: match ($extension = $this->getRequest()->getExtension()) {
             null => Config::DEFAULT_RESPONSE_FORMAT,
             default => $this->getResponseFormatFromExtension(extension: $extension)
         });

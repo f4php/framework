@@ -85,6 +85,11 @@ abstract class AbstractConfig
             'extensions' => [],
             'class' => \F4\Core\ResponseEmitter\Cli::class,
         ],
+        // this emitter ignores response data and emits raw psr7 response
+        Core\ResponseEmitter\Passthrough::INTERNAL_MIME_TYPE => [
+            'extensions' => [],
+            'class' => \F4\Core\ResponseEmitter\Passthrough::class,
+        ],
     ];
 
     public const string SESSION_MANAGER_CLASS = SessionManager::class;

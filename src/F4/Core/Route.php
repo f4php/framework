@@ -26,11 +26,13 @@ use F4\Core\Validator;
 use function array_map;
 use function array_keys;
 use function array_walk;
+use function count;
 use function implode;
 use function in_array;
 use function is_callable;
 use function is_numeric;
 use function preg_quote;
+use function sprintf;
 
 class Route implements RouteInterface
 {
@@ -106,9 +108,13 @@ class Route implements RouteInterface
         $prefixedLiteralPathDefinitionPattern = '(?<prefixedLiteralPathDefinition>[^\{\}\/\.]*?)';
         $literalPathDefinitionPattern = '(?<literalPathDefinition>\/[^\{\}\/\.]*?)';
         $extensions = $this->getAvailableFormatExtensions();
-        $extensionDefinitionPattern = implode(separator: '|', array: array_map(callback: function ($extension): string {
-            return preg_quote(str: $extension, delimiter: '/');
-        }, array: $extensions));
+        $extensionDefinitionPattern = implode(
+            separator: '|',
+            array: array_map(
+                callback: fn(string $extension): string => preg_quote(str: $extension, delimiter: '/'),
+                array: $extensions,
+            ),
+        );
         $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern}|{$prefixedLiteralPathDefinitionPattern})+";
         $definitionPattern = "^\s*((?i)(?<methodDefinition>({$methodDefinitionPattern})\s+)?(?<pathDefinition>({$pathDefinitionPattern}))(?<extensionDefinition>{$extensionDefinitionPattern})?\s*$";
         if (!Preg::isMatch(pattern: "/{$definitionPattern}/Anu", subject: $path, matches: $matches)) {
@@ -118,37 +124,34 @@ class Route implements RouteInterface
             false => "({$matches['methodDefinition']})\s+",
             default => 'GET\s+'
         };
-        $quoteLiterals = function (string $string) use ($literalPathDefinitionPattern): string {
-            return Preg::replaceCallback(
+        $quoteLiteralsFunction = fn(string $string): string =>
+            Preg::replaceCallback(
                 pattern: "/{$literalPathDefinitionPattern}/nu",
-                replacement: function ($match): string {
-                    return preg_quote(str: $match['literalPathDefinition'], delimiter: '/');
-                },
+                replacement: fn(array $match): string => preg_quote(str: $match['literalPathDefinition'], delimiter: '/'),
                 subject: $string,
             );
-        };
         $regexpPieces[] = match (Preg::isMatchAll(pattern: "/{$parameterDefinitionPattern}/nu", subject: $matches['pathDefinition'], matches: $parameterMatches)) {
             true => Preg::replaceCallback(
                 pattern: "/{$parameterDefinitionPattern}/nu",
-                replacement: function ($match): string {
-                        $pattern = match ($match['parameterTypeDefinition']) {
-                            'any' => '.+?',
-                            'bool' => '[true|false]',
-                            'float' => '[\-\+]?[0-9]+(\.[0-9]+?)?',
-                            'int' => '[\-\+]?[0-9]+?',
-                            'regexp' => match (empty($match['parameterTypeOptionsDefinition'])) {
-                                    true => throw new InvalidArgumentException(message: 'regexp type requires pattern option in parentheses, i.e param_name:regexp([a-z0-9]+?)'),
-                                    default => $match['parameterTypeOptionsDefinition']
-                                },
-                            'uuid' => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
-                            'uuid4' => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}',
-                            default => '[^\/]+?' // same as string
-                        };
-                        return "(?<{$match['parameterNameDefinition']}>{$pattern})";
-                    },
-                subject: $quoteLiterals(string: $matches['pathDefinition']),
+                replacement: function (array $match): string {
+                    $pattern = match ($match['parameterTypeDefinition']) {
+                        'any' => '.+?',
+                        'bool' => '[true|false]',
+                        'float' => '[\-\+]?[0-9]+(\.[0-9]+?)?',
+                        'int' => '[\-\+]?[0-9]+?',
+                        'regexp' => match (empty($match['parameterTypeOptionsDefinition'])) {
+                                true => throw new InvalidArgumentException(message: 'regexp type requires pattern option in parentheses, i.e param_name:regexp([a-z0-9]+?)'),
+                                default => $match['parameterTypeOptionsDefinition']
+                            },
+                        'uuid' => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+                        'uuid4' => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}',
+                        default => '[^\/]+?' // same as string
+                    };
+                    return "(?<{$match['parameterNameDefinition']}>{$pattern})";
+                },
+                subject: $quoteLiteralsFunction(string: $matches['pathDefinition']),
             ),
-            default => $quoteLiterals(string: $matches['pathDefinition'])
+            default => $quoteLiteralsFunction(string: $matches['pathDefinition'])
         };
         $regexpPieces[] = '$';
         return [
@@ -167,7 +170,7 @@ class Route implements RouteInterface
         if (!$this->checkIfFormatIsSupported(format: $format)) {
             throw new ValueError(message: "format {$format} is not supported");
         }
-        $this->templates[$format] = match(is_callable($template)) {
+        $this->templates[$format] = match (is_callable($template)) {
             true => $template($format),
             // TODO: check template path validity with realpath
             default => $template,
@@ -184,7 +187,7 @@ class Route implements RouteInterface
     }
     public function setHandler(callable $handler): static
     {
-        $this->handler = match($handler instanceof Closure) {
+        $this->handler = match ($handler instanceof Closure) {
             true => $handler,
             default => $handler(...)
         };
@@ -221,24 +224,24 @@ class Route implements RouteInterface
         $responseFormat = $response->getResponseFormat();
         $requestPath = match ($pathPrefix) {
             null => $requestPath,
-            default => match(Preg::isMatch(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), subject: $requestPath)) {
-                true => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath),
-                default => null
-            }
+            default => match (Preg::isMatch(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), subject: $requestPath)) {
+                    true => Preg::replace(pattern: sprintf('/^%s/', preg_quote(str: $pathPrefix, delimiter: '/')), replacement: '', subject: $requestPath),
+                    default => null
+                }
         };
-        return match($requestPath) {
+        return match ($requestPath) {
             null => false,
             default => Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: "{$requestMethod} {$requestPath}")
-                       &&
-                       Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat)
+            &&
+            Preg::isMatch(pattern: "/^{$this->responseFormatRegExp}$/", subject: $responseFormat)
         };
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response, ?string $pathPrefix = null): mixed
     {
-        $handler = $this->getHandler();
-        $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
-        $parameters = $this->getRequestParameters($request, $pathPrefix);
         try {
+            $handler = $this->getHandler();
+            $validator = new Validator(flags: (Config::VALIDATOR_ATTRIBUTES_MUST_BE_CLASSES ? Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES : 0));
+            $parameters = $this->getRequestParameters($request, $pathPrefix);
             $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
             $request->setParameters($parameters);
             $request->setValidatedParameters($arguments);
@@ -248,12 +251,17 @@ class Route implements RouteInterface
                     true => $requestMiddlewareResult,
                     default => $request
                 };
+                // in case request object was modified by the middleware, revalidate all the parameters
+                $parameters = $this->getRequestParameters($request, $pathPrefix);
+                $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
+                $request->setParameters($parameters);
+                $request->setValidatedParameters($arguments);
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
             }
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $handler, 'parameters' => $arguments]);
             $handlerReflection = new ReflectionFunction($handler);
             $handlerThis = $handlerReflection->getClosureThis();
-            $response->setData($result = match($handlerThis) {
+            $response->setData($result = match ($handlerThis) {
                 null => $handler(...$arguments),
                 default => $handler->call($handlerThis, ...$arguments)
             });
@@ -295,7 +303,7 @@ class Route implements RouteInterface
         if (!Preg::isMatch(pattern: "/{$this->requestPathRegExp}/", subject: $subject, matches: $matches)) {
             return [];
         }
-        array_walk(array: $matches, callback: function ($value, $key) use (&$matches): void {
+        array_walk(array: $matches, callback: function (mixed $value, int|string $key) use (&$matches): void {
             if (is_numeric(value: $key)) {
                 unset($matches[$key]);
             }

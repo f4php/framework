@@ -49,14 +49,15 @@ class RouteGroup implements RouteGroupInterface
             ];
         }, []);
         (function (Route ...$routes): void{})(...$routes);
-        array_map(callback: function ($route) {
-            $this->addRoute($route);
-        }, array: $routes);
+        array_map(
+            callback: $this->addRoute(...),
+            array: $routes
+        );
         return $this;
     }
     public static function withRoutes(...$routes): static
     {
-        return (new static())->addRoutes(...$routes);
+        return new static()->addRoutes(...$routes);
     }
     public static function fromRoutes(...$routes): static
     {
@@ -77,15 +78,20 @@ class RouteGroup implements RouteGroupInterface
     }
     public function hasMatchingRoute(RequestInterface $request, ResponseInterface $response): bool
     {
-        return array_reduce($this->routes, function ($result, Route $route) use ($request, $response): bool {
-            return $result || $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix);
-        }, false);
+        return array_reduce(
+            array: $this->routes,
+            callback: fn($result, Route $route): bool =>
+                $result || $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix),
+            initial: false,
+        );
     }
     public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route
     {
-        return array_find(array: $this->routes, callback: function (Route $route) use ($request, $response): bool {
-            return $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix);
-        });
+        return array_find(
+            array: $this->routes,
+            callback: fn(Route $route): bool =>
+                $route->checkMatch(request: $request, response: $response, pathPrefix: $this->pathPrefix)
+        );
     }
     public function invoke(RequestInterface &$request, ResponseInterface &$response): mixed
     {
@@ -129,5 +135,4 @@ class RouteGroup implements RouteGroupInterface
         }
         return $result;
     }
-
 }

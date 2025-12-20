@@ -814,4 +814,19 @@ final class ValidatorTest extends TestCase
         );
         $this->assertSame('"abac"', $value1['string1']);
     }
+    public function testCustomWithInvalidArgument(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (
+                #[Custom('non-callable-string')]
+                string $string1
+            ): void {},
+            [
+                'string1' => 'abac',
+            ],
+        );
+    }
+
 }

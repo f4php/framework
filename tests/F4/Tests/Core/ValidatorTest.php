@@ -14,6 +14,7 @@ use F4\Core\Validator\CastBoolean;
 use F4\Core\Validator\CastFloat;
 use F4\Core\Validator\CastInt;
 use F4\Core\Validator\CastInteger;
+use F4\Core\Validator\Custom;
 use F4\Core\Validator\DefaultValue;
 use F4\Core\Validator\Filter;
 use F4\Core\Validator\IsBool;
@@ -48,6 +49,8 @@ use F4\Core\Validator\UnsafeString;
 use ErrorException;
 use InvalidArgumentException;
 use TypeError;
+
+use function sprintf;
 
 final class ValidatorTest extends TestCase
 {
@@ -778,7 +781,7 @@ final class ValidatorTest extends TestCase
         $this->assertSame(null, $value1['emptyBool']);
         $this->assertSame(null, $value1['emptyFloat']);
     }
-    public function Replace(): void
+    public function testReplace(): void
     {
         $validator = new Validator();
         $value1 = $validator->getFilteredArguments(
@@ -793,5 +796,22 @@ final class ValidatorTest extends TestCase
         $this->assertSame('bbbc', $value1['string1']);
         $this->assertSame('bbbc', $value1['string2']);
         $this->assertSame('Abbc', $value1['string3']);
+    }
+    public function testCustom(): void
+    {
+        if (\PHP_VERSION_ID < 80500) {
+            $this->markTestSkipped('Callable attribute arguments require PHP 8.5+');
+        }
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (
+                #[Custom(static function(string $param) { return sprintf('"%s"', $param); })]
+                string $string1
+            ): void {},
+            [
+                'string1' => 'abac',
+            ],
+        );
+        $this->assertSame('"abac"', $value1['string1']);
     }
 }

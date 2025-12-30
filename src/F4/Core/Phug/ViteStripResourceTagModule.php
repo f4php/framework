@@ -8,7 +8,7 @@ use Phug\AbstractCompilerModule;
 use Phug\Compiler\Event\NodeEvent;
 use Phug\CompilerEvent;
 
-class StripViteResourceModule extends AbstractCompilerModule
+class ViteStripResourceTagModule extends AbstractCompilerModule
 {
     protected const string ELEMENT_NAME = 'vite:resource';
 
@@ -19,7 +19,7 @@ class StripViteResourceModule extends AbstractCompilerModule
                 $node = $event->getNode();
                 if ($node instanceof \Phug\Parser\Node\ElementNode) {
                     if ($node->getName() === self::ELEMENT_NAME) {
-                        $node = (new \Phug\Parser\Node\CommentNode())->hide();
+                        $node = new \Phug\Parser\Node\CommentNode()->hide();
                         $event->setNode($node);
                     }
                 }

@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace F4\Core\Phug;
 
 use F4\Config;
-use F4\Core\Phug\{FluentResourceModule, StripViteResourceModule, ViteBundleModule};
+// use F4\Core\Phug\FluentResourceModule;
+use F4\Core\Phug\ViteStripResourceTagModule;
+use F4\Core\Phug\ViteBundleModule;
 
 use Phug\Phug;
 use Phug\Component\ComponentExtension;
 use Phug\Optimizer;
 
+use function array_reduce;
+use function define;
+use function defined;
 use function fopen;
+use function mb_trim;
+use function realpath;
 use function sys_get_temp_dir;
 
 class TemplateRenderer
@@ -35,10 +42,10 @@ class TemplateRenderer
                     // this module is not compatible with Phug's cache implementation, so it's disabled until a solution is implemented
                     // FluentResourceModule::class,
                     ViteBundleModule::class,
-                    StripViteResourceModule::class,
+                    ViteStripResourceTagModule::class,
                 ],
             ],
-            ...$options
+            ...$options,
         ]);
         ComponentExtension::enable();
     }
@@ -50,19 +57,23 @@ class TemplateRenderer
             Optimizer::call('displayFile', [$file, $args]);
         }
     }
-    public static function getPaths(?array $paths = null): array
+    public static function getPaths(?array $paths = []): array
     {
-        $paths = Config::TEMPLATE_RELATIVE_PATHS ? (array) $paths : [];
+        $paths = (array) (Config::TEMPLATE_RELATIVE_PATHS ? (array) $paths : []);
         if (Config::TEMPLATE_PATHS) {
-            $paths = array_merge((array) $paths, Config::TEMPLATE_PATHS);
+            $paths = [
+                ...(array) Config::TEMPLATE_PATHS,
+                ...$paths,
+            ];
         }
-        $realpaths = [];
-        foreach ((array) $paths as $i => $path) {
-            if (realpath(path: mb_trim(string: $path))) {
-                $realpaths[] = realpath(path: $path);
-            }
-        }
-        return $realpaths;
+        return array_reduce(
+            array: $paths,
+            callback: fn ($realpaths, $path) => [
+                ...$realpaths,
+                ...($realpath = realpath(path: mb_trim(string: $path))) ? [$realpath] : [],
+            ],
+            initial: [],
+        );
     }
 }
 

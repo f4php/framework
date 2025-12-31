@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace F4\Core\Phug\ViteBundleModule;
 
 use InvalidArgumentException;
-use F4\Core\Phug\ViteBundleModule\PhugNodeInjectorInterface;
+use F4\Core\Phug\ViteBundleModule\{PhugNodeInjectorInterface, SriAwareTrait};
+use F4\Loader;
 use Phug\Parser\Node\{AttributeNode, ElementNode};
 use Phug\Parser\NodeInterface;
 
@@ -16,6 +17,7 @@ use function sprintf;
 
 class ViteScriptAsset implements PhugNodeInjectorInterface
 {
+    use SriAwareTrait;
     /**
      * Valid script attributes per HTML spec (excluding global/event attributes)
      */
@@ -37,6 +39,7 @@ class ViteScriptAsset implements PhugNodeInjectorInterface
         protected array $attributes = [
             'type' => 'module',
         ],
+        protected bool|array $withSri = false,
         protected ?NodeInterface $template = null,
     ) {
         if ($this->attributes['src'] ?? false) {
@@ -54,11 +57,14 @@ class ViteScriptAsset implements PhugNodeInjectorInterface
         if ($template) {
             $this->template = clone $template;
         }
+        if ($this->withSri === true) {
+            $this->withSri = [self::DEFAULT_SRI_ALGORITHM];
+        }
     }
     public function injectNode(NodeInterface $containerNode): void
     {
         $node = $this->template ?: new ElementNode()->setName('script');
-        // template overrides all attributes except src
+        // template overrides all attributes except src and integrity
         if(!$this->template) {
             foreach ($this->attributes as $name => $value) {
                 $node->getAttributes()->offsetSet(
@@ -70,9 +76,17 @@ class ViteScriptAsset implements PhugNodeInjectorInterface
         }
         $node->getAttributes()->offsetSet(
             new AttributeNode()
-                ->setName('src')
-                ->setValue(sprintf('"%s"', $this->src)),
+            ->setName('src')
+            ->setValue(sprintf('"%s"', $this->src)),
         );
+        if($this->withSri !== false) {
+            $path = Loader::getPublicPath().$this->src;
+            $node->getAttributes()->offsetSet(
+                new AttributeNode()
+                    ->setName('integrity')
+                    ->setValue(sprintf('"%s"', $this->generateSri($path, $this->withSri))),
+            );
+        }
         $containerNode->appendChild($node);
     }
 }

@@ -1,7 +1,10 @@
 {
     "name": "f4php/framework",
     "description": "F4 is a lightweight web development framework",
-    "keywords": ["f4","framework"],
+    "keywords": [
+        "f4",
+        "framework"
+    ],
     "license": "MIT",
     "autoload": {
         "psr-4": {

@@ -6,8 +6,7 @@ namespace F4\Core\Phug;
 
 use F4\Config;
 // use F4\Core\Phug\FluentResourceModule;
-use F4\Core\Phug\ViteStripResourceTagModule;
-use F4\Core\Phug\ViteBundleModule;
+use F4\Core\Phug\{ViteBundleModule, ViteStripResourceTagModule};
 
 use Phug\Phug;
 use Phug\Component\ComponentExtension;

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace F4\Core\Phug\ViteBundleModule;
 
 use InvalidArgumentException;
-use F4\Core\Phug\ViteBundleModule\PhugNodeInjectorInterface;
+use F4\Core\Phug\ViteBundleModule\{PhugNodeInjectorInterface, SriAwareTrait};
+use F4\Loader;
 use Phug\Parser\Node\{AttributeNode, ElementNode};
 use Phug\Parser\NodeInterface;
 
@@ -16,6 +17,7 @@ use function sprintf;
 
 class ViteLinkAsset implements PhugNodeInjectorInterface
 {
+    use SriAwareTrait;
     /**
      * Valid script attributes per HTML spec (excluding global/event attributes)
      */
@@ -42,6 +44,7 @@ class ViteLinkAsset implements PhugNodeInjectorInterface
         protected array $attributes = [
             'rel' => 'stylesheet',
         ],
+        protected bool|array $withSri = false,
         protected ?NodeInterface $template = null,
     ) {
         if ($this->attributes['href'] ?? false) {
@@ -59,11 +62,14 @@ class ViteLinkAsset implements PhugNodeInjectorInterface
         if ($template) {
             $this->template = clone $template;
         }
+        if ($this->withSri === true) {
+            $this->withSri = [self::DEFAULT_SRI_ALGORITHM];
+        }
     }
     public function injectNode(NodeInterface $containerNode): void
     {
         $node = $this->template ?: new ElementNode()->setName('link');
-        // template overrides all attributes except href
+        // template overrides all attributes except href and integrity
         if(!$this->template) {
             foreach ($this->attributes as $name => $value) {
                 $node->getAttributes()->offsetSet(
@@ -78,6 +84,14 @@ class ViteLinkAsset implements PhugNodeInjectorInterface
                 ->setName('href')
                 ->setValue(sprintf('"%s"', $this->href)),
         );
+        if($this->withSri !== false) {
+            $path = Loader::getPublicPath().$this->href;
+            $node->getAttributes()->offsetSet(
+                new AttributeNode()
+                    ->setName('integrity')
+                    ->setValue(sprintf('"%s"', $this->generateSri($path, $this->withSri))),
+            );
+        }
         $containerNode->appendChild($node);
     }
 }

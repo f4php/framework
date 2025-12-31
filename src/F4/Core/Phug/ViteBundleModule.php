@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace F4\Core\Phug;
 
-use ErrorException;
 use F4\Config;
 use F4\Core\AssetManifestAwareTrait;
 use F4\Core\Phug\ViteBundleModule\{ViteBundle, ViteScriptAsset, ViteLinkAsset};
 use Phug\{AbstractCompilerModule, CompilerEvent};
 use Phug\Compiler\Event\NodeEvent;
 use Phug\Parser\Node\{ConditionalNode, ElementNode};
+use RuntimeException;
 
 use function array_reduce;
 use function array_unique;
+use function explode;
 use function iterator_to_array;
 use function mb_trim;
 
@@ -48,12 +49,19 @@ class ViteBundleModule extends AbstractCompilerModule
                             src: '/@id/__x00__' . self::ENTRY_POINT_NAME_PREFIX . $bundleName,
                         ));
                     } else {
-                        $preload = array_reduce(
-                        array: iterator_to_array($node->getAttributes()),
-                            callback: fn(bool $result, $attribute): bool =>
-                            $result || ($attribute->getName() === 'preload'),
-                            initial: false,
-                        );
+                        $preload = false;
+                        $withSri = false;
+                        foreach(iterator_to_array($node->getAttributes()) as $bundleAttribute) {
+                            if ($bundleAttribute->getName() === 'preload') {
+                                $preload = true;
+                            }
+                            if ($bundleAttribute->getName() === 'with-sri') {
+                                $withSri = explode(
+                                    separator: ' ', 
+                                    string: mb_trim((string)$bundleAttribute->getValue(), '"')
+                                ) ?: true;
+                            }
+                        }
                         $scriptNodeTemplate = null;
                         $linkNodeTemplate = null;
                         foreach ($node->getChildren() as $childNode) {
@@ -74,11 +82,13 @@ class ViteBundleModule extends AbstractCompilerModule
                                         'as' => 'script',
                                         'crossorigin' => 'anonymous',
                                     ],
+                                    withSri: $withSri,
                                 ));
                             }
                             $viteBundle->addAsset(new ViteScriptAsset(
                                 src: $scriptSrc,
                                 template: $scriptNodeTemplate,
+                                withSri: $withSri,
                             ));
                         }
                         if ($linkHrefs = self::collectStylesheetHrefs(entryPoint: self::ENTRY_POINT_NAME_PREFIX . $bundleName)) {
@@ -90,11 +100,13 @@ class ViteBundleModule extends AbstractCompilerModule
                                             'rel' => 'preload',
                                             'as' => 'style',
                                         ],
+                                        withSri: $withSri,
                                     ));
                                 }
                                 $viteBundle->addAsset(new ViteLinkAsset(
                                     href: $linkHref,
                                     template: $linkNodeTemplate,
+                                    withSri: $withSri,
                                 ));
                             }
                         }
@@ -102,6 +114,7 @@ class ViteBundleModule extends AbstractCompilerModule
                             $viteBundle->addAsset(new ViteLinkAsset(
                                 href: $linkHref,
                                 template: $linkNodeTemplate,
+                                withSri: $withSri,
                             ));
                             $this->fallbackCssBundleAdded = true;
                         }
@@ -115,7 +128,7 @@ class ViteBundleModule extends AbstractCompilerModule
     protected function collectStylesheetHrefs(string $entryPoint, int $recursionLock = 64): array
     {
         if ($recursionLock <= 0) {
-            throw new ErrorException('Recursion too deep when collecting stylesheet data from vite manifest file');
+            throw new RuntimeException('Recursion too deep when collecting stylesheet data from vite manifest file');
         }
         $references = [
             $entryPoint => (array) self::getManifestData(entryPoint: $entryPoint, property: 'css')

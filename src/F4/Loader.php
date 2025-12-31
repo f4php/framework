@@ -34,6 +34,7 @@ class Loader
     public const array DEFAULT_ENVIRONMENTS = ['local', 'default'];
 
     private static string $path = __DIR__ . '/../../'; // project root, should be updated with application project root via ::setPath()
+    private static string $publicPath = __DIR__ . '/../../public'; // project public root, should be updated with application project root via ::setPublicPath()
     private static string $assetPath = '/assets/';
     private static string $currentEnvironment;
 
@@ -42,9 +43,18 @@ class Loader
         $path .= mb_substr(string: $path, start: -1) === '/' ? '' : '/';
         self::$path = $path;
     }
+    public static function setPublicPath(string $publicPath): void
+    {
+        $publicPath .= mb_substr(string: $publicPath, start: -1) === '/' ? '' : '/';
+        self::$publicPath = $publicPath;
+    }
     public static function getPath(): string
     {
         return self::$path;
+    }
+    public static function getPublicPath(): string
+    {
+        return self::$publicPath;
     }
     public static function setAssetPath(string $path): void
     {

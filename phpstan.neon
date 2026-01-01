@@ -4,6 +4,12 @@ parameters:
             message: '#^Call to an undefined static method Phug\\Phug::setOptions\(\)#'
             identifier: staticMethod.notFound
         -
+            message: '#Call to an undefined method Phug\\Parser\\NodeInterface::getAttributes\(\)#'
+            identifier: method.notFound
+            paths:
+              - src/F4/Core/Phug/ViteBundleModule/ViteLinkAsset.php
+              - src/F4/Core/Phug/ViteBundleModule/ViteScriptAsset.php
+        -
             message: '#^Attribute class F4\\Tests\\Core\\NotAClassName does not exist#'
             identifier: attribute.notFound
         -

@@ -13,7 +13,7 @@ use function preg_match;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class RegExp implements ValidatorAttributeInterface
 {
-    public function __construct(protected string $pattern, protected int|string $group, protected int $flags = 0) {}
+    public function __construct(protected readonly string $pattern, protected readonly int|string $group, protected readonly int $flags = 0) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (preg_match(pattern: $this->pattern, subject: $value, matches: $matches, flags: $this->flags)) {

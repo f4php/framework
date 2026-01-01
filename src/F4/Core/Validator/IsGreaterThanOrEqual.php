@@ -14,7 +14,7 @@ use function is_numeric;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsGreaterThanOrEqual implements ValidatorAttributeInterface
 {
-    public function __construct(protected int $target) {}
+    public function __construct(protected readonly int $target) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (is_numeric(value: $value) && ($value >= $this->target)) {

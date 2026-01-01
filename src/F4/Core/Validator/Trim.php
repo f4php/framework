@@ -13,7 +13,7 @@ use function mb_trim;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Trim implements ValidatorAttributeInterface
 {
-    public function __construct(protected ?string $characters = null) {}
+    public function __construct(protected readonly ?string $characters = null) {}
 
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {

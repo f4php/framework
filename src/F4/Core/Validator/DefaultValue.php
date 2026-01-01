@@ -11,7 +11,7 @@ use F4\Core\Validator\ValidatorAttributeInterface;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class DefaultValue implements ValidatorAttributeInterface
 {
-    public function __construct(protected mixed $defaultValue) {}
+    public function __construct(protected readonly mixed $defaultValue) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return $value ?? $this->defaultValue;

@@ -14,7 +14,7 @@ use function filter_var;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class IsUrl implements ValidatorAttributeInterface
 {
-    public function __construct(protected array|int $options = 0) {}
+    public function __construct(protected readonly array|int $options = 0) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (filter_var(value: $value, filter: FILTER_VALIDATE_URL, options: $this->options)) {

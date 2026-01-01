@@ -14,7 +14,7 @@ use function is_callable;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Custom implements ValidatorAttributeInterface
 {
-    protected mixed $handler;
+    protected readonly mixed $handler;
     public function __construct(mixed $handler) {
         $this->handler = is_callable($handler) ? $handler : throw new InvalidArgumentException('Only callable arguments are supported');
     }

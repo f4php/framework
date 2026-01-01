@@ -13,7 +13,7 @@ use function in_array;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class OneOf implements ValidatorAttributeInterface
 {
-    public function __construct(protected array $values) {}
+    public function __construct(protected readonly array $values) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (in_array(needle: $value, haystack: $this->values)) {

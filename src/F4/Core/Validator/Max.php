@@ -13,7 +13,7 @@ use function min;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Max implements ValidatorAttributeInterface
 {
-    public function __construct(protected int $max) {}
+    public function __construct(protected readonly int $max) {}
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return min($value, $this->max);

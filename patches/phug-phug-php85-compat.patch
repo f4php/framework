@@ -1,0 +1,624 @@
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/ElementNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/ElementNodeCompiler.php
+index e342b0e..7fadab9 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/ElementNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/ElementNodeCompiler.php
+@@ -14,7 +14,7 @@ use SplObjectStorage;
+ 
+ class ElementNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+@@ -31,7 +31,7 @@ class ElementNodeCompiler extends AbstractNodeCompiler
+ 
+         $attributes = new SplObjectStorage();
+         foreach ($node->getAttributes() as $attribute) {
+-            $attributes->attach($compiler->compileNode($attribute, $parent));
++            $attributes->offsetSet($compiler->compileNode($attribute, $parent));
+         }
+         $markup = new MarkupElement($name, $node->isAutoClosed(), $attributes, $node);
+         foreach ($node->getAssignments() as $assignment) {
+diff --git a/src/Phug/Util/Util/AttributesStorage.php b/src/Phug/Util/Util/AttributesStorage.php
+index dc85b43..e68f344 100644
+--- a/src/Phug/Util/Util/AttributesStorage.php
++++ b/src/Phug/Util/Util/AttributesStorage.php
+@@ -25,7 +25,7 @@ class AttributesStorage extends SplObjectStorage
+             $object->setOrder($this->holder->getNextAttributeIndex());
+         }
+ 
+-        parent::attach($object, $info);
++        parent::offsetSet($object, $info);
+     }
+ 
+     #[ReturnTypeWillChange]
+diff --git a/src/Phug/Compiler/Compiler/AbstractNodeCompiler.php b/src/Phug/Compiler/Compiler/AbstractNodeCompiler.php
+index 44b69d5..17ca62a 100644
+--- a/src/Phug/Compiler/Compiler/AbstractNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/AbstractNodeCompiler.php
+@@ -41,7 +41,7 @@ abstract class AbstractNodeCompiler implements NodeCompilerInterface
+      *
+      * @return ElementInterface[]
+      */
+-    public function getCompiledNodeList($nodeList, ElementInterface $element = null)
++    public function getCompiledNodeList($nodeList, ?ElementInterface $element = null)
+     {
+         return array_values(array_filter(array_map(
+             function (NodeInterface $childNode) use ($element) {
+@@ -59,7 +59,7 @@ abstract class AbstractNodeCompiler implements NodeCompilerInterface
+      *
+      * @return ElementInterface[]
+      */
+-    public function getCompiledChildren(NodeInterface $node, ElementInterface $element = null)
++    public function getCompiledChildren(NodeInterface $node, ?ElementInterface $element = null)
+     {
+         return $this->getCompiledNodeList($node->getChildren(), $element);
+     }
+@@ -71,7 +71,7 @@ abstract class AbstractNodeCompiler implements NodeCompilerInterface
+      * @param NodeInterface         $node
+      * @param ElementInterface|null $element
+      */
+-    public function compileNodeChildren(NodeInterface $node, ElementInterface $element = null)
++    public function compileNodeChildren(NodeInterface $node, ?ElementInterface $element = null)
+     {
+         $children = array_filter($node->getChildren());
+         array_walk($children, function (NodeInterface $childNode) use ($element) {
+@@ -109,7 +109,7 @@ abstract class AbstractNodeCompiler implements NodeCompilerInterface
+         }, $children));
+     }
+ 
+-    private function compileParserNode(NodeInterface $node, ElementInterface $element = null)
++    private function compileParserNode(NodeInterface $node, ?ElementInterface $element = null)
+     {
+         return $node instanceof ParserNodeInterface
+             ? $this->getCompiler()->compileNode($node, $element)
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentListNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentListNodeCompiler.php
+index 0c2796b..422abe2 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentListNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentListNodeCompiler.php
+@@ -9,7 +9,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class AssignmentListNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof AssignmentListNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentNodeCompiler.php
+index 74df639..df48687 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/AssignmentNodeCompiler.php
+@@ -13,7 +13,7 @@ use SplObjectStorage;
+ 
+ class AssignmentNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof AssignmentNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/AttributeListNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/AttributeListNodeCompiler.php
+index 3ac8869..3e900d2 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/AttributeListNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/AttributeListNodeCompiler.php
+@@ -9,7 +9,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class AttributeListNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof AttributeListNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/AttributeNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/AttributeNodeCompiler.php
+index 896c914..1b560ef 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/AttributeNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/AttributeNodeCompiler.php
+@@ -57,7 +57,7 @@ class AttributeNodeCompiler extends AbstractNodeCompiler
+         return $value;
+     }
+ 
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof AttributeNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/BlockNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/BlockNodeCompiler.php
+index b841d51..dbf9774 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/BlockNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/BlockNodeCompiler.php
+@@ -12,7 +12,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class BlockNodeCompiler extends AbstractNodeCompiler
+ {
+-    protected function compileAnonymousBlock(BlockNode $node, ElementInterface $parent = null)
++    protected function compileAnonymousBlock(BlockNode $node, ?ElementInterface $parent = null)
+     {
+         $mixin = $node;
+         while ($mixin->hasParent() && !($mixin instanceof MixinNode)) {
+@@ -38,7 +38,7 @@ class BlockNodeCompiler extends AbstractNodeCompiler
+         return false;
+     }
+ 
+-    protected function compileNamedBlock($name, BlockNode $node, ElementInterface $parent = null)
++    protected function compileNamedBlock($name, BlockNode $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $layout = $compiler->getLayout();
+@@ -63,7 +63,7 @@ class BlockNodeCompiler extends AbstractNodeCompiler
+         );
+     }
+ 
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof BlockNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/CaseNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/CaseNodeCompiler.php
+index 5ea95d9..0d6f5a1 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/CaseNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/CaseNodeCompiler.php
+@@ -8,7 +8,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class CaseNodeCompiler extends AbstractStatementNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof CaseNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/CodeNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/CodeNodeCompiler.php
+index ad3803e..c2ca101 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/CodeNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/CodeNodeCompiler.php
+@@ -12,7 +12,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class CodeNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof CodeNode,
+@@ -42,7 +42,7 @@ class CodeNodeCompiler extends AbstractNodeCompiler
+         return $code;
+     }
+ 
+-    private function getCodeElement(CodeNode $node, array $texts, array $children, ElementInterface $parent = null)
++    private function getCodeElement(CodeNode $node, array $texts, array $children, ?ElementInterface $parent = null)
+     {
+         if (count($texts) === count($children)) {
+             return new CodeElement($this->getTextChildren($node), $node);
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/CommentNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/CommentNodeCompiler.php
+index 8c523ca..3308b24 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/CommentNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/CommentNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class CommentNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof CommentNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/ConditionalNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/ConditionalNodeCompiler.php
+index 03b8c72..680e0df 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/ConditionalNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/ConditionalNodeCompiler.php
+@@ -9,7 +9,7 @@ use Phug\Util\TransformableInterface;
+ 
+ class ConditionalNodeCompiler extends AbstractStatementNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+ 
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/DoNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/DoNodeCompiler.php
+index 96a5002..0fdd394 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/DoNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/DoNodeCompiler.php
+@@ -8,7 +8,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class DoNodeCompiler extends AbstractStatementNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof DoNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/DoctypeNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/DoctypeNodeCompiler.php
+index 20cf422..bfa63e1 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/DoctypeNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/DoctypeNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class DoctypeNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/DocumentNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/DocumentNodeCompiler.php
+index 5ce327d..429bcc7 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/DocumentNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/DocumentNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class DocumentNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof DocumentNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/EachNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/EachNodeCompiler.php
+index 711340b..6becd93 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/EachNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/EachNodeCompiler.php
+@@ -76,7 +76,7 @@ class EachNodeCompiler extends AbstractStatementNodeCompiler
+         return $loop;
+     }
+ 
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof EachNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/ExpressionNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/ExpressionNodeCompiler.php
+index 5f0ccd7..ba0f175 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/ExpressionNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/ExpressionNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class ExpressionNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof ExpressionNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/FilterNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/FilterNodeCompiler.php
+index 28168aa..daa61b0 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/FilterNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/FilterNodeCompiler.php
+@@ -40,7 +40,7 @@ class FilterNodeCompiler extends AbstractNodeCompiler
+         }, $children));
+     }
+ 
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/ForNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/ForNodeCompiler.php
+index cd2a077..3511369 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/ForNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/ForNodeCompiler.php
+@@ -8,7 +8,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class ForNodeCompiler extends EachNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof ForNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/ImportNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/ImportNodeCompiler.php
+index 7043438..7d53017 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/ImportNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/ImportNodeCompiler.php
+@@ -51,7 +51,7 @@ class ImportNodeCompiler extends AbstractNodeCompiler
+      *
+      * @return null|ElementInterface
+      */
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/KeywordNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/KeywordNodeCompiler.php
+index 2abc3bf..09daa8e 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/KeywordNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/KeywordNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class KeywordNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof KeywordNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/MixinCallNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/MixinCallNodeCompiler.php
+index e59c085..1aa123e 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/MixinCallNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/MixinCallNodeCompiler.php
+@@ -14,7 +14,7 @@ use Phug\Parser\NodeInterface as ParserNodeInterface;
+ 
+ class MixinCallNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(ParserNodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(ParserNodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/MixinNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/MixinNodeCompiler.php
+index 0bde5c7..d5e15be 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/MixinNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/MixinNodeCompiler.php
+@@ -13,7 +13,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class MixinNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/TextNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/TextNodeCompiler.php
+index 3277761..4cc4277 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/TextNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/TextNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class TextNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof TextNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/VariableNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/VariableNodeCompiler.php
+index e8dde98..c673f88 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/VariableNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/VariableNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class VariableNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/WhenNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/WhenNodeCompiler.php
+index edffac6..1c998bf 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/WhenNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/WhenNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class WhenNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $this->getCompiler()->assert(
+             $node instanceof WhenNode,
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/WhileNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/WhileNodeCompiler.php
+index 7e949cf..95ccc02 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/WhileNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/WhileNodeCompiler.php
+@@ -9,7 +9,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class WhileNodeCompiler extends AbstractStatementNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompiler/YieldNodeCompiler.php b/src/Phug/Compiler/Compiler/NodeCompiler/YieldNodeCompiler.php
+index b9e102c..97fa9f2 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompiler/YieldNodeCompiler.php
++++ b/src/Phug/Compiler/Compiler/NodeCompiler/YieldNodeCompiler.php
+@@ -10,7 +10,7 @@ use Phug\Parser\NodeInterface;
+ 
+ class YieldNodeCompiler extends AbstractNodeCompiler
+ {
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $compiler = $this->getCompiler();
+         $compiler->assert(
+diff --git a/src/Phug/Compiler/Compiler/NodeCompilerInterface.php b/src/Phug/Compiler/Compiler/NodeCompilerInterface.php
+index 1522f81..02e15b4 100644
+--- a/src/Phug/Compiler/Compiler/NodeCompilerInterface.php
++++ b/src/Phug/Compiler/Compiler/NodeCompilerInterface.php
+@@ -16,7 +16,7 @@ interface NodeCompilerInterface
+      *
+      * @return array
+      */
+-    public function getCompiledNodeList($nodeList, ElementInterface $parent = null);
++    public function getCompiledNodeList($nodeList, ?ElementInterface $parent = null);
+ 
+     /**
+      * @param NodeInterface    $node
+@@ -24,7 +24,7 @@ interface NodeCompilerInterface
+      *
+      * @return array
+      */
+-    public function getCompiledChildren(NodeInterface $node, ElementInterface $parent = null);
++    public function getCompiledChildren(NodeInterface $node, ?ElementInterface $parent = null);
+ 
+     /**
+      * @param NodeInterface         $node
+@@ -32,7 +32,7 @@ interface NodeCompilerInterface
+      *
+      * @return mixed
+      */
+-    public function compileNodeChildren(NodeInterface $node, ElementInterface $element = null);
++    public function compileNodeChildren(NodeInterface $node, ?ElementInterface $element = null);
+ 
+     /**
+      * @param ParserNodeInterface $node
+@@ -40,7 +40,7 @@ interface NodeCompilerInterface
+      *
+      * @return null|BlockElement|ElementInterface
+      */
+-    public function compileNode(ParserNodeInterface $node, ElementInterface $parent = null);
++    public function compileNode(ParserNodeInterface $node, ?ElementInterface $parent = null);
+ 
+     /**
+      * @return CompilerInterface
+diff --git a/src/Phug/Compiler/Compiler.php b/src/Phug/Compiler/Compiler.php
+index 2a3f8ec..a998d08 100644
+--- a/src/Phug/Compiler/Compiler.php
++++ b/src/Phug/Compiler/Compiler.php
+@@ -499,7 +499,7 @@ class Compiler implements ModuleContainerInterface, CompilerInterface, WithUpper
+      *
+      * @return ElementInterface
+      */
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null)
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null)
+     {
+         $nodeEvent = new NodeEvent($node);
+         $this->trigger($nodeEvent);
+@@ -537,7 +537,7 @@ class Compiler implements ModuleContainerInterface, CompilerInterface, WithUpper
+      * @param BlockElement $block
+      * @param array        $children
+      */
+-    public function replaceBlock(BlockElement $block, array $children = null)
++    public function replaceBlock(BlockElement $block, ?array $children = null)
+     {
+         if ($parent = $block->getParent()) {
+             foreach (array_reverse($children ?: $block->getChildren()) as $child) {
+diff --git a/src/Phug/Compiler/CompilerInterface.php b/src/Phug/Compiler/CompilerInterface.php
+index ff36a9b..3d5335b 100644
+--- a/src/Phug/Compiler/CompilerInterface.php
++++ b/src/Phug/Compiler/CompilerInterface.php
+@@ -92,7 +92,7 @@ interface CompilerInterface extends ModuleContainerInterface
+      * @param BlockElement $block
+      * @param array        $children
+      */
+-    public function replaceBlock(BlockElement $block, array $children = null);
++    public function replaceBlock(BlockElement $block, ?array $children = null);
+ 
+     /**
+      * @throws CompilerException
+@@ -133,7 +133,7 @@ interface CompilerInterface extends ModuleContainerInterface
+      *
+      * @return null|ElementInterface
+      */
+-    public function compileNode(NodeInterface $node, ElementInterface $parent = null);
++    public function compileNode(NodeInterface $node, ?ElementInterface $parent = null);
+ 
+     /**
+      * @param string $input
+diff --git a/src/Phug/Formatter/Formatter/AbstractFormat.php b/src/Phug/Formatter/Formatter/AbstractFormat.php
+index d49365c..6ce9ae0 100644
+--- a/src/Phug/Formatter/Formatter/AbstractFormat.php
++++ b/src/Phug/Formatter/Formatter/AbstractFormat.php
+@@ -77,7 +77,7 @@ abstract class AbstractFormat implements FormatInterface, OptionInterface
+      */
+     private $debugCommentPattern = null;
+ 
+-    public function __construct(Formatter $formatter = null)
++    public function __construct(?Formatter $formatter = null)
+     {
+         $patterns = [
+             'class_attribute'        => static::CLASS_ATTRIBUTE,
+@@ -1003,7 +1003,7 @@ abstract class AbstractFormat implements FormatInterface, OptionInterface
+         return $this->formatElementChildren($document, 0);
+     }
+ 
+-    protected function throwException($message, ElementInterface $element = null)
++    protected function throwException($message, ?ElementInterface $element = null)
+     {
+         $location = ($node = $element->getOriginNode()) && ($loc = $node->getSourceLocation())
+             ? clone $loc
+diff --git a/src/Phug/Formatter/Formatter/Format/HtmlFormat.php b/src/Phug/Formatter/Formatter/Format/HtmlFormat.php
+index a858862..37d471d 100644
+--- a/src/Phug/Formatter/Formatter/Format/HtmlFormat.php
++++ b/src/Phug/Formatter/Formatter/Format/HtmlFormat.php
+@@ -11,7 +11,7 @@ class HtmlFormat extends XhtmlFormat
+     const EXPLICIT_CLOSING_TAG = '<%s/>';
+     const BOOLEAN_ATTRIBUTE_PATTERN = ' %s';
+ 
+-    public function __construct(Formatter $formatter = null)
++    public function __construct(?Formatter $formatter = null)
+     {
+         parent::__construct($formatter);
+ 
+diff --git a/src/Phug/Formatter/Formatter/Format/XhtmlFormat.php b/src/Phug/Formatter/Formatter/Format/XhtmlFormat.php
+index d51e515..d5d854f 100644
+--- a/src/Phug/Formatter/Formatter/Format/XhtmlFormat.php
++++ b/src/Phug/Formatter/Formatter/Format/XhtmlFormat.php
+@@ -13,7 +13,7 @@ abstract class XhtmlFormat extends XmlFormat
+     const DOCTYPE_LANGUAGE = 'html';
+     const SELF_CLOSING_TAG = '<%s />';
+ 
+-    public function __construct(Formatter $formatter = null)
++    public function __construct(?Formatter $formatter = null)
+     {
+         $this->setOptionsRecursive([
+             'white_space_sensitive_tags' => [
+diff --git a/src/Phug/Formatter/Formatter/Format/XmlFormat.php b/src/Phug/Formatter/Formatter/Format/XmlFormat.php
+index 757ade8..4a0c4e6 100644
+--- a/src/Phug/Formatter/Formatter/Format/XmlFormat.php
++++ b/src/Phug/Formatter/Formatter/Format/XmlFormat.php
+@@ -37,7 +37,7 @@ class XmlFormat extends AbstractFormat
+     const BOOLEAN_ATTRIBUTE_PATTERN = ' %s="%s"';
+     const BUFFER_VARIABLE = '$__value';
+ 
+-    public function __construct(Formatter $formatter = null)
++    public function __construct(?Formatter $formatter = null)
+     {
+         parent::__construct($formatter);
+ 
+diff --git a/src/Phug/Formatter/Formatter/FormatInterface.php b/src/Phug/Formatter/Formatter/FormatInterface.php
+index bc0160f..24c5661 100644
+--- a/src/Phug/Formatter/Formatter/FormatInterface.php
++++ b/src/Phug/Formatter/Formatter/FormatInterface.php
+@@ -11,7 +11,7 @@ interface FormatInterface
+ {
+     const DEFAULT_VARIABLES_VARIABLE_NAME = 'pug_vars';
+ 
+-    public function __construct(Formatter $formatter = null);
++    public function __construct(?Formatter $formatter = null);
+ 
+     public function format($element);
+ 
+diff --git a/src/Phug/Formatter/Formatter/Partial/PatternTrait.php b/src/Phug/Formatter/Formatter/Partial/PatternTrait.php
+index 0ee4d2c..2cbffad 100644
+--- a/src/Phug/Formatter/Formatter/Partial/PatternTrait.php
++++ b/src/Phug/Formatter/Formatter/Partial/PatternTrait.php
+@@ -98,7 +98,7 @@ trait PatternTrait
+      *
+      * @return string
+      */
+-    public function exportHelper($name, array $arguments = null)
++    public function exportHelper($name, ?array $arguments = null)
+     {
+         $this->requireHelper($name);
+ 
+diff --git a/src/Phug/Phug/Phug/Partial/PluginEnablerTrait.php b/src/Phug/Phug/Phug/Partial/PluginEnablerTrait.php
+index 3974c42..c611d37 100644
+--- a/src/Phug/Phug/Phug/Partial/PluginEnablerTrait.php
++++ b/src/Phug/Phug/Phug/Partial/PluginEnablerTrait.php
+@@ -15,7 +15,7 @@ trait PluginEnablerTrait
+      *
+      * @throws PhugException
+      */
+-    public static function enable(Renderer $renderer = null)
++    public static function enable(?Renderer $renderer = null)
+     {
+         if ($renderer) {
+             static::activateOnRenderer($renderer);
+diff --git a/src/Phug/Util/Util/SandBox.php b/src/Phug/Util/Util/SandBox.php
+index 2ae952a..5ab5e69 100644
+--- a/src/Phug/Util/Util/SandBox.php
++++ b/src/Phug/Util/Util/SandBox.php
+@@ -23,7 +23,7 @@ class SandBox
+      */
+     private $throwable;
+ 
+-    public function __construct(callable $action, callable $errorInterceptor = null)
++    public function __construct(callable $action, ?callable $errorInterceptor = null)
+     {
+         set_error_handler($errorInterceptor ?: function ($number, $message, $file, $line) {
+             if (error_reporting() & $number) {

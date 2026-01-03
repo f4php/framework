@@ -1,0 +1,29 @@
+{
+    "_hash": "2d2a738b88fc63f7389e57110b2b828891e97641b71acac6bb72853d6719e867",
+    "patches": {
+        "phug/phug": [
+            {
+                "package": "phug/phug",
+                "description": "PHP 8.5 compatibility fixes",
+                "url": "https://raw.githubusercontent.com/f4php/framework/refs/heads/main/patches/phug-phug-php85-compat.patch",
+                "sha256": "b6d08c6b666f47af054bd912c9ff717ef9f91ed857dfb3b5b359d0275349ea37",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "phug/component": [
+            {
+                "package": "phug/component",
+                "description": "PHP 8.5 compatibility fixes",
+                "url": "https://raw.githubusercontent.com/f4php/framework/refs/heads/main/patches/phug-component-php85-compat.patch",
+                "sha256": "fea43de72c2cfb6d5564a4da036e12a7a85b40788623db82c1aecfc977670a5a",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}

@@ -25,7 +25,8 @@
     "config": {
         "optimize-autoloader": true,
         "allow-plugins": {
-            "nodejs-php-fallback/nodejs-php-fallback": true
+            "nodejs-php-fallback/nodejs-php-fallback": true,
+            "cweagans/composer-patches": true
         }
     },
     "scripts": {
@@ -37,8 +38,8 @@
         "ext-mbstring": "*",
         "ext-pgsql": "*",
         "guzzlehttp/guzzle": "^7.9",
-        "phug/phug": "^1.13",
-        "phug/component": "^1.1",
+        "phug/phug": "1.13.0",
+        "phug/component": "1.1.4",
         "php": "^8.4.1",
         "cekurte/environment": "^0.3.0",
         "ralouphie/getallheaders": "^3.0",
@@ -49,11 +50,22 @@
         "spatie/backtrace": "^1.7",
         "jrmajor/fluent": "^1.1",
         "f4php/db": "^0.3",
-        "f4php/hookmanager": "^0.0.2"
+        "f4php/hookmanager": "^0.0.2",
+        "cweagans/composer-patches": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^12",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0"
+    },
+    "extra": {
+      "patches": {
+        "phug/phug": {
+          "PHP 8.5 compatibility fixes": "https://raw.githubusercontent.com/f4php/framework/refs/heads/main/patches/phug-phug-php85-compat.patch"
+        },
+        "phug/component": {
+          "PHP 8.5 compatibility fixes": "https://raw.githubusercontent.com/f4php/framework/refs/heads/main/patches/phug-component-php85-compat.patch"
+        }
+      }
     }
 }

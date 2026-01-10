@@ -44,6 +44,7 @@ use F4\Core\Validator\SanitizedString;
 use F4\Core\Validator\SanitizedUrl;
 use F4\Core\Validator\SanitizedUuid;
 use F4\Core\Validator\Trim;
+use F4\Core\Validator\TruncateAt;
 use F4\Core\Validator\UnsafeString;
 
 use ErrorException;
@@ -828,5 +829,40 @@ final class ValidatorTest extends TestCase
             ],
         );
     }
-
+    public function testTruncateAt(): void
+    {
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (
+                #[TruncateAt(2)]
+                string $string1,
+                #[TruncateAt(4)]
+                string $string2,
+                #[TruncateAt(0)]
+                string $string3,
+            ): void {},
+            [
+                'string1' => 'abac',
+                'string2' => 'cd',
+                'string3' => 'efg',
+            ],
+        );
+        $this->assertSame('ab', $value1['string1']);
+        $this->assertSame('cd', $value1['string2']);
+        $this->assertSame('', $value1['string3']);
+    }
+    public function testInvalidTruncateAt(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $validator = new Validator();
+        $value1 = $validator->getFilteredArguments(
+            function (
+                #[TruncateAt(-2)]
+                string $string1,
+            ): void {},
+            [
+                'string1' => 'abac',
+            ],
+        );
+    }
 }

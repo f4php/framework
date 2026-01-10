@@ -17,7 +17,10 @@ class Trim implements ValidatorAttributeInterface
 
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
-        return mb_trim($value, $this->characters);
+        return mb_trim(
+            string: $value, 
+            characters: $this->characters
+        );
     }
 
 }

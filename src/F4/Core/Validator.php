@@ -40,7 +40,7 @@ class Validator
     public function getFilteredArguments(Closure $handler, mixed $arguments): mixed
     {
         $filteredArguments = [];
-        if ($parameters = (new ReflectionFunction(function: $handler))->getParameters()) {
+        if ($parameters = new ReflectionFunction(function: $handler)->getParameters()) {
             foreach ($parameters as $parameter) {
                 $name = $parameter->getName();
                 if ($parameter->isVariadic()) {

@@ -13,6 +13,6 @@ class UnsafeString implements ValidatorAttributeInterface
 {
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
-        return $value;
+        return (string) $value;
     }
 }

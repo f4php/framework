@@ -56,6 +56,10 @@ class TemplateRenderer
             Optimizer::call('displayFile', [$file, $args]);
         }
     }
+    public function displayString(string $string, array $args = []): void
+    {
+        Phug::display(input: $string, parameters: $args);
+    }
     public static function getPaths(?array $paths = []): array
     {
         $paths = (array) (Config::TEMPLATE_RELATIVE_PATHS ? (array) $paths : []);
@@ -73,6 +77,17 @@ class TemplateRenderer
             ],
             initial: [],
         );
+    }
+    public function renderFile(string $file, array $args = []): string
+    {
+        return match(Config::DEBUG_MODE === true) {
+            true => Phug::renderFile(path: $file, parameters: $args),
+            default => Optimizer::call('renderFile', [$file, $args]),
+        };
+    }
+    public function renderString(string $string, array $args = []): string
+    {
+        return Phug::render(input: $string, parameters: $args);
     }
 }
 

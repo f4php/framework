@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-
 use Composer\InstalledVersions;
 
 use F4\Config;
@@ -27,7 +26,6 @@ use Closure;
 use ErrorException;
 use ReflectionFunction;
 
-use function array_keys;
 use function array_map;
 use function array_slice;
 use function count;

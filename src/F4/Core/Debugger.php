@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
+
 use Composer\InstalledVersions;
 
 use F4\Config;
@@ -15,6 +16,7 @@ use F4\Core\LocalizerInterface;
 use F4\Core\RequestInterface;
 use F4\Core\ResponseInterface;
 use F4\Core\MiddlewareInterface;
+use F4\Core\SensitiveParameterAwareTrait;
 
 use F4\Core\Debugger\ExportResult;
 use F4\Core\Debugger\BacktraceResult;
@@ -25,23 +27,27 @@ use Closure;
 use ErrorException;
 use ReflectionFunction;
 
+use function array_keys;
 use function array_map;
 use function array_slice;
+use function count;
 use function debug_backtrace;
 use function file_get_contents;
+use function header_remove;
 use function header;
 use function headers_list;
-use function header_remove;
 use function mb_split;
 use function ob_get_clean;
 use function ob_start;
 use function php_sapi_name;
 use function php_uname;
 use function phpversion;
+use function realpath;
 use function sprintf;
 
 class Debugger implements DebuggerInterface
 {
+    use SensitiveParameterAwareTrait;
     protected LocalizerInterface $localizer;
     protected RequestInterface $request;
     protected ResponseInterface $response;
@@ -171,19 +177,21 @@ class Debugger implements DebuggerInterface
             throw new ErrorException('CLI mode debugger is not yet implemented');
         }
         $data = [
-            'config' => ExportResult::fromVariable(new Config())->toArray(),
+            'config' => ExportResult::fromVariable($this->getClassConstantsWithoutSensitive(className: Config::class, replaceWith: '[sensitive parameter]'))->toArray(),
             // 'hooks' => ExportResult::fromVariable(HookManager::getHooks())->toArray(),
             'localizer' => [
                 'locale' => $this->localizer->getLocale(),
                 'resources' => $this->localizer->getResources(),
             ],
-            'log' => array_map(function ($entry) {
-                return [
+            'log' => array_map(
+                callback: fn (array $entry): array =>
+                [
                     'description' => $entry['description'],
                     'trace' => $entry['trace'],
                     'value' => ExportResult::fromVariable($entry['value'])->toArray()
-                ];
-            }, $this->logEntries),
+                ],
+                array: $this->logEntries,
+            ),
             'profiler' => Profiler::getSnapshots(),
             'project' => [
                 'root' => realpath(Loader::getPath()),
@@ -251,10 +259,10 @@ class Debugger implements DebuggerInterface
         header(sprintf(
             '%s: %s',
             'Content-Type',
-            "text/html; charset=" . Config::RESPONSE_CHARSET,
+            sprintf("text/html; charset=%s", Config::RESPONSE_CHARSET),
         ), true, 200);
         $pugRenderer = new TemplateRenderer();
-        $pugRenderer->displayFile(__DIR__ . '/../../../templates/debugger/debugger.pug', $data);
+        $pugRenderer->displayFile(realpath(__DIR__ . '/../../../templates/debugger/debugger.pug'), $data);
         return true;
     }
 

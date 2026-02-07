@@ -96,7 +96,7 @@ abstract class AbstractConfig
     public const bool SESSION_ENABLED = true;
     public const string SESSION_COOKIE_NAME = 'F4_SESSION_ID';
     public const ?string SESSION_DOMAIN = null;
-    public const bool SESSION_HTTP_ONLY = false;
+    public const bool SESSION_HTTP_ONLY = true;
     public const int SESSION_LIFETIME = 0;
     public const string SESSION_PATH = '/';
     public const string SESSION_SAME_SITE = 'Strict';

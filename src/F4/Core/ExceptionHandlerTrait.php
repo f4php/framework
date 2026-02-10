@@ -13,10 +13,9 @@ use function is_subclass_of;
 trait ExceptionHandlerTrait
 {
     protected array $exceptionHandlers = [];
-
     public function addExceptionHandler(string $exceptionClassName, callable $exceptionHandler): static
     {
-        if (!is_subclass_of(object_or_class: $exceptionClassName, class: Throwable::class)) {
+        if (!is_subclass_of(object_or_class: $exceptionClassName, class: Throwable::class, allow_string: true)) {
             throw new InvalidArgumentException(message: "{$exceptionClassName} is not throwable");
         }
         if (isset($this->exceptionHandlers[$exceptionClassName])) {
@@ -24,6 +23,13 @@ trait ExceptionHandlerTrait
         }
         $this->exceptionHandlers[$exceptionClassName] = $exceptionHandler(...);
         return $this;
+    }
+    public function getExceptionHandlers(?string $exceptionClass = null): array
+    {
+        return match (null !== $exceptionClass) {
+            true => $this->exceptionHandlers[$exceptionClass] ?? [],
+            default => $this->exceptionHandlers,
+        };
     }
     public function on(string $exceptionClassName, callable $exceptionHandler): static
     {
@@ -39,12 +45,5 @@ trait ExceptionHandlerTrait
             }
         }
         throw $exception;
-    }
-    public function getExceptionHandlers(?string $exceptionClass = null): array
-    {
-        return match (null !== $exceptionClass) {
-            true => $this->exceptionHandlers[$exceptionClass] ?? null,
-            default => $this->exceptionHandlers
-        };
     }
 }

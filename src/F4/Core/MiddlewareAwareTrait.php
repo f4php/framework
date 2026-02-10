@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use InvalidArgumentException;
+use RuntimeException;
 use F4\Core\RequestInterface;
 use F4\Core\RequestMiddleware;
 use F4\Core\ResponseInterface;
@@ -47,10 +48,16 @@ trait MiddlewareAwareTrait
     }
     public function invokeRequestMiddleware(RequestInterface $request, ResponseInterface $response, mixed $context = null): mixed
     {
+        if (!isset($this->requestMiddleware)) {
+            throw new RuntimeException(message: 'Middleware not set');
+        }
         return $this->requestMiddleware->invoke(request: $request, response: $response, context: $context);
     }
     public function invokeResponseMiddleware(ResponseInterface $response, RequestInterface $request, mixed $context = null): mixed
     {
+        if (!isset($this->responseMiddleware)) {
+            throw new RuntimeException(message: 'Middleware not set');
+        }
         return $this->responseMiddleware->invoke(response: $response, request: $request, context: $context);
     }
     protected function getRequestMiddleware(): RequestMiddleware

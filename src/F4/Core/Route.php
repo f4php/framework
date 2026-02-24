@@ -247,13 +247,19 @@ class Route implements RouteInterface
             $request->setValidatedParameters($arguments);
             if (isset($this->requestMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
-                if(($requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this)) instanceof RequestInterface) {
-                    // If request was modified by the middleware, save it and revalidate all the parameters
+                $requestMiddlewareResult = $this->requestMiddleware->invoke(request: $request, response: $response, context: $this);
+                if($requestMiddlewareResult instanceof RequestInterface) {
+                    // If the request was modified by the middleware, save it and revalidate all the parameters
                     $request = $requestMiddlewareResult;
                     $parameters = $this->getRequestParameters($request, $pathPrefix);
                     $arguments = $validator->getFilteredArguments(handler: $handler, arguments: $parameters);
                     $request->setParameters($parameters);
                     $request->setValidatedParameters($arguments);
+                }
+                else if($requestMiddlewareResult instanceof ResponseInterface) {
+                    // If the middleware returned a response object, replace the original response with it, and return immediately
+                    $response = $requestMiddlewareResult;
+                    return null;
                 }
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
             }

@@ -6,9 +6,11 @@ namespace F4\Core;
 
 use ReflectionFunction;
 
-use F4\Core\AbstractMiddleware;
-use F4\Core\RequestInterface;
-use F4\Core\ResponseInterface;
+use F4\Core\{
+    AbstractMiddleware,
+    RequestInterface,
+    ResponseInterface,
+};
 
 class RequestMiddleware extends AbstractMiddleware
 {

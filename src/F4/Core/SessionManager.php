@@ -15,6 +15,7 @@ use function session_set_cookie_params;
 use function session_start;
 use function session_status;
 use function session_unset;
+use function session_write_close;
 
 class SessionManager implements SessionManagerInterface
 {
@@ -22,6 +23,9 @@ class SessionManager implements SessionManagerInterface
         get { return session_status() === PHP_SESSION_ACTIVE; }
     }
     public function __construct() {}
+    public function commit(): bool {
+        return session_write_close();
+    }
     public function get(?string $key = null): mixed {
         $this->ensureStarted();
         return match($key === null) {

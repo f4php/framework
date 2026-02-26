@@ -280,6 +280,10 @@ class Core implements CoreApiInterface
     protected function processRequestNormally(): void
     {
         $this->router->invokeMatchingRoutes(request: $this->request, response: $this->response);
+        // Commit session changes as early as possible to release locks and improve concurrency
+        if (Config::SESSION_ENABLED) {
+            $this->sessionManager->commit();
+        }
     }
     protected function emitResponseNormally(): void
     {

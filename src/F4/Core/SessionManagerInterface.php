@@ -6,6 +6,7 @@ namespace F4\Core;
 
 interface SessionManagerInterface
 {
+    public function commit(): bool;
     public function get(?string $key = null): mixed;
     public function getName(): string;
     public function getParameters(): array;

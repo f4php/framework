@@ -154,6 +154,6 @@ F4 framework package contains unit tests and supports static code analysis with 
 composer run test
 ```
 ```
-composer run phpstan
+composer run stan
 ```
 

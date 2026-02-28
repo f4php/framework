@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace F4\Core;
 
-use ReflectionFunction;
 use Throwable;
 
 use F4\Core\Exception\HttpException;
@@ -114,9 +113,7 @@ class Router implements RouterInterface
             } catch (Throwable $exception) {
                 foreach ($this->exceptionHandlers as $className => $handler) {
                     if (!$className || ($exception instanceof $className)) {
-                        $handlerReflection = new ReflectionFunction($handler);
-                        $handlerThis = $handlerReflection->getClosureThis();
-                        if (($result = $handler->call($handlerThis, $exception, $request, $response, $matchingRoute)) instanceof ResponseInterface) {
+                        if (($result = ($handler)($exception, $request, $response, $matchingRoute)) instanceof ResponseInterface) {
                             $response = $result;
                             return null;
                         }

@@ -285,7 +285,6 @@ final class RouteTest extends TestCase
 
     public function testPathIvalidParameterTypeInHandler(): void
     {
-        $this->expectException(TypeError::class);
         $requestMethod = 'GET';
         $requestPath = "/entities/abc";
         $queryString = 'entityID=345';
@@ -296,7 +295,8 @@ final class RouteTest extends TestCase
         $route = new Route($routePathDefinition, function (int $entityID = 0): int {
             return $entityID;
         });
-        $route->invoke(request: $request, response: $response);
+        $result = $route->invoke(request: $request, response: $response);
+        $this->assertSame(0, $result);
     }
 
     public function testInvalidFormatMatching(): void

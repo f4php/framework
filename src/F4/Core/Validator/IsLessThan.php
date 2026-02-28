@@ -18,7 +18,7 @@ class IsLessThan implements ValidatorAttributeInterface
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (is_numeric(value: $value) && ($value < $this->target)) {
-            false => throw new ValidationFailedException(message: "'{$value}' is not an integer")
+            false => throw new ValidationFailedException(message: "'{$value}' is not in the correct range")
                 ->withContext($context),
             default => $value
         };

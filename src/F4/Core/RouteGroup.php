@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use Throwable;
-use ReflectionFunction;
 
 use F4\HookManager;
 use F4\Core\ExceptionHandlerTrait;
@@ -120,9 +119,7 @@ class RouteGroup implements RouteGroupInterface
             } catch (Throwable $exception) {
                 foreach ($this->exceptionHandlers as $className => $handler) {
                     if (!$className || ($exception instanceof $className)) {
-                        $handlerReflection = new ReflectionFunction($handler);
-                        $handlerThis = $handlerReflection->getClosureThis();
-                        if (($result = $handler->call($handlerThis, $exception, $request, $response, $route, $this)) instanceof ResponseInterface) {
+                        if (($result = ($handler)($exception, $request, $response, $route, $this)) instanceof ResponseInterface) {
                             $response = $result;
                             return null;
                         }

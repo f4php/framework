@@ -15,13 +15,15 @@ use Composer\Pcre\Preg;
 use F4\Config;
 
 use F4\HookManager;
-use F4\Core\CanExtractFormatFromExtensionTrait;
-use F4\Core\ExceptionHandlerTrait;
-use F4\Core\MiddlewareAwareTrait;
-use F4\Core\RequestInterface;
-use F4\Core\ResponseInterface;
-use F4\Core\RouteInterface;
-use F4\Core\Validator;
+use F4\Core\{
+    CanExtractFormatFromExtensionTrait,
+    ExceptionHandlerTrait,
+    MiddlewareAwareTrait,
+    RequestInterface,
+    ResponseInterface,
+    RouteInterface,
+    Validator,
+};
 
 use function array_map;
 use function array_keys;
@@ -48,11 +50,12 @@ class Route implements RouteInterface
     ];
     protected array $exceptionHandlers = [];
     protected string $requestPathRegExp;
+    protected array $typeCastHandlers = [];
     protected ?string $responseFormatRegExp = null;
 
     public function __construct(string $pathDefinition, callable $handler)
     {
-        [$this->requestPathRegExp, $extension] = $this->unpackPath(path: $pathDefinition);
+        [$this->requestPathRegExp, $extension, $this->typeCastHandlers] = $this->unpackPath(path: $pathDefinition);
         $this->responseFormatRegExp = match ($extension) {
             null => Config::STRICT_RESPONSE_FORMAT_MATCHING ? preg_quote(str: Config::DEFAULT_RESPONSE_FORMAT, delimiter: '/') : '.+',
             default => preg_quote(str: $this->getResponseFormatFromExtension(extension: $extension), delimiter: '/')
@@ -117,6 +120,7 @@ class Route implements RouteInterface
         );
         $pathDefinitionPattern = "({$literalPathDefinitionPattern}|{$parameterDefinitionPattern}|{$prefixedLiteralPathDefinitionPattern})+";
         $definitionPattern = "^\s*((?i)(?<methodDefinition>({$methodDefinitionPattern})\s+)?(?<pathDefinition>({$pathDefinitionPattern}))(?<extensionDefinition>{$extensionDefinitionPattern})?\s*$";
+        $typeCastHandlers = [];
         if (!Preg::isMatch(pattern: "/{$definitionPattern}/Anu", subject: $path, matches: $matches)) {
             throw new InvalidArgumentException(message: 'path parsing failed');
         }
@@ -133,8 +137,10 @@ class Route implements RouteInterface
         $regexpPieces[] = match (Preg::isMatchAll(pattern: "/{$parameterDefinitionPattern}/nu", subject: $matches['pathDefinition'], matches: $parameterMatches)) {
             true => Preg::replaceCallback(
                 pattern: "/{$parameterDefinitionPattern}/nu",
-                replacement: function (array $match): string {
-                    $pattern = match ($match['parameterTypeDefinition']) {
+                replacement: function (array $match) use (&$typeCastHandlers): string {
+                    $type = $match['parameterTypeDefinition'];
+                    $name = $match['parameterNameDefinition'];
+                    $pattern = match ($type) {
                         'any' => '.+?',
                         'bool' => '[true|false]',
                         'float' => '[\-\+]?[0-9]+(\.[0-9]+?)?',
@@ -147,7 +153,13 @@ class Route implements RouteInterface
                         'uuid4' => '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}',
                         default => '[^\/]+?' // same as string
                     };
-                    return "(?<{$match['parameterNameDefinition']}>{$pattern})";
+                    $typeCastHandlers[$name] = match ($type) {
+                        'bool' => fn(string $value): bool => $value === 'true',
+                        'float' => fn(string $value): float => (float)$value,
+                        'int' => fn(string $value): int => (int)$value,
+                        default => null,
+                    };
+                    return "(?<{$name}>{$pattern})";
                 },
                 subject: $quoteLiteralsFunction(string: $matches['pathDefinition']),
             ),
@@ -156,7 +168,8 @@ class Route implements RouteInterface
         $regexpPieces[] = '$';
         return [
             implode(separator: '', array: $regexpPieces),
-            $matches['extensionDefinition'] ?? null
+            $matches['extensionDefinition'] ?? null,
+            $typeCastHandlers,
         ];
     }
 
@@ -266,10 +279,7 @@ class Route implements RouteInterface
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $handler, 'parameters' => $arguments]);
             $handlerReflection = new ReflectionFunction($handler);
             $handlerThis = $handlerReflection->getClosureThis();
-            $response->setData($result = match ($handlerThis) {
-                null => $handler(...$arguments),
-                default => $handler->call($handlerThis, ...$arguments)
-            });
+            $response->setData($result = ($handler)(...$arguments));
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route' => $this, 'result' => $result]);
             if (isset($this->responseMiddleware)) {
                 HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE_RESPONSE_MIDDLEWARE, context: ['response' => $response, 'route' => $this, 'middleware' => $this->responseMiddleware]);
@@ -311,6 +321,9 @@ class Route implements RouteInterface
         array_walk(array: $matches, callback: function (mixed $value, int|string $key) use (&$matches): void {
             if (is_numeric(value: $key)) {
                 unset($matches[$key]);
+            }
+            if($this->typeCastHandlers[$key]??false) {
+                $matches[$key] = ($this->typeCastHandlers[$key])($matches[$key]);
             }
         });
         return $matches;

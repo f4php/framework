@@ -85,7 +85,7 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[CastBool] bool $bool1, #[CastBool] bool $bool2, #[CastBoolean] bool $bool3, #[CastBoolean] bool $bool4, #[CastInt] bool $int1, #[CastInt] bool $int2, #[CastInteger] bool $int3, #[CastInteger] bool $int4, #[CastInteger] bool $int5, #[CastFloat] float $float1, #[CastFloat] float $float2, #[CastFloat] float $float3): void {
+            function (#[CastBool] bool $bool1, #[CastBool] bool $bool2, #[CastBoolean] bool $bool3, #[CastBoolean] bool $bool4, #[CastInt] int $int1, #[CastInt] int $int2, #[CastInteger] int $int3, #[CastInteger] int $int4, #[CastInteger] int $int5, #[CastFloat] float $float1, #[CastFloat] float $float2, #[CastFloat] float $float3): void {
             },
             [
                 'bool1' => 1,
@@ -251,7 +251,6 @@ final class ValidatorTest extends TestCase
                 'fields1' => [],
             ],
         );
-        $this->assertSame('c', $arguments['fields1']);
     }
     public function testArrayKeysIncorrectArguments2(): void
     {
@@ -264,7 +263,6 @@ final class ValidatorTest extends TestCase
                 'fields1' => [],
             ],
         );
-        $this->assertSame('c', $arguments['fields1']);
     }
     public function testArrayOfIncorrectArguments(): void
     {
@@ -277,7 +275,6 @@ final class ValidatorTest extends TestCase
                 'fields1' => [],
             ],
         );
-        // $this->assertSame('c', $arguments['fields1']);
     }
     public function testArrayOf(): void
     {
@@ -335,7 +332,6 @@ final class ValidatorTest extends TestCase
             function (#[DefaultValue(null)] string $default1, ): void {
             },
             [
-                // 'oneof1' => 'b',
             ],
         );
         $this->assertSame(null, $arguments['default1']);
@@ -365,8 +361,7 @@ final class ValidatorTest extends TestCase
                 'oneof1' => '',
             ],
         );
-        $this->assertSame(null, $arguments['oneof1']);
-        $closure->call($this, $arguments); // null cannot be passed as string, and there's no other default available for $oneof1
+        ($closure)($arguments); // null cannot be passed as string, and there's no other default available for $oneof1
     }
     public function testInvalidInteger(): void
     {
@@ -385,7 +380,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsBool] int $bool1): void {
+            function (#[IsBool] bool $bool1): void {
             },
             [
                 'bool1' => 'not-a-boolean',
@@ -397,7 +392,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsFloat] int $float1): void {
+            function (#[IsFloat] float $float1): void {
             },
             [
                 'float1' => 'not-a-float',
@@ -409,7 +404,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsEmail] int $email1): void {
+            function (#[IsEmail] string $email1): void {
             },
             [
                 'email1' => 'not-an-email',
@@ -433,7 +428,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsUuid] int $uuid1): void {
+            function (#[IsUuid] string $uuid1): void {
             },
             [
                 'uuid1' => 'not-a-uuid',
@@ -469,10 +464,10 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $validator->getFilteredArguments(
-            function (#[IsNotEmpty] string $regexp1): void {
+            function (#[IsNotEmpty] string $string1): void {
             },
             [
-                'regexp1' => '',
+                'string1' => '',
             ],
         );
     }
@@ -552,49 +547,47 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsLessThan(10)] int $greater1): void {
+            function (#[IsLessThan(10)] int $lessthan1): void {
             },
             [
-                'greater1' => 9,
+                'lessthan1' => 9,
             ],
         );
-        $this->assertSame(9, $arguments['greater1']);
+        $this->assertSame(9, $arguments['lessthan1']);
     }
     public function testIsLessThanFail(): void
     {
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsLessThan(10)] int $greater1): void {
+            function (#[IsLessThan(10)] int $lessthan1): void {
             },
             [
-                'greater1' => 11,
+                'lessthan1' => 11,
             ],
         );
     }
-
     public function testIsLessThanOrEqual(): void
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsLessThanOrEqual(10)] int $greater1): void {
+            function (#[IsLessThanOrEqual(10)] int $lessthanorequal1): void {
             },
             [
-                'greater1' => 10,
+                'lessthanorequal1' => 10,
             ],
         );
-        $this->assertSame(10, $arguments['greater1']);
+        $this->assertSame(10, $arguments['lessthanorequal1']);
     }
-
     public function testIsLessThanOrEqualFail(): void
     {
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsLessThanOrEqual(10)] int $greater1): void {
+            function (#[IsLessThanOrEqual(10)] int $lessthanorequal1): void {
             },
             [
-                'greater1' => 11,
+                'lessthanorequal1' => 11,
             ],
         );
     }
@@ -602,7 +595,7 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsIpAddress] int $ip1, #[IsIpAddress] int $ip2): void {
+            function (#[IsIpAddress] string $ip1, #[IsIpAddress] string $ip2): void {
             },
             [
                 'ip1' => '127.0.0.1',
@@ -617,7 +610,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsIpAddress] int $ip1): void {
+            function (#[IsIpAddress] string $ip1): void {
             },
             [
                 'ip1' => '256.0.0.0',
@@ -629,7 +622,7 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationFailedException::class);
         $validator = new Validator();
         $arguments = $validator->getFilteredArguments(
-            function (#[IsIpAddress] int $ip1): void {
+            function (#[IsIpAddress] string $ip1): void {
             },
             [
                 'ip1' => '2001:db8:a0b:12f0::::0:1',
@@ -646,17 +639,16 @@ final class ValidatorTest extends TestCase
                 int $parameter): void {
             },
             [
-
             ],
         );
     }
-    public function testAllAttributesCanByAnything(): void
+    public function testAllAttributesCanBeAnything(): void
     {
         $validator = new Validator(flags: ~Validator::ALL_ATTRIBUTES_MUST_BE_CLASSES);
         $arguments = $validator->getFilteredArguments(
             function ( 
                 #[NotAClassName] // valid
-                int $parameter): void {
+                string $parameter): void {
             },
             [
                 'parameter' => 'test',
@@ -668,28 +660,28 @@ final class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $value1 = $validator->getFilteredArguments(
-            function (#[SanitizedUuid] int $uuid1): void {
+            function (#[SanitizedUuid] string $uuid1): void {
             },
             [
                 'uuid1' => 'not-a-uuid',
             ],
         );
         $value2 = $validator->getFilteredArguments(
-            function (#[SanitizedUuid] int $uuid2): void {
+            function (#[SanitizedUuid] string $uuid2): void {
             },
             [
                 'uuid2' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',
             ],
         );
         $value3 = $validator->getFilteredArguments(
-            function (#[SanitizedUuid(1)] int $uuid3): void {
+            function (#[SanitizedUuid(1)] string $uuid3): void {
             },
             [
                 'uuid3' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',
             ],
         );
         $value4 = $validator->getFilteredArguments(
-            function (#[SanitizedUuid(4)] int $uuid4): void {
+            function (#[SanitizedUuid(4)] string $uuid4): void {
             },
             [
                 'uuid4' => '1a8e4cd9-85c0-45d4-9732-8f866c9e3f27',

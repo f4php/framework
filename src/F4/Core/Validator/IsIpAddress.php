@@ -18,7 +18,7 @@ class IsIpAddress implements ValidatorAttributeInterface
     public function getFilteredValue(mixed $value, ValidationContextInterface $context): mixed
     {
         return match (filter_var(value: $value, filter: FILTER_VALIDATE_IP, options: $this->options)) {
-            false => throw new ValidationFailedException(message: "'{$value}' is not a valid email address")
+            false => throw new ValidationFailedException(message: "'{$value}' is not a valid IP address")
                 ->withContext($context),
             default => $value
         };

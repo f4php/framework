@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace F4\Core;
 
 use InvalidArgumentException;
-use ReflectionFunction;
 use Throwable;
 
 use function is_subclass_of;
@@ -39,9 +38,7 @@ trait ExceptionHandlerTrait
     {
         foreach ($this->exceptionHandlers as $className => $handler) {
             if ($exception instanceof $className) {
-                $handlerReflection = new ReflectionFunction($handler);
-                $handlerThis = $handlerReflection->getClosureThis();
-                return $handler->call($handlerThis, $exception, ...$arguments);
+                return ($handler)($exception, ...$arguments);
             }
         }
         throw $exception;

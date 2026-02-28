@@ -21,6 +21,7 @@ use function array_reduce;
 use function class_exists;
 use function count;
 use function explode;
+use function in_array;
 use function is_string;
 
 class Validator
@@ -87,12 +88,18 @@ class Validator
                         $filters[] = new SanitizedString();
                     }
                     try {
-                        $filteredArguments[$name] = array_reduce(
+                        $value = array_reduce(
                             array: $filters,
                             callback: fn(mixed $value, ValidatorAttributeInterface $filter): mixed
                                 => $filter->getFilteredValue($value, new ValidationContext()->withNode($name, $filter, $value)),
                             initial: $value
                         ) ?? $defaultValue;
+                        $filteredArguments[$name] = match($type) {
+                            'int' => (int) $value,
+                            'bool' => (bool) (!in_array(needle: $value, haystack: [false, 0, '0', 'false', ''], strict: true)),
+                            'float' => (float) $value,
+                            default => $value,
+                        };
                     } catch (ValidationFailedException $e) {
                         throw $e
                             ->withArgumentName(argumentName: $name)

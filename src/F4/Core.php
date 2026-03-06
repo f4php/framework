@@ -57,9 +57,6 @@ use function ob_start;
 use function php_sapi_name;
 use function restore_error_handler;
 use function restore_exception_handler;
-use function session_name;
-use function session_set_cookie_params;
-use function session_start;
 use function set_error_handler;
 use function set_exception_handler;
 

@@ -277,8 +277,6 @@ class Route implements RouteInterface
                 HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE_REQUEST_MIDDLEWARE, context: ['request' => $request, 'route' => $this, 'middleware' => $this->requestMiddleware]);
             }
             HookManager::triggerHook(hookName: HookManager::BEFORE_ROUTE, context: ['route' => $this, 'handler' => $handler, 'parameters' => $arguments]);
-            $handlerReflection = new ReflectionFunction($handler);
-            $handlerThis = $handlerReflection->getClosureThis();
             $response->setData($result = ($handler)(...$arguments));
             HookManager::triggerHook(hookName: HookManager::AFTER_ROUTE, context: ['route' => $this, 'result' => $result]);
             if (isset($this->responseMiddleware)) {

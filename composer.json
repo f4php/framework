@@ -39,7 +39,7 @@
         "ext-pgsql": "*",
         "guzzlehttp/guzzle": "^7.9",
         "phug/phug": "2.0.1",
-        "phug/component": "1.2.0",
+        "phug/component": "1.2.1",
         "php": "^8.4.1",
         "cekurte/environment": "^0.3.0",
         "ralouphie/getallheaders": "^3.0",

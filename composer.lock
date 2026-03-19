@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "329996c7b42c79213ddf17fcd92a4644",
+    "content-hash": "dca40edc510d3359d41832b5154e0a0c",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -1046,16 +1046,16 @@
         },
         {
             "name": "phug/component",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phug-php/component.git",
-                "reference": "533b3a506d2b8078e6911cde22c5431c07c2ca29"
+                "reference": "dc1babf6bd7a5e80769d0774f60395b795bd1b61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phug-php/component/zipball/533b3a506d2b8078e6911cde22c5431c07c2ca29",
-                "reference": "533b3a506d2b8078e6911cde22c5431c07c2ca29",
+                "url": "https://api.github.com/repos/phug-php/component/zipball/dc1babf6bd7a5e80769d0774f60395b795bd1b61",
+                "reference": "dc1babf6bd7a5e80769d0774f60395b795bd1b61",
                 "shasum": ""
             },
             "require": {
@@ -1113,7 +1113,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-17T12:52:47+00:00"
+            "time": "2026-03-19T19:38:08+00:00"
         },
         {
             "name": "phug/phug",

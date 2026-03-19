@@ -367,7 +367,7 @@ class Core implements CoreApiInterface
     {
         return $this->router->addRoute(routeOrPath: $routeOrPath, handler: $handler);
     }
-    public function addRouteGroup(Routegroup $routeGroup): RouteGroup
+    public function addRouteGroup(RouteGroup $routeGroup): RouteGroup
     {
         return $this->router->addRouteGroup(routeGroup: $routeGroup);
     }

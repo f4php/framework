@@ -14,7 +14,7 @@ interface RouterInterface
     public function addRoute(Route|string $routeOrPath, ?callable $handler = null): Route;
     public function addRouteGroup(RouteGroup $routeGroup): RouteGroup;
     public function getMatchingRoute(RequestInterface $request, ResponseInterface $response): ?Route;
-    public function getMatchingRouteGroup(RequestInterface $request, ResponseInterface $response): ?RouteGRoup;
+    public function getMatchingRouteGroup(RequestInterface $request, ResponseInterface $response): ?RouteGroup;
     public function invokeMatchingRoutes(RequestInterface &$request, ResponseInterface &$response): mixed;
     public function setRequestMiddleware(RequestMiddleware|callable $requestMiddleware): static;
     public function before(RequestMiddleware|callable $requestMiddleware): static;

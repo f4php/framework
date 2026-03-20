@@ -142,7 +142,7 @@ This bootstrap sequence is mostly self-explanatory, and contains the following s
 
 Custom intervention in the bootstrap process is not recommended. All of the developer-facing features needed to handle a web request, such as routing, parameter validation, header management etc. are provided via F4's Core API and can be used inside Modules.
 
-Such an interventions may be required hoewever if, for example, exotic third-party software needs to be initialized / configured at a certain stage and made available to other parts of the code.
+Such an intervention may be required hoewever if, for example, exotic third-party software needs to be initialized / configured at a certain stage and made available to other parts of the code.
 
 Once again, normal operation does not require any developer intervention in the bootstrap process.
 

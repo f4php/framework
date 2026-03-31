@@ -6,22 +6,23 @@ namespace F4\Core\ResponseEmitter;
 
 use ErrorException;
 
-use F4\Core\CoreApiInterface;
-use F4\Core\RequestInterface;
-use F4\Core\ResponseInterface;
-use F4\Core\ResponseEmitter\ResponseEmitterInterface;
+use F4\Config;
+use F4\Core\{
+    CoreApiInterface,
+    RequestInterface,
+    ResponseInterface,
+    ResponseEmitter\ResponseEmitterInterface,
+};
 
 use function array_diff_key;
-use function array_find;
-use function array_keys;
 use function gmdate;
 use function header;
 use function headers_sent;
 use function in_array;
-use function mb_strtolower;
 use function ob_get_level;
 use function ob_get_length;
 use function sprintf;
+use function time;
 use function ucwords;
 
 abstract class AbstractResponseEmitter implements ResponseEmitterInterface
@@ -54,7 +55,7 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
     {
         $statusCode = $response->getStatusCode();
         $headers = $response->getHeaders();
-        $headers += array_diff_key(['Expires' => [sprintf('%s GMT', gmdate('D, d M Y H:i:s', 239772600))]], $headers);
+        $headers += array_diff_key(['Expires' => [sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + Config::DEFAULT_EXPIRES_TTL))]], $headers);
         foreach ($headers as $header => $values) {
             $name = $this->filterHeaderName($header);
             $first = $name !== 'Set-Cookie';
@@ -70,10 +71,12 @@ abstract class AbstractResponseEmitter implements ResponseEmitterInterface
     }
     public function shouldEmitBody(ResponseInterface $response): bool
     {
-        return !in_array($response->getStatusCode(), [100, 101, 102, 103, 204, 205, 304])
-            && (null === array_find(array_keys($response->getHeaders()), function ($name): bool{
-                return mb_strtolower($name) === 'location';
-            }));
+        return !in_array(
+                needle: $response->getStatusCode(),
+                haystack: [100, 101, 102, 103, 204, 205, 304]
+            )
+            &&
+            !$response->hasHeader('Location');
     }
     protected function filterHeaderName(string $header): string
     {

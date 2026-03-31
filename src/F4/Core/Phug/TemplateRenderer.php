@@ -8,9 +8,11 @@ use F4\Config;
 // use F4\Core\Phug\FluentResourceModule;
 use F4\Core\Phug\{ViteBundleModule, ViteStripResourceTagModule};
 
-use Phug\Phug;
-use Phug\Component\ComponentExtension;
-use Phug\Optimizer;
+use Phug\{
+    Optimizer,
+    Phug,
+    Component\ComponentExtension,
+};
 
 use function array_reduce;
 use function define;

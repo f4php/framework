@@ -47,6 +47,7 @@ abstract class AbstractConfig
     public const string TEMPLATE_PUG_FALLBACK_CSS_BUNDLE_NAME = 'style.css'; // used by vite by default if css splitting is disabled
 
     public const string RESPONSE_CHARSET = 'utf-8';
+    public const int DEFAULT_EXPIRES_TTL = 0; // added to time() and emitted as Expires header
 
     /**
      * Response format defines which emitter will be used for emitting response

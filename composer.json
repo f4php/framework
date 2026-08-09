@@ -25,8 +25,7 @@
     "config": {
         "optimize-autoloader": true,
         "allow-plugins": {
-            "nodejs-php-fallback/nodejs-php-fallback": true,
-            "cweagans/composer-patches": true
+            "nodejs-php-fallback/nodejs-php-fallback": true
         }
     },
     "scripts": {
@@ -58,7 +57,5 @@
         "phpstan/phpstan-phpunit": "^2.0"
     },
     "extra": {
-      "patches": {
-      }
     }
 }

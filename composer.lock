@@ -142,16 +142,16 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.3.5",
+            "version": "v0.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "cc7cfd34b1a1a38b1c6a559ed8f8ac64638f41e3"
+                "reference": "9b7685c6bd22c6fdd4e99cefc2e32537c7bab6d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/cc7cfd34b1a1a38b1c6a559ed8f8ac64638f41e3",
-                "reference": "cc7cfd34b1a1a38b1c6a559ed8f8ac64638f41e3",
+                "url": "https://api.github.com/repos/f4php/db/zipball/9b7685c6bd22c6fdd4e99cefc2e32537c7bab6d9",
+                "reference": "9b7685c6bd22c6fdd4e99cefc2e32537c7bab6d9",
                 "shasum": ""
             },
             "require": {
@@ -164,6 +164,10 @@
                 "phpstan/phpstan": "^2.0",
                 "phpstan/phpstan-phpunit": "^2.0",
                 "phpunit/phpunit": "^12"
+            },
+            "suggest": {
+                "ext-mysqli": "Required to use MysqlAdapter",
+                "ext-sqlite3": "Required to use SqliteAdapter"
             },
             "type": "library",
             "autoload": {
@@ -190,9 +194,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.3.5"
+                "source": "https://github.com/f4php/db/tree/v0.3.8"
             },
-            "time": "2026-02-26T21:43:40+00:00"
+            "time": "2026-08-17T21:03:49+00:00"
         },
         {
             "name": "f4php/hookmanager",
@@ -1755,16 +1759,16 @@
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v8.1.2",
+            "version": "v8.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "865103cf742a039f34645b971fc3ace308d6c167"
+                "reference": "61743d9bc7ab23b194527ca1be2fafd7dc93b74a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/865103cf742a039f34645b971fc3ace308d6c167",
-                "reference": "865103cf742a039f34645b971fc3ace308d6c167",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/61743d9bc7ab23b194527ca1be2fafd7dc93b74a",
+                "reference": "61743d9bc7ab23b194527ca1be2fafd7dc93b74a",
                 "shasum": ""
             },
             "require": {
@@ -1818,7 +1822,7 @@
                 "dump"
             ],
             "support": {
-                "source": "https://github.com/symfony/var-dumper/tree/v8.1.2"
+                "source": "https://github.com/symfony/var-dumper/tree/v8.1.5"
             },
             "funding": [
                 {
@@ -1838,26 +1842,26 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-22T15:42:13+00:00"
+            "time": "2026-08-21T12:16:08+00:00"
         }
     ],
     "packages-dev": [
         {
             "name": "myclabs/deep-copy",
-            "version": "1.13.4",
+            "version": "1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "07d290f0c47959fd5eed98c95ee5602db07e0b6a"
+                "reference": "8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/07d290f0c47959fd5eed98c95ee5602db07e0b6a",
-                "reference": "07d290f0c47959fd5eed98c95ee5602db07e0b6a",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
+                "reference": "8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1 || ^8.0"
+                "php": "^8.0"
             },
             "conflict": {
                 "doctrine/collections": "<1.6.8",
@@ -1892,15 +1896,15 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.4"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.14.0"
             },
             "funding": [
                 {
-                    "url": "https://tidelift.com/funding/github/packagist/myclabs/deep-copy",
-                    "type": "tidelift"
+                    "url": "https://github.com/mnapoli",
+                    "type": "github"
                 }
             ],
-            "time": "2025-08-01T08:46:24+00:00"
+            "time": "2026-08-11T10:17:44+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -2079,11 +2083,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.8",
+            "version": "2.2.9",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e285254e60f33c21902efef4a926ca0987c06804",
-                "reference": "e285254e60f33c21902efef4a926ca0987c06804",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/13d6b4f347bad222da436580c8304fa6f83e6bd0",
+                "reference": "13d6b4f347bad222da436580c8304fa6f83e6bd0",
                 "shasum": ""
             },
             "require": {
@@ -2139,7 +2143,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-04T22:21:45+00:00"
+            "time": "2026-08-22T07:38:16+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",

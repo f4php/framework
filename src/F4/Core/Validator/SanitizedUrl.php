@@ -18,7 +18,7 @@ class SanitizedUrl implements ValidatorAttributeInterface
     {
         return match (filter_var(value: $value, filter: FILTER_VALIDATE_URL, options: $this->options)) {
             false => null,
-            default => $value
+            default => $value,
         };
     }
 }

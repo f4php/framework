@@ -34,6 +34,7 @@ abstract class AbstractConfig
     public const string DB_ADAPTER_CLASS = PostgresqlAdapter::class;
     /** Enable only to preserve the legacy last-column-wins result behavior. */
     public const bool DB_OVERWRITE_DUPLICATE_RESPONSE_COLUMNS = false;
+    public const bool DB_STRICT_CONCEAL = true;
 
     public const bool DB_PERSIST = true;
 

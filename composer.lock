@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d21b501203bc054208c132345693e366",
+    "content-hash": "5e7bfb78c0f2db96c8ad1b0531b35ff1",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -142,22 +142,22 @@
         },
         {
             "name": "f4php/db",
-            "version": "v0.4.2",
+            "version": "v0.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/db.git",
-                "reference": "b30fb53f8a4e8acf1b1036f84538638878bc5009"
+                "reference": "08ec30b7fdade0c3d33b245216c35ae1049e858a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/db/zipball/b30fb53f8a4e8acf1b1036f84538638878bc5009",
-                "reference": "b30fb53f8a4e8acf1b1036f84538638878bc5009",
+                "url": "https://api.github.com/repos/f4php/db/zipball/08ec30b7fdade0c3d33b245216c35ae1049e858a",
+                "reference": "08ec30b7fdade0c3d33b245216c35ae1049e858a",
                 "shasum": ""
             },
             "require": {
                 "composer/pcre": "^3.3",
                 "ext-pgsql": "*",
-                "f4php/hookmanager": "^0.0.4",
+                "f4php/hookmanager": "^0.0.5",
                 "php": "^8.4.27"
             },
             "require-dev": {
@@ -194,22 +194,22 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/db/issues",
-                "source": "https://github.com/f4php/db/tree/v0.4.2"
+                "source": "https://github.com/f4php/db/tree/v0.4.3"
             },
-            "time": "2026-10-21T14:21:00+00:00"
+            "time": "2026-10-27T21:43:06+00:00"
         },
         {
             "name": "f4php/hookmanager",
-            "version": "v0.0.4",
+            "version": "v0.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/hookmanager.git",
-                "reference": "ea3c56f3448221227de5d5f480a447113fa1b085"
+                "reference": "06b806df9b240fe65c2f6bd6cba7245c5ffe1447"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/hookmanager/zipball/ea3c56f3448221227de5d5f480a447113fa1b085",
-                "reference": "ea3c56f3448221227de5d5f480a447113fa1b085",
+                "url": "https://api.github.com/repos/f4php/hookmanager/zipball/06b806df9b240fe65c2f6bd6cba7245c5ffe1447",
+                "reference": "06b806df9b240fe65c2f6bd6cba7245c5ffe1447",
                 "shasum": ""
             },
             "require": {
@@ -244,22 +244,22 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/hookmanager/issues",
-                "source": "https://github.com/f4php/hookmanager/tree/v0.0.4"
+                "source": "https://github.com/f4php/hookmanager/tree/v0.0.5"
             },
-            "time": "2026-10-21T14:17:41+00:00"
+            "time": "2026-10-27T21:34:09+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.16.0",
+            "version": "7.16.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "ffb62ec787050ae4fa9449cdd6b80335db69bda2"
+                "reference": "81755d989b3007ca7f88a069857553cd08e7dc2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ffb62ec787050ae4fa9449cdd6b80335db69bda2",
-                "reference": "ffb62ec787050ae4fa9449cdd6b80335db69bda2",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/81755d989b3007ca7f88a069857553cd08e7dc2e",
+                "reference": "81755d989b3007ca7f88a069857553cd08e7dc2e",
                 "shasum": ""
             },
             "require": {
@@ -358,7 +358,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.16.0"
+                "source": "https://github.com/guzzle/guzzle/tree/7.16.1"
             },
             "funding": [
                 {
@@ -374,7 +374,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-18T13:38:36+00:00"
+            "time": "2026-10-25T21:35:21+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -743,21 +743,21 @@
         },
         {
             "name": "nette/php-generator",
-            "version": "v4.2.2",
+            "version": "v4.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/php-generator.git",
-                "reference": "0d7060926f5c3e8c488b9b9ced42d857f12a34b5"
+                "reference": "19818e4924f9620d016b874e5b7518e78dbb3b24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/php-generator/zipball/0d7060926f5c3e8c488b9b9ced42d857f12a34b5",
-                "reference": "0d7060926f5c3e8c488b9b9ced42d857f12a34b5",
+                "url": "https://api.github.com/repos/nette/php-generator/zipball/19818e4924f9620d016b874e5b7518e78dbb3b24",
+                "reference": "19818e4924f9620d016b874e5b7518e78dbb3b24",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^4.0.6",
-                "php": "8.1 - 8.5"
+                "php": "8.1 - 8.6"
             },
             "require-dev": {
                 "jetbrains/phpstorm-attributes": "^1.2",
@@ -795,25 +795,22 @@
                 {
                     "name": "David Grudl",
                     "homepage": "https://davidgrudl.com"
-                },
-                {
-                    "name": "Nette Community",
-                    "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🐘 Nette PHP Generator: generates neat PHP code for you. Supports new PHP 8.5 features.",
-            "homepage": "https://nette.org",
+            "description": "🐘 Nette PHP Generator: generates PHP code from objects. Classes, enums, functions and whole files, with namespaces resolved for you, and always up to date with the latest PHP.",
+            "homepage": "https://doc.nette.org/php-generator",
             "keywords": [
-                "code",
+                "code generation",
+                "code generator",
+                "codegen",
                 "nette",
-                "php",
                 "scaffolding"
             ],
             "support": {
                 "issues": "https://github.com/nette/php-generator/issues",
-                "source": "https://github.com/nette/php-generator/tree/v4.2.2"
+                "source": "https://github.com/nette/php-generator/tree/v4.2.4"
             },
-            "time": "2026-02-26T00:58:33+00:00"
+            "time": "2026-10-26T22:16:39+00:00"
         },
         {
             "name": "nette/utils",
@@ -2083,11 +2080,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.1",
+            "version": "2.3.3",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
-                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4b57dc8ca7456b635d1661845f44bc060b02c6b0",
+                "reference": "4b57dc8ca7456b635d1661845f44bc060b02c6b0",
                 "shasum": ""
             },
             "require": {
@@ -2143,7 +2140,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-08T21:09:11+00:00"
+            "time": "2026-10-27T14:06:26+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2562,16 +2559,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.40",
+            "version": "12.5.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "76bd3198f16aeb375a4d5f3626471445aed0966e"
+                "reference": "1d6dbe748c079e5d2b03bca1be69d0f4cc52a578"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/76bd3198f16aeb375a4d5f3626471445aed0966e",
-                "reference": "76bd3198f16aeb375a4d5f3626471445aed0966e",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1d6dbe748c079e5d2b03bca1be69d0f4cc52a578",
+                "reference": "1d6dbe748c079e5d2b03bca1be69d0f4cc52a578",
                 "shasum": ""
             },
             "require": {
@@ -2640,7 +2637,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.40"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.42"
             },
             "funding": [
                 {
@@ -2648,7 +2645,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-16T05:55:07+00:00"
+            "time": "2026-10-27T04:15:03+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -3695,7 +3692,7 @@
         "ext-filter": "*",
         "ext-mbstring": "*",
         "ext-pgsql": "*",
-        "php": "^8.4.27"
+        "php": ">=8.4.27 <8.5 || >=8.5.12 <8.6"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"
